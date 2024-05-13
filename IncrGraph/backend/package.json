@@ -1,0 +1,22 @@
+{
+	"name": "backend",
+	"version": "1.0.0",
+	"scripts": {
+        "dev": "nodemon src/index.ts",
+		"build": "tsc",
+		"start": "node dist/index.js"
+	},
+    "author": "Max Boksem",
+    "license": "GPL-3.0",
+    "description": "Backend of IncrGraph",
+	"dependencies": {
+		"body-parser": "^1.20.2",
+		"cors": "^2.8.5",
+		"express": "^4.19.2"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.4.5"
+	}
+}
