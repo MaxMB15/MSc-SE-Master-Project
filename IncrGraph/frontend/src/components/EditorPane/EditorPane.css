@@ -12,6 +12,7 @@
 	overflow: hidden;
 	height: 100%; /* Ensure the editor pane takes full height */
 	position: relative; /* Ensure relative positioning for the resize handle */
+	flex: 0 0 auto; /* Prevent the editor pane from growing */
 }
 
 .navbar {
@@ -25,27 +26,9 @@
 	z-index: 10;
 }
 
-.navbar.collapsed {
-	justify-content: center;
-}
-
 .directory-name {
 	flex-grow: 1;
 	font-weight: bold;
-}
-
-.icon-button {
-	background: none;
-	border: none;
-	color: #ffffff;
-	cursor: pointer;
-	padding: 0 8px;
-	display: flex;
-	align-items: center;
-}
-
-.icon-button:hover {
-	color: #007acc;
 }
 
 .resize-handle-container {
