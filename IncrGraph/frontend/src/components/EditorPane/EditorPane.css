@@ -1,18 +1,12 @@
-.editor-pane-container {
-	display: flex;
-	height: 100vh; /* Full height */
-}
-
 .editor-pane {
 	display: flex;
 	flex-direction: column;
 	background-color: #1e1e1e;
 	color: #ffffff;
-	border-right: 1px solid #333333;
 	overflow: hidden;
 	height: 100%; /* Ensure the editor pane takes full height */
-	position: relative; /* Ensure relative positioning for the resize handle */
-	flex: 0 0 auto; /* Prevent the editor pane from growing */
+	flex-grow: 1; /* Allow the editor pane to grow */
+	min-width: 0; /* Prevent overflow */
 }
 
 .navbar {
@@ -31,18 +25,21 @@
 	font-weight: bold;
 }
 
-.resize-handle-container {
-	position: absolute;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	width: 5px;
-	cursor: ew-resize;
-	z-index: 5; /* Ensure the resize handle is above other elements */
+.editor-pane-content {
+	height: 100%;
+	background-color: #2d2d2d;
+	position: relative;
 }
 
-.resize-handle {
-	height: 100%;
-	width: 100%;
-	background-color: transparent;
+.react-flow__node {
+	cursor: pointer;
+	user-select: none;
+}
+
+.react-flow__pane {
+	cursor: grab;
+}
+
+.react-flow__pane:active {
+	cursor: grabbing;
 }

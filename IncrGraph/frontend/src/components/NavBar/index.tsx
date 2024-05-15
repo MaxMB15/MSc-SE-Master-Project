@@ -170,7 +170,7 @@ const Navbar: React.FC = () => {
 						onClick={toggleConnectionStatusDrawer}
 					>
 						<Badge
-							color={isConnected ? "primary" : "secondary"}
+							color={isConnected ? "success" : "error"}
 							variant="dot"
 						>
 							<SyncIcon />
