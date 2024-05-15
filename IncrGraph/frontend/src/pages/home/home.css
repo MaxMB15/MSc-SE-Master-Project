@@ -1,0 +1,139 @@
+html,
+body,
+#root {
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-container {
+	display: flex;
+	flex-grow: 1;
+	height: calc(100vh - 64px); /* Adjust based on your navbar height */
+	overflow: hidden;
+	width: 100%;
+}
+
+.file-explorer-container {
+	display: flex;
+	height: 100%; /* Full height */
+	overflow: hidden;
+}
+
+.file-explorer {
+	display: flex;
+	flex-direction: column;
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border-right: 1px solid #333333;
+	overflow: hidden;
+	height: 100%; /* Ensure the file explorer takes full height */
+	position: relative; /* Ensure relative positioning for the resize handle */
+}
+
+.file-explorer .navbar {
+	display: flex;
+	align-items: center;
+	background-color: #252526;
+	padding: 8px;
+	border-bottom: 1px solid #333333;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.file-explorer .navbar.collapsed {
+	justify-content: center;
+}
+
+.file-explorer .directory-name {
+	flex-grow: 1;
+	font-weight: bold;
+}
+
+.file-explorer .icon-button {
+	background: none;
+	border: none;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 0 8px;
+	display: flex;
+	align-items: center;
+}
+
+.file-explorer .icon-button:hover {
+	color: #007acc;
+}
+
+.file-explorer .loading {
+	border: 1px solid #333333;
+	padding: 10px;
+}
+
+.file-explorer .resize-handle-container {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 5px;
+	cursor: ew-resize;
+	z-index: 5; /* Ensure the resize handle is above other elements */
+}
+
+.file-explorer .resize-handle {
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+}
+
+.editor-pane-container {
+	display: flex;
+	height: 100vh; /* Full height */
+}
+
+.editor-pane {
+	display: flex;
+	flex-direction: column;
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border-right: 1px solid #333333;
+	overflow: hidden;
+	height: 100%; /* Ensure the editor pane takes full height */
+	position: relative; /* Ensure relative positioning for the resize handle */
+}
+
+.file-editor-container {
+	display: flex;
+	height: 100vh; /* Full height */
+}
+
+.file-editor {
+	display: flex;
+	flex-direction: column;
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border-right: 1px solid #333333;
+	overflow: hidden;
+	height: 100%; /* Ensure the file editor takes full height */
+}
+
+.resize-handle-container {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 5px;
+	cursor: ew-resize;
+	z-index: 5; /* Ensure the resize handle is above other elements */
+}
+
+.resize-handle {
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+}

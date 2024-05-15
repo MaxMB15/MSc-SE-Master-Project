@@ -1,0 +1,38 @@
+/* RootPage.css - Dark Theme */
+
+/* General reset */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212; /* Dark background for the body */
+    color: #ffffff; /* Light text color for better readability on dark background */
+}
+
+/* Main content styles */
+main {
+    padding: 0px;
+    min-height: calc(
+        100vh - 60px
+    ); /* Adjust the value based on your actual header and footer height */
+}
+
+/* Footer styles */
+.footer {
+    padding: 5px 10px;
+    background: black; /* Darker shade for the footer */
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
