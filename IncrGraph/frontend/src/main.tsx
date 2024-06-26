@@ -3,7 +3,11 @@ import { RouterProvider } from "react-router-dom";
 
 import AppRouter from "./routes";
 import "./index.css";
-import React from "react";
+import { injectCSSVariables } from "./styles/injectStyles";
+
+
+// Inject the static CSS variables
+injectCSSVariables();
 
 const rootElement = document.getElementById("root");
 if (rootElement) {

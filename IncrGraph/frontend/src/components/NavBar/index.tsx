@@ -94,7 +94,8 @@ const Navbar: React.FC = () => {
 							Open Project
 						</MenuItem>
 						<Divider />
-						<MenuItem onClick={handleMenuClose}>Save File</MenuItem>
+						<MenuItem onClick={handleMenuClose}>Save File Editor</MenuItem>
+						<MenuItem onClick={handleMenuClose}>Save Graph Editor</MenuItem>
 						<MenuItem onClick={handleMenuClose}>Save All</MenuItem>
 					</Menu>
 					<IconButton

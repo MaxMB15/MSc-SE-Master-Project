@@ -147,9 +147,7 @@ const FileExplorerContent: React.FC<{
 							: { icon: InsertDriveFileIcon }
 					}
 					onClick={() =>
-						node.type === "file"
-							? handleFileSelect(nodePath)
-							: handleFileSelect(null)
+						node.type === "file" && handleFileSelect(nodePath)
 					}
 				>
 					{node.children && renderTree(node.children, nodePath)}

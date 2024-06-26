@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from "react";
-import { Box } from "@mui/material";
+import React, { useCallback, useState, useRef, useEffect } from "react";
+import { Box, Button, IconButton, Menu, MenuItem } from "@mui/material";
+import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
 	ReactFlowProvider,
 	addEdge,
@@ -11,108 +12,205 @@ import ReactFlow, {
 	Edge,
 	Node,
 	Connection,
+	NodeChange,
+	EdgeChange,
+	ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
+import StartNode from "./components/nodes/StartNode";
+import CodeFragmentNode from "./components/nodes/CodeFragmentNode";
+import BaseNode from "./components/nodes/BaseNode";
+import FloatingEdge, { defaultEdgeOptions } from "./components/edges/FloatingEdge";
+import CustomConnectionLine, {
+	connectionLineStyle,
+} from "./components/edges/CustomConnectionLine";
 
 const initialNodes: Node[] = [
 	{
+		id: "start",
+		type: "startNode",
+		data: { label: "Start" },
+		position: { x: 0, y: -200 }, // Position a bit above 0, 0
+		draggable: false,
+        style: { cursor: "grab" }
+	},
+	{
 		id: "1",
-		type: "input",
-		data: { label: "Start Node" },
-		position: { x: 250, y: 5 },
+		type: "baseNode",
+		data: { label: "User Class"},
+		position: { x: -100, y: -100 },
 	},
 	{
 		id: "2",
-		data: { label: "Another Node" },
+		type: "codeFragmentNode",
+		data: { label: "Admin Class"},
 		position: { x: 100, y: 100 },
 	},
-	{
-		id: "3",
-		data: { label: "Output Node" },
-		position: { x: 400, y: 100 },
-	},
 ];
 
-const initialEdges: Edge[] = [
-	{ id: "e1-2", source: "1", target: "2", animated: true },
-	{ id: "e2-3", source: "2", target: "3", animated: true },
-];
+const initialEdges: Edge[] = [];
 
-const EditorPaneContent: React.FC = () => {
+const nodeTypes = {
+	startNode: StartNode,
+	baseNode: BaseNode,
+	codeFragmentNode: CodeFragmentNode,
+};
+
+const edgeTypes = {
+	floating: FloatingEdge,
+};
+
+
+const EditorPane: React.FC = () => {
 	const [nodes, setNodes] = useState<Node[]>(initialNodes);
 	const [edges, setEdges] = useState<Edge[]>(initialEdges);
+    const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+    const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
+    
+	const reactFlowWrapper = useRef<HTMLDivElement>(null);
+	const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
 
 	const onNodesChange = useCallback(
-		(changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+		(changes: NodeChange[]) =>
+			setNodes((nds) => applyNodeChanges(changes, nds)),
 		[],
 	);
 	const onEdgesChange = useCallback(
-		(changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+		(changes: EdgeChange[]) =>
+			setEdges((eds) => applyEdgeChanges(changes, eds)),
 		[],
 	);
-	const onConnect = useCallback(
-		(connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-		[],
-	);
+	const onConnect = useCallback((params: Edge | Connection) => {
+		const { source, target } = params;
 
-	const handlePaneClick = useCallback((event: React.MouseEvent) => {
-		if (event.button === 2) {
-			event.preventDefault();
-			// Implement custom right-click drag for panning
-			const onMouseMove = (moveEvent: MouseEvent) => {
-				window.scrollBy(moveEvent.movementX, moveEvent.movementY);
-			};
-
-			const onMouseUp = () => {
-				window.removeEventListener("mousemove", onMouseMove);
-				window.removeEventListener("mouseup", onMouseUp);
-			};
-
-			window.addEventListener("mousemove", onMouseMove);
-			window.addEventListener("mouseup", onMouseUp);
+		// Custom logic to handle the connection
+		if (source && target) {
+			console.log(`Creating connection from ${source} to ${target}`);
+			setEdges((eds) => addEdge(params, eds));
+		} else {
+			console.error("Invalid connection attempt:", params);
 		}
 	}, []);
 
-	return (
-		<div className="editor-pane-content" onMouseDown={handlePaneClick}>
-			<ReactFlow
-				nodes={nodes}
-				edges={edges}
-				onNodesChange={onNodesChange}
-				onEdgesChange={onEdgesChange}
-				onConnect={onConnect}
-				fitView
-				zoomOnScroll
-				panOnScroll={false} // Disable default panning
-				selectionKeyCode={["Shift", "Meta"]} // Support multiple selection with Shift or Cmd key
-			>
-				<MiniMap />
-				<Controls />
-				<Background />
-			</ReactFlow>
-		</div>
-	);
-};
+	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+		setAnchorEl(event.currentTarget);
+	};
 
-const EditorPane: React.FC = () => {
+	const handleMenuClose = () => {
+		setAnchorEl(null);
+	};
+
+	const handleAddNode = (type: string) => {
+		const newNode: Node = {
+			id: `${Date.now()}`,
+			type: type as any,
+			data: { label: `Node ${nodes.length}` },
+			position: {
+				x: Math.random() * 500 - 250,
+				y: Math.random() * 500 - 250,
+			},
+		};
+		setNodes((nodes) => [...nodes, newNode]);
+	};
+
+	const handlePanToStartNode = () => {
+		if (reactFlowInstance.current) {
+			reactFlowInstance.current.setCenter(0, 0);
+			reactFlowInstance.current.zoomTo(1);
+		}
+	};
+
+    const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
+        console.log("Node double clicked", node);
+        console.log("Event", event);
+    }
+
 	return (
-		<div className="editor-pane">
-			<div className="navbar">
-				<span className="directory-name">Editor Pane</span>
+		<ReactFlowProvider>
+			<div className="editor-pane">
+				<div className="navbar">
+					<span className="directory-name">Graph Editor</span>
+					<Button startIcon={<AddCircle />} onClick={handleMenuClick}>
+						Add Node
+					</Button>
+					<IconButton color="inherit">
+						<PlayArrow />
+					</IconButton>
+					<IconButton color="inherit">
+						<BugReport />
+					</IconButton>
+					<IconButton color="inherit" onClick={handlePanToStartNode}>
+						<Home />
+					</IconButton>
+				</div>
+				<Menu
+					anchorEl={anchorEl}
+					keepMounted
+					open={Boolean(anchorEl)}
+					onClose={handleMenuClose}
+				>
+					<MenuItem
+						onClick={() => {
+							handleAddNode("codeFragmentNode");
+							handleMenuClose();
+						}}
+					>
+						Add Code Fragment
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							handleAddNode("codeFragmentNode");
+							handleMenuClose();
+						}}
+					>
+						Add Class
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							handleAddNode("codeFragmentNode");
+							handleMenuClose();
+						}}
+					>
+						Add Method
+					</MenuItem>
+				</Menu>
+				<Box
+					sx={{
+						flexGrow: 1,
+						backgroundColor: "#1e1e1e",
+						overflow: "hidden",
+					}}
+					ref={reactFlowWrapper}
+				>
+					<ReactFlow
+						nodes={nodes}
+						edges={edges}
+						onNodesChange={onNodesChange}
+						onEdgesChange={onEdgesChange}
+						onConnect={onConnect}
+						nodeTypes={nodeTypes}
+                        onNodeDoubleClick={onNodeDoubleClick}
+						edgeTypes={edgeTypes}
+						defaultEdgeOptions={defaultEdgeOptions}
+						connectionLineComponent={CustomConnectionLine}
+						connectionLineStyle={connectionLineStyle}
+						zoomOnScroll
+						panOnScroll={false}
+						onInit={(instance) => {
+							reactFlowInstance.current = instance;
+							handlePanToStartNode();
+						}}
+					>
+						<MiniMap />
+						<Controls showFitView={false}/>
+						<Background />
+					</ReactFlow>
+				</Box>
 			</div>
-			<Box
-				sx={{
-					flexGrow: 1,
-					backgroundColor: "#1e1e1e",
-					overflow: "hidden", // Ensure no overflow in the container
-				}}
-			>
-				<ReactFlowProvider>
-					<EditorPaneContent />
-				</ReactFlowProvider>
-			</Box>
-		</div>
+		</ReactFlowProvider>
 	);
 };
 

@@ -1,0 +1,44 @@
+.customNodeBody {
+	width: 150px;
+	height: 80px;
+	border: 1px solid black;
+	position: relative;
+	overflow: hidden;
+	border-radius: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: bold;
+}
+.customNode:after {
+	content: "";
+	position: absolute;
+	height: calc(100% - var(--nodeBottomHeight));
+	width: 100%;
+	top: 0px;
+	background: transparent;
+	z-index: 1000;
+	line-height: 1;
+	border-radius: 4px;
+}
+
+.customHandle {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	background-color: transparent;
+	top: 0;
+	left: 0;
+	border-radius: 0;
+	transform: none;
+	border: none;
+    z-index: 5;
+}
+.base{
+    width: 100%;
+    height: var(--nodeBottomHeight);
+    bottom: 0;
+    background-color: var(--nodeBottomBackgroundColor);
+    position: absolute;
+}
+
