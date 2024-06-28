@@ -1,5 +1,5 @@
 :root {
-    /* WILL GET POPULATED FROM CSS INJECTION */
+	/* WILL GET POPULATED FROM CSS INJECTION */
 }
 
 .editor-pane {
@@ -24,8 +24,8 @@
 	z-index: 10;
 }
 .navbar button {
-    padding-top: 0;
-    padding-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .directory-name {
@@ -109,4 +109,66 @@
 	top: 10px;
 	left: 10px;
 	z-index: 100;
+}
+.react-flow__node {
+	border: 1px solid transparent;
+	border-radius: 11px;
+}
+.react-flow__node.selected {
+	border: 1px solid #dbdbdb87;
+	background-color: #2b2b2b;
+	box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+	/* transition: all 0.3s ease; */
+	border-radius: 11px;
+}
+
+/* General improvements */
+.react-flow__minimap,
+.react-flow__controls {
+	border-radius: 2px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* MiniMap styles */
+.react-flow__minimap {
+	background-color: #252526;
+	border: 1px solid #333333;
+}
+
+.react-flow__minimap-mask {
+	fill: #1e1e1e;
+	stroke: #444444;
+}
+
+.react-flow__minimap-node {
+	fill: #ffffff;
+	stroke: #666666;
+}
+
+/* Controls styles */
+.react-flow__controls {
+	background-color: #1e1e1e;
+	border: 1px solid #333333;
+	color: #ffffff;
+	padding: 4px;
+	margin-bottom: 42px;
+	margin-left: 5px;
+}
+
+.react-flow__controls-button {
+	background-color: #252526;
+	color: #ffffff;
+	border: 1px solid #444444;
+	border-radius: 4px;
+	margin: 2px 0;
+	padding: 4px;
+	transition: background-color 0.3s, transform 0.3s;
+}
+.react-flow__controls-button svg {
+	fill: #ffffff;
+}
+
+.react-flow__controls-button:hover {
+	background-color: #333333;
+	transform: scale(1.1);
 }

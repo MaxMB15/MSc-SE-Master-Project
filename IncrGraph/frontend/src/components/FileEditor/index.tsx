@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+	useState,
+	useEffect,
+	useRef,
+	useCallback,
+	forwardRef,
+	useImperativeHandle,
+} from "react";
 import { Box, IconButton } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ResizableBox } from "react-resizable";
@@ -6,9 +13,11 @@ import { Editor, Monaco } from "@monaco-editor/react";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
 import { useAxiosRequest } from "../../utils";
+import { SaveFilePathRequest } from "src/types/common";
 
 interface FileEditorProps {
 	selectedFile: string | null;
+	pushFileContent: (content: string) => void;
 }
 
 interface GetFilePathRequest {
@@ -20,18 +29,17 @@ interface GetFilePathResponse {
 	lastModified: number;
 }
 
-interface SaveFilePathRequest {
-	path: string;
-	content: string;
-}
-
 interface FileHistory {
 	lastSavedTimestamp: number;
 	prevContent: string;
 	prevSavedContent: string;
 }
 
-const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
+const FileEditor = forwardRef<
+	{ updateModel: (content: string) => void },
+	FileEditorProps
+>(({ selectedFile, pushFileContent }, ref) => {
+	// State
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [width, setWidth] = useState(500);
 	const [fileContent, setFileContent] = useState<string | null>(null);
@@ -42,6 +50,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 	const [fileHistories, setFileHistories] = useState<
 		Map<string, FileHistory>
 	>(new Map());
+
+	// Variables
 	const {
 		error: readFileError,
 		loading: readFileLoading,
@@ -52,6 +62,16 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 	const editorRef = useRef<any>(null);
 	const monacoRef = useRef<Monaco | null>(null);
 	const modelsRef = useRef<Map<string, any>>(new Map());
+
+	const updateModel = (content: string) => {
+		console.log("updateModel");
+		console.log(content);
+		// createOrReuseModel(filePath, fileHistory.prevContent);
+	};
+
+	useImperativeHandle(ref, () => ({
+		updateModel,
+	}));
 
 	const toggleCollapse = () => {
 		setIsCollapsed(!isCollapsed);
@@ -138,6 +158,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 			const fileHistory = fileHistories.get(filePath);
 			const previousTimestamp = fileHistory?.lastSavedTimestamp;
 
+			// Push the file content to the parent component
+			pushFileContent(content);
+
+			// Check if the file has changed externally
 			if (previousTimestamp && lastModified > previousTimestamp) {
 				const shouldRefresh = window.confirm(
 					"The file has changed externally. Would you like to refresh?",
@@ -180,6 +204,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 						}),
 					),
 				);
+				if (editorRef.current && monacoRef.current) {
+					createOrReuseModel(filePath, content);
+				}
 			}
 		} catch (error) {
 			console.error("Error fetching the file:", error);
@@ -301,20 +328,23 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 							}}
 						>
 							{readFileLoading && <div>Loading...</div>}
-							{readFileError != null && (
+							{readFileError !== null && (
 								<div>Error: {readFileError}</div>
 							)}
-							{selectedFile !== null && fileContent !== null && (
-								<Editor
-									height="100%"
-									language="python"
-									value={fileContent}
-									theme="vs-dark"
-									options={{ readOnly: false }}
-									onMount={handleEditorMount}
-									onChange={handleEditorChange}
-								/>
-							)}
+							{selectedFile !== null &&
+								fileContent !== null &&
+								!readFileLoading &&
+								readFileError === null && (
+									<Editor
+										height="100%"
+										language="python"
+										value={fileContent}
+										theme="vs-dark"
+										options={{ readOnly: false }}
+										onMount={handleEditorMount}
+										onChange={handleEditorChange}
+									/>
+								)}
 							{!selectedFile && (
 								<div style={{ textAlign: "center" }}>
 									Select a file to view its content.
@@ -326,6 +356,6 @@ const FileEditor: React.FC<FileEditorProps> = ({ selectedFile }) => {
 			</div>
 		</ResizableBox>
 	);
-};
+});
 
 export default FileEditor;

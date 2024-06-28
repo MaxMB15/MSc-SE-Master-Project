@@ -10,3 +10,8 @@ export interface FileNode {
 	type: "file" | "directory";
 	children?: FileNode[];
 }
+
+export interface SaveFilePathRequest {
+	path: string;
+	content: string;
+}

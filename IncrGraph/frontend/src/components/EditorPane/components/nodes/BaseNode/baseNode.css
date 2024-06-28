@@ -1,7 +1,7 @@
 .customNodeBody {
 	width: 150px;
 	height: 80px;
-	border: 1px solid black;
+	border: 1px solid transparent;
 	position: relative;
 	overflow: hidden;
 	border-radius: 10px;

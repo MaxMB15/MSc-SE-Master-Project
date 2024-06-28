@@ -81,8 +81,6 @@ const getEdgePosition = (node: Node, intersectionPoint: Point) => {
 
 // returns the parameters (sx, sy, tx, ty, sourcePos, targetPos) you need to create an edge
 export const getEdgeParams = (source: Node, target: Node) => {
-    console.log("source: ", source);
-    console.log("target: ", target);
 	const sourceIntersectionPoint = getNodeIntersection(source, target);
 	const targetIntersectionPoint = getNodeIntersection(target, source);
 

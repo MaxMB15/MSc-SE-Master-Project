@@ -15,7 +15,6 @@ interface BaseNodeProps {
 }
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const connectionNodeId = useStore(connectionNodeIdSelector);
-    const selectedElements = useStore((state) => state.selectedElements);
 	const defaultData = {
 		backgroundColor: STYLES.defaultNodeColor,
 	};
@@ -38,6 +37,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 							? STYLES.nodeDropColor
 							: STYLES.nodePickColor
 						: data.backgroundColor,
+                    // border: "2px solid transparent",
 				}}
 			>
 				{/* If handles are conditionally rendered and not present initially, you need to update the node internals https://reactflow.dev/docs/api/hooks/use-update-node-internals/ */}
