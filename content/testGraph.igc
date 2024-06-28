@@ -1,34 +1,60 @@
 {
-	"nodes": [
-		{
-			"id": "start",
-			"type": "startNode",
-			"data": { "label": "Start" },
-			"position": { "x": 0, "y": -200 },
-			"draggable": false,
-			"style": { "cursor": "grab" },
-			"width": 23,
-			"height": 23
-		},
-		{
-			"id": "1",
-			"type": "baseNode",
-			"data": { "label": "User Class" },
-			"position": { "x": -147, "y": -106 },
-			"width": 154,
-			"height": 84,
-			"selected": true,
-			"positionAbsolute": { "x": -147, "y": -106 },
-			"dragging": false
-		},
-		{
-			"id": "2",
-			"type": "codeFragmentNode",
-			"data": { "label": "Admin Class" },
-			"position": { "x": 100, "y": 100 },
-			"width": 154,
-			"height": 84
-		}
-	],
-	"edges": []
+    "nodes": [
+        {
+            "id": "start",
+            "type": "startNode",
+            "data": {
+                "label": "Start"
+            },
+            "position": {
+                "x": 0,
+                "y": -200
+            },
+            "draggable": false,
+            "style": {
+                "cursor": "grab"
+            },
+            "width": 23,
+            "height": 23
+        },
+        {
+            "id": "1",
+            "type": "baseNode",
+            "data": {
+                "label": "User Class"
+            },
+            "position": {
+                "x": -129,
+                "y": -74
+            },
+            "width": 154,
+            "height": 84,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -229,
+                "y": -74
+            },
+            "dragging": false
+        },
+        {
+            "id": "2",
+            "type": "codeFragmentNode",
+            "data": {
+                "label": "Admin Class"
+            },
+            "position": {
+                "x": 74,
+                "y": 9
+            },
+            "width": 154,
+            "height": 84,
+            "selected": true,
+            "positionAbsolute": {
+                "x": 74,
+                "y": 9
+            },
+            "dragging": true
+        }
+    ],
+    "edges": []
 }

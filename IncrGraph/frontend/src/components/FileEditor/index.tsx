@@ -1,4 +1,4 @@
-import React, {
+import {
 	useState,
 	useEffect,
 	useRef,
@@ -6,7 +6,7 @@ import React, {
 	forwardRef,
 	useImperativeHandle,
 } from "react";
-import { Box, IconButton } from "@mui/material";
+import { Box } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ResizableBox } from "react-resizable";
 import { Editor, Monaco } from "@monaco-editor/react";
@@ -18,6 +18,7 @@ import { SaveFilePathRequest } from "src/types/common";
 interface FileEditorProps {
 	selectedFile: string | null;
 	pushFileContent: (content: string) => void;
+    openConfirmDialog: (msg: string, buttonLabelConfirm: string, buttonLabelCancel: string) => Promise<boolean>
 }
 
 interface GetFilePathRequest {
@@ -38,7 +39,7 @@ interface FileHistory {
 const FileEditor = forwardRef<
 	{ updateModel: (content: string) => void },
 	FileEditorProps
->(({ selectedFile, pushFileContent }, ref) => {
+>(({ selectedFile, pushFileContent, openConfirmDialog }, ref) => {
 	// State
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [width, setWidth] = useState(500);
@@ -64,9 +65,10 @@ const FileEditor = forwardRef<
 	const modelsRef = useRef<Map<string, any>>(new Map());
 
 	const updateModel = (content: string) => {
-		console.log("updateModel");
-		console.log(content);
-		// createOrReuseModel(filePath, fileHistory.prevContent);
+        if (currentSelectedFile !== null) {
+            handleEditorChange(content);
+            createOrReuseModel(currentSelectedFile, content);
+        }
 	};
 
 	useImperativeHandle(ref, () => ({
@@ -123,6 +125,7 @@ const FileEditor = forwardRef<
 						}),
 					),
 				);
+                pushFileContent(fileContent);
 			});
 		}
 	};
@@ -163,8 +166,8 @@ const FileEditor = forwardRef<
 
 			// Check if the file has changed externally
 			if (previousTimestamp && lastModified > previousTimestamp) {
-				const shouldRefresh = window.confirm(
-					"The file has changed externally. Would you like to refresh?",
+				const shouldRefresh = await openConfirmDialog(
+					"The file has changed externally. Would you like to refresh?", "Refresh", "Keep Changes"
 				);
 				if (shouldRefresh) {
 					setFileContent(content);
@@ -333,7 +336,6 @@ const FileEditor = forwardRef<
 							)}
 							{selectedFile !== null &&
 								fileContent !== null &&
-								!readFileLoading &&
 								readFileError === null && (
 									<Editor
 										height="100%"

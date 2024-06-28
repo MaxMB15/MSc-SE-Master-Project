@@ -33,31 +33,6 @@ interface EditorPaneProps {
 	updateGraphContentFileEditor: (content: string) => void;
 }
 
-const initialNodes: Node[] = [
-	{
-		id: "start",
-		type: "startNode",
-		data: { label: "Start" },
-		position: { x: 0, y: -200 }, // Position a bit above 0, 0
-		draggable: false,
-		style: { cursor: "grab" },
-	},
-	{
-		id: "1",
-		type: "baseNode",
-		data: { label: "User Class" },
-		position: { x: -100, y: -100 },
-	},
-	{
-		id: "2",
-		type: "codeFragmentNode",
-		data: { label: "Admin Class" },
-		position: { x: 100, y: 100 },
-	},
-];
-
-const initialEdges: Edge[] = [];
-
 const nodeTypes = {
 	startNode: StartNode,
 	baseNode: BaseNode,
@@ -74,9 +49,10 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 }) => {
 	// State
 	const [showGraph, setShowGraph] = useState(false);
+    const [startup, setStartup] = useState(false);
 
-	const [nodes, setNodes] = useState<Node[]>(initialNodes);
-	const [edges, setEdges] = useState<Edge[]>(initialEdges);
+	const [nodes, setNodes] = useState<Node[]>([]);
+	const [edges, setEdges] = useState<Edge[]>([]);
 
 	const reactFlowWrapper = useRef<HTMLDivElement>(null);
 	const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -97,7 +73,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 	const deserializeGraphData = (nodes: Node[], edges: Edge[]): string => {
 		let data = { nodes: nodes, edges: edges };
 
-		return JSON.stringify(data);
+		return JSON.stringify(data, null, 4);
 	};
 
 	const loadGraphDataFile = () => {
@@ -105,12 +81,14 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 			const { nodes, edges } = serializeGraphData(igcContent);
 			setNodes(nodes);
 			setEdges(edges);
+            // updateGraphContent();
 		}
 	};
 	useEffect(() => {
 		if (igcContent !== null) {
-			loadGraphDataFile();
 			setShowGraph(true);
+            setStartup(false);
+			loadGraphDataFile();
 		} else {
 			setShowGraph(false);
 		}
@@ -124,15 +102,20 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		}
 	};
 
-	const onNodesChange = useCallback((changes: NodeChange[]) => {
+	const onNodesChange = (changes: NodeChange[]) => {
 		setNodes((nds) => applyNodeChanges(changes, nds));
-		updateGraphContent();
-	}, []);
-	const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+        if(startup) {
+            updateGraphContent();
+        }
+        else{
+            setStartup(true);
+        }
+	};
+	const onEdgesChange = (changes: EdgeChange[]) => {
 		setEdges((eds) => applyEdgeChanges(changes, eds));
 		updateGraphContent();
-	}, []);
-	const onConnect = useCallback((params: Edge | Connection) => {
+	};
+	const onConnect = (params: Edge | Connection) => {
 		const { source, target } = params;
 
 		// Custom logic to handle the connection
@@ -143,7 +126,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		} else {
 			console.error("Invalid connection attempt:", params);
 		}
-	}, []);
+	};
 
 	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorEl(event.currentTarget);
@@ -264,10 +247,12 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 						</ReactFlow>
 					</ReactFlowProvider>
 				) : (
-					<Alert severity="info" sx={{ marginTop: 2 }}>
-						<AlertTitle>Information</AlertTitle>
+					<div style={{
+                            margin: "10px",
+                    }}>
 						Not a valid IGC file
-					</Alert>
+                    </div>
+					
 				)}
 			</Box>
 		</div>
