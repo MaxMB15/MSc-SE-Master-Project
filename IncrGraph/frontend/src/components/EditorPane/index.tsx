@@ -1,5 +1,13 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
-import { Alert, AlertTitle, Box, Button, IconButton, Menu, MenuItem } from "@mui/material";
+import {
+	Alert,
+	AlertTitle,
+	Box,
+	Button,
+	IconButton,
+	Menu,
+	MenuItem,
+} from "@mui/material";
 import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
 	ReactFlowProvider,
@@ -15,44 +23,53 @@ import ReactFlow, {
 	NodeChange,
 	EdgeChange,
 	ReactFlowInstance,
+	NodeSelectionChange,
+	EdgeSelectionChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import StartNode from "./components/nodes/StartNode";
-import CodeFragmentNode from "./components/nodes/CodeFragmentNode";
-import BaseNode from "./components/nodes/BaseNode";
+import {nodeTypes} from "./components/utils/utils";
 import FloatingEdge, {
 	defaultEdgeOptions,
-} from "./components/edges/FloatingEdge";
+} from "./components/edges/FloatingEdge/index";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
+import { Item } from "src/types/common";
 
 interface EditorPaneProps {
 	igcContent: string | null;
 	updateGraphContentFileEditor: (content: string) => void;
+	setSelectedItems: React.Dispatch<React.SetStateAction<Item[]>>;
+    nodes: Node[];
+    setNodes: React.Dispatch<React.SetStateAction<Node[]>>
 }
 
-const nodeTypes = {
-	startNode: StartNode,
-	baseNode: BaseNode,
-	codeFragmentNode: CodeFragmentNode,
-};
+
 
 const edgeTypes = {
 	floating: FloatingEdge,
 };
 
+type NodesDict = Record<string, Node>;
+type EdgesDict = Record<string, Edge>;
+
 const EditorPane: React.FC<EditorPaneProps> = ({
 	igcContent,
 	updateGraphContentFileEditor,
+	setSelectedItems,
+    nodes,
+    setNodes,
 }) => {
 	// State
 	const [showGraph, setShowGraph] = useState(false);
-    const [startup, setStartup] = useState(false);
 
-	const [nodes, setNodes] = useState<Node[]>([]);
+	const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+	const [nodesDict, setNodesDict] = useState<NodesDict>({});
+
 	const [edges, setEdges] = useState<Edge[]>([]);
+	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
+	const [edgesDict, setEdgesDict] = useState<EdgesDict>({});
 
 	const reactFlowWrapper = useRef<HTMLDivElement>(null);
 	const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -80,14 +97,25 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		if (igcContent !== null) {
 			const { nodes, edges } = serializeGraphData(igcContent);
 			setNodes(nodes);
+			setNodesDict(
+				nodes.reduce((dict, node) => {
+					dict[node.id] = node;
+					return dict;
+				}, {} as NodesDict),
+			);
 			setEdges(edges);
-            // updateGraphContent();
+			setEdgesDict(
+				edges.reduce((dict, edge) => {
+					dict[edge.id] = edge;
+					return dict;
+				}, {} as EdgesDict),
+			);
+			// updateGraphContent();
 		}
 	};
 	useEffect(() => {
 		if (igcContent !== null) {
 			setShowGraph(true);
-            setStartup(false);
 			loadGraphDataFile();
 		} else {
 			setShowGraph(false);
@@ -101,20 +129,57 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 			updateGraphContentFileEditor(content);
 		}
 	};
-
 	const onNodesChange = (changes: NodeChange[]) => {
 		setNodes((nds) => applyNodeChanges(changes, nds));
-        if(startup) {
-            updateGraphContent();
-        }
-        else{
-            setStartup(true);
-        }
 	};
-	const onEdgesChange = (changes: EdgeChange[]) => {
-		setEdges((eds) => applyEdgeChanges(changes, eds));
+
+	useEffect(() => {
+		const newNodesDict: NodesDict = {};
+		nodes.forEach((node) => {
+			newNodesDict[node.id] = node;
+		});
+		setNodesDict(newNodesDict);
+
+		let newSelectedNodes: Node[] = [];
+		for (const nodeId in newNodesDict) {
+			const node = newNodesDict[nodeId];
+			if (node.selected) {
+				newSelectedNodes.push(node);
+			}
+		}
+
+		setSelectedNodes(newSelectedNodes);
+		// setSelectedEdges([]);
+
+		// Update the file editor with the current Graph content
 		updateGraphContent();
+	}, [nodes]);
+
+	const onEdgesChange = (changes: EdgeChange[]) => {
+		setEdges((eds) => {
+			return applyEdgeChanges(changes, eds);
+		});
 	};
+	useEffect(() => {
+		const newEdgesDict: EdgesDict = {};
+		edges.forEach((edge) => {
+			newEdgesDict[edge.id] = edge;
+		});
+		setEdgesDict(newEdgesDict);
+
+		let newSelectedEdges: Edge[] = [];
+		for (const edgeId in newEdgesDict) {
+			const edge = newEdgesDict[edgeId];
+			if (edge.selected) {
+				newSelectedEdges.push(edge);
+			}
+		}
+		// setSelectedNodes([]);
+		setSelectedEdges(newSelectedEdges);
+
+		updateGraphContent();
+	}, [edges]);
+
 	const onConnect = (params: Edge | Connection) => {
 		const { source, target } = params;
 
@@ -145,8 +210,11 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 				x: Math.random() * 500 - 250,
 				y: Math.random() * 500 - 250,
 			},
+			selected: true,
 		};
 		setNodes((nodes) => [...nodes, newNode]);
+		setSelectedNodes(() => [newNode]);
+		setSelectedEdges(() => []);
 	};
 
 	const handlePanToStartNode = () => {
@@ -155,6 +223,19 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 			reactFlowInstance.current.zoomTo(1);
 		}
 	};
+
+	useEffect(() => {
+		const items: Item[] = [];
+		selectedNodes.forEach((node) => {
+			items.push({ type: "Node", item: node, id: node.id, name: node.data.label});
+		});
+
+		selectedEdges.forEach((edge) => {
+			items.push({ type: "Edge", item: edge, id: edge.id, name: edge.id});
+		});
+
+		setSelectedItems(() => items);
+	}, [selectedNodes, selectedEdges]);
 
 	const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
 		console.log("Node double clicked", node);
@@ -247,12 +328,13 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 						</ReactFlow>
 					</ReactFlowProvider>
 				) : (
-					<div style={{
-                            margin: "10px",
-                    }}>
+					<div
+						style={{
+							margin: "10px",
+						}}
+					>
 						Not a valid IGC file
-                    </div>
-					
+					</div>
 				)}
 			</Box>
 		</div>

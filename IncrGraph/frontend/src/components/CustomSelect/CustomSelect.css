@@ -1,0 +1,114 @@
+.custom-select-container {
+	position: relative;
+	margin-bottom: 16px;
+	width: 100%;
+}
+
+.custom-select-label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 14px;
+	color: #cccccc;
+}
+
+.custom-select {
+	width: 100%;
+	padding: 8px;
+	background-color: #3c3c3c;
+	border: 1px solid #555555;
+	color: #ffffff;
+	font-size: 14px;
+	border-radius: 4px;
+	cursor: pointer;
+	position: relative;
+}
+
+.custom-select-options {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	background-color: #252526;
+	border: 1px solid #555555;
+	border-radius: 4px;
+	max-height: 200px;
+	overflow-y: auto;
+	z-index: 1;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.custom-select-option {
+	display: flex;
+	align-items: center;
+	padding: 8px;
+	cursor: pointer;
+}
+
+.custom-select-option:hover {
+	background-color: #555555;
+}
+
+.custom-select-color {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 2px;
+	margin-right: 8px;
+}
+
+/* Node colors */
+.selection-pane-node-base .custom-select-color {
+	background-color: #ffffff;
+}
+
+.selection-pane-node-class .custom-select-color {
+	background-color: #00ff00;
+}
+
+.selection-pane-node-abstract-class .custom-select-color {
+	background-color: #66ff66;
+}
+
+.selection-pane-node-interface .custom-select-color {
+	background-color: #008000;
+}
+
+.selection-pane-node-library .custom-select-color {
+	background-color: #ffa500;
+}
+
+.selection-pane-node-method .custom-select-color {
+	background-color: #ff0000;
+}
+
+.selection-pane-node-code-fragment .custom-select-color {
+	background-color: #0000ff;
+}
+
+/* Edge colors */
+.selection-pane-edge-base .custom-select-color {
+	background-color: #ffffff;
+}
+
+.selection-pane-edge-inheritance .custom-select-color {
+	background-color: #00ff00;
+}
+
+.selection-pane-edge-overrides .custom-select-color {
+	background-color: #ffa500;
+}
+
+.selection-pane-edge-method .custom-select-color {
+	background-color: #ff0000;
+}
+
+.selection-pane-edge-execution .custom-select-color {
+	background-color: #0000ff;
+}
+
+.selection-pane-edge-dependency .custom-select-color {
+	background-color: #ffa500;
+}

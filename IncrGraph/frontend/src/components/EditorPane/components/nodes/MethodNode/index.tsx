@@ -1,20 +1,20 @@
 import React from "react";
-import "./methodNode.css";
+import "./MethodNode.css";
 import BaseNode from "../BaseNode";
 import { STYLES } from "../../../../../styles/constants";
 
-interface CodeFragmentNodeProps {
+interface MethodNodeProps {
     id: string
 	data: {
 		label: string;
 	};
 }
 
-const CodeFragmentNode: React.FC<CodeFragmentNodeProps> = ({ id, data }) => (
+const MethodNode: React.FC<MethodNodeProps> = ({ id, data }) => (
 	<BaseNode id={id} data={{
         label: data.label,
         backgroundColor: STYLES.methodNodeColor
     }}/>
 );
 
-export default CodeFragmentNode;
+export default MethodNode;

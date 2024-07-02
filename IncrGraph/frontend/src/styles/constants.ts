@@ -4,9 +4,13 @@ export const STYLES = {
 
     
 	defaultNodeColor: "#ffffffc2",
+	classNodeColor: "#00ff00",
+	abstractClassNodeColor: "#66ff66",
+    interfaceNodeColor: "#008000",
+    libraryNodeColor: "#ffa500",
+    methodNodeColor: "#ff0000",
 	codeFragmentNodeColor: "#0077ff",
-	classNodeColor: "#4caf50",
-	methodNodeColor: "#c60000",
+
 
     edgeWidth: "3px",
     defaultEdgeColor: "#eeeeee",
@@ -16,3 +20,4 @@ export const STYLES = {
     nodePickColor: "#75e7b7",
     nodeDropColor: "#ea6c76",
 };
+

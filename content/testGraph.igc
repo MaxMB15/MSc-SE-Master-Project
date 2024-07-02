@@ -19,20 +19,20 @@
         },
         {
             "id": "1",
-            "type": "baseNode",
+            "type": "libraryNode",
             "data": {
                 "label": "User Class"
             },
             "position": {
-                "x": -129,
-                "y": -74
+                "x": -316,
+                "y": -98
             },
             "width": 154,
             "height": 84,
             "selected": false,
             "positionAbsolute": {
-                "x": -229,
-                "y": -74
+                "x": -316,
+                "y": -98
             },
             "dragging": false
         },
@@ -40,21 +40,40 @@
             "id": "2",
             "type": "codeFragmentNode",
             "data": {
-                "label": "Admin Class"
+                "label": "Admin Class",
+                "type": "interfaceNode"
             },
             "position": {
-                "x": 74,
-                "y": 9
+                "x": 43,
+                "y": -84
             },
             "width": 154,
             "height": 84,
-            "selected": true,
+            "selected": false,
             "positionAbsolute": {
-                "x": 74,
-                "y": 9
+                "x": 43,
+                "y": -84
             },
-            "dragging": true
+            "dragging": false
         }
     ],
-    "edges": []
+    "edges": [
+        {
+            "style": {
+                "strokeWidth": "3px",
+                "stroke": "#eeeeee"
+            },
+            "type": "floating",
+            "markerEnd": {
+                "type": "arrowclosed",
+                "color": "#eeeeee"
+            },
+            "source": "start",
+            "sourceHandle": null,
+            "target": "2",
+            "targetHandle": null,
+            "id": "reactflow__edge-start-2",
+            "selected": false
+        }
+    ]
 }

@@ -5,6 +5,9 @@ import EditorPane from "../../components/EditorPane";
 import FileEditor from "../../components/FileEditor";
 import "./home.css";
 import useConfirmDialog from "../../components/ConfirmDialog/useConfirmDialog";
+import { Item } from "../../types/common";
+import { Node, Edge } from "reactflow";
+
 
 const HomePage: React.FC = () => {
     // Variables
@@ -17,20 +20,27 @@ const HomePage: React.FC = () => {
     // State
 	const [selectedFile, setSelectedFile] = useState<string | null>(null);
 	const [fileContent, setFileContent] = useState<string | null>(null);
+    const [isIGCFile, setIsIGCFile] = useState<boolean>(false);
+    const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+
+    const [nodes, setNodes] = useState<Node[]>([]);
+    // const [edges, setEdges] = useState<Edge[]>([]);
 
 	const handleFileSelect = (filePath: string | null) => {
 		setSelectedFile(filePath);
         setFileContent(null);
+        setIsIGCFile(filePath !== null && filePath.endsWith(".igc"));
 	};
 	const pushFileContent = (content: string) => {
 		setFileContent(() => content);
 	};
 	const passIGCFileContent = (
-		filePath: string | null,
 		content: string | null,
 	) => {
         // console.log(filePath, content)
-		return filePath && filePath.endsWith(".igc") && content !== null ? content : null;
+        
+
+		return isIGCFile && content !== null ? content : null;
 	};
 
 	const updateGraphContentFileEditor = (content: string) => {
@@ -44,14 +54,20 @@ const HomePage: React.FC = () => {
 			<div className="app-container">
 				<FileExplorer onFileSelect={handleFileSelect} />
 				<EditorPane
-					igcContent={passIGCFileContent(selectedFile, fileContent)}
+					igcContent={passIGCFileContent(fileContent)}
 					updateGraphContentFileEditor={updateGraphContentFileEditor}
+                    setSelectedItems={setSelectedItems}
+                    nodes={nodes}
+                    setNodes={setNodes}
 				/>
 				<FileEditor
 					ref={fileEditorRef}
 					selectedFile={selectedFile}
 					pushFileContent={pushFileContent}
                     openConfirmDialog={openConfirmDialog}
+                    isIGCFile={isIGCFile}
+                    selectedItems={selectedItems}
+                    setNodes={setNodes}
 				/>
                 <ConfirmDialogPortal />
 			</div>

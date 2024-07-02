@@ -1,9 +1,9 @@
 import { ComponentType, useCallback } from "react";
 import { useStore, getStraightPath, EdgeProps, MarkerType } from "reactflow";
-import { STYLES } from "../../../../styles/constants";
+import { STYLES } from "../../../../../styles/constants";
 
 
-import { getEdgeParams } from "../utils/utils";
+import { getEdgeParams } from "../../utils/utils";
 
 const FloatingEdge: ComponentType<EdgeProps> = ({ id, source, target, markerEnd, style }) => {
 	const sourceNode = useStore(
@@ -46,4 +46,5 @@ export const defaultEdgeOptions = {
 		type: MarkerType.ArrowClosed,
 		color: STYLES.defaultEdgeColor,
 	},
+    elevateEdgesOnSelection: true,
 };

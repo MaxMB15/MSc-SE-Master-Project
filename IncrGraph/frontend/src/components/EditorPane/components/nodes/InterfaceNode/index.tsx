@@ -1,20 +1,20 @@
 import React from "react";
-import "./CodeFragmentNode.css";
+import "./InterfaceNode.css";
 import BaseNode from "../BaseNode";
 import { STYLES } from "../../../../../styles/constants";
 
-interface CodeFragmentNodeProps {
+interface InterfaceNodeProps {
     id: string
 	data: {
 		label: string;
 	};
 }
 
-const CodeFragmentNode: React.FC<CodeFragmentNodeProps> = ({ id, data }) => (
+const InterfaceNode: React.FC<InterfaceNodeProps> = ({ id, data }) => (
 	<BaseNode id={id} data={{
         label: data.label,
-        backgroundColor: STYLES.codeFragmentNodeColor
+        backgroundColor: STYLES.interfaceNodeColor
     }}/>
 );
 
-export default CodeFragmentNode;
+export default InterfaceNode;

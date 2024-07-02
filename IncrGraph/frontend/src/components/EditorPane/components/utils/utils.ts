@@ -1,5 +1,13 @@
-import { Position, MarkerType } from "reactflow";
+import { Position, MarkerType, NodeTypes } from "reactflow";
 import { Node, Point } from "./types";
+import StartNode from "../nodes/StartNode";
+import BaseNode from "../nodes/BaseNode";
+import CodeFragmentNode from "../nodes/CodeFragmentNode";
+import ClassNode from "../nodes/ClassNode";
+import AbstractClassNode from "../nodes/AbstractClassNode";
+import InterfaceNode from "../nodes/InterfaceNode";
+import LibraryNode from "../nodes/LibraryNode";
+import MethodNode from "../nodes/MethodNode";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -128,4 +136,16 @@ export const createNodesAndEdges = () => {
 	}
 
 	return { nodes, edges };
+};
+
+//Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
+export const nodeTypes: NodeTypes = {
+	startNode: StartNode,
+	baseNode: BaseNode,
+    classNode: ClassNode,
+    abstractClassNode: AbstractClassNode,
+    interfaceNode: InterfaceNode,
+    libraryNode: LibraryNode,
+    methodNode: MethodNode,
+	codeFragmentNode: CodeFragmentNode,
 };

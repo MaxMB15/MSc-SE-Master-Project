@@ -1,5 +1,5 @@
 import React from "react";
-import "./startNode.css";
+import "./StartNode.css";
 import { Handle, Position } from "reactflow";
 
 

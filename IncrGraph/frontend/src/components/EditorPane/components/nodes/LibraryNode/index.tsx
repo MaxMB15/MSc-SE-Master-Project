@@ -1,20 +1,20 @@
 import React from "react";
-import "./CodeFragmentNode.css";
+import "./LibraryNode.css";
 import BaseNode from "../BaseNode";
 import { STYLES } from "../../../../../styles/constants";
 
-interface CodeFragmentNodeProps {
+interface LibraryNodeProps {
     id: string
 	data: {
 		label: string;
 	};
 }
 
-const CodeFragmentNode: React.FC<CodeFragmentNodeProps> = ({ id, data }) => (
+const LibraryNode: React.FC<LibraryNodeProps> = ({ id, data }) => (
 	<BaseNode id={id} data={{
         label: data.label,
-        backgroundColor: STYLES.codeFragmentNodeColor
+        backgroundColor: STYLES.libraryNodeColor
     }}/>
 );
 
-export default CodeFragmentNode;
+export default LibraryNode;

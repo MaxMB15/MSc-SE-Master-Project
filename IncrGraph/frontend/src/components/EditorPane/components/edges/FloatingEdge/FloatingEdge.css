@@ -1,0 +1,7 @@
+.react-flow__edge-path.selected {
+    background-color: red;
+    fill: red;
+    stroke: red;
+
+    box-shadow: 0 0 0 2px red;
+}

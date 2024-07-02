@@ -1,0 +1,110 @@
+.selection-pane-formControl {
+	background-color: #252526;
+	padding: 16px;
+	color: #ffffff;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.selection-pane-label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 14px;
+	color: #cccccc;
+}
+
+.selection-pane-select,
+.selection-pane-input {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 16px;
+	background-color: #3c3c3c;
+	border: 1px solid #555555;
+	color: #ffffff;
+	font-size: 14px;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.selection-pane-deleteButton {
+	width: 100%;
+	padding: 12px;
+	background-color: #ff1744;
+	color: #ffffff;
+	border: none;
+	font-size: 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.selection-pane-deleteButton:hover {
+	background-color: #d50000;
+}
+
+/* Node colors */
+.selection-pane-node-base {
+	background-color: var(--defaultNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-class {
+	background-color: var(--classNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-abstract-class {
+	background-color: var(--abstractClassNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-interface {
+	background-color: var(--interfaceNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-library {
+	background-color: var(--libraryNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-method {
+	background-color: var(--methodNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-code-fragment {
+	background-color: var(--codeFragmentNodeColor);
+	color: #ffffff;
+}
+
+/* Edge colors */
+.selection-pane-edge-base {
+	background-color: #ffffff;
+	color: #000000;
+}
+
+.selection-pane-edge-inheritance {
+	background-color: #00ff00;
+	color: #000000;
+}
+
+.selection-pane-edge-overrides {
+	background-color: #000000;
+	color: #000000;
+}
+
+.selection-pane-edge-method {
+	background-color: #ff0000;
+	color: #ffffff;
+}
+
+.selection-pane-edge-execution {
+	background-color: #0000ff;
+	color: #ffffff;
+}
+
+.selection-pane-edge-dependency {
+	background-color: #ffa500;
+	color: #000000;
+}
