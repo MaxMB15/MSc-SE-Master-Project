@@ -7,12 +7,13 @@ import { Node, Edge } from "reactflow";
 interface SelectionPaneProps {
 	items: Item[];
 	setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
+    selectedItem: Item | null;
+    setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>
 }
 
-const SelectionPane: React.FC<SelectionPaneProps> = ({ items, setNodes }) => {
+const SelectionPane: React.FC<SelectionPaneProps> = ({ items, setNodes, selectedItem, setSelectedItem }) => {
 	const [name, setName] = useState<string>("");
 	const [selectedOption, setSelectedOption] = useState<string>("");
-	const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
 	useEffect(() => {
 		if (items.length > 0) {

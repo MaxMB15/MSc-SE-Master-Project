@@ -63,6 +63,8 @@ const FileEditor = forwardRef<
 		// State
 		const [isCollapsed, setIsCollapsed] = useState(false);
 		const [contentPushed, setContentPushed] = useState(false);
+		const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
 		const [width, setWidth] = useState(500);
 		const [fileContent, setFileContent] = useState<string | null>(null);
 		const [currentSelectedFile, setCurrentSelectedFile] = useState<
@@ -142,6 +144,9 @@ const FileEditor = forwardRef<
 		};
 
 		const saveChanges = () => {
+			// if(selectedItem !== null && selectedItem.type === "Node") {
+			//     setFileContent((prev))
+			// }
 			if (fileContent !== null && selectedFile !== null) {
 				saveFileSendRequest({
 					method: "POST",
@@ -299,6 +304,15 @@ const FileEditor = forwardRef<
 			};
 		}, [handleResize]);
 
+		useEffect(() => {
+			if (selectedItem !== null && selectedItem.type === "Node") {
+				createOrReuseModel(
+					`${selectedFile}-code`,
+					selectedItem.item.data.code,
+				);
+			}
+		}, [selectedItem]);
+
 		console.log(selectedItems);
 		return (
 			<ResizableBox
@@ -404,6 +418,8 @@ const FileEditor = forwardRef<
 							<SelectionPane
 								items={selectedItems}
 								setNodes={setNodes}
+								selectedItem={selectedItem}
+								setSelectedItem={setSelectedItem}
 							/>
 						</div>
 					</div>

@@ -187,34 +187,52 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		if (source && target) {
 			console.log(`Creating connection from ${source} to ${target}`);
 			setEdges((eds) => addEdge(params, eds));
+            setNodes((nodes) => {
+                let newNodes = nodes.map((node) => {
+                    node.selected = false;
+                    return node;
+                });
+                return [...newNodes];
+            });
+            setEdges((edges) => {
+                let newEdges = edges.map((edge) => {
+                    edge.id === `reactflow__edge-${params.source}-${params.target}` ? edge.selected = true : edge.selected = false;
+                    return edge;
+                });
+                return [...newEdges];
+            });
 			updateGraphContent();
 		} else {
 			console.error("Invalid connection attempt:", params);
 		}
 	};
 
-	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-		setAnchorEl(event.currentTarget);
-	};
-
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-	};
-
-	const handleAddNode = (type: string) => {
+	const handleAddNode = () => {
 		const newNode: Node = {
 			id: `${Date.now()}`,
-			type: type as any,
-			data: { label: `Node ${nodes.length}` },
+			type: "baseNode",
+			data: { label: `Node ${nodes.length}`, code: ""},
 			position: {
 				x: Math.random() * 500 - 250,
 				y: Math.random() * 500 - 250,
 			},
 			selected: true,
 		};
-		setNodes((nodes) => [...nodes, newNode]);
-		setSelectedNodes(() => [newNode]);
-		setSelectedEdges(() => []);
+        
+		setNodes((nodes) => {
+            let newNodes = nodes.map((node) => {
+                node.selected = false;
+                return node;
+            });
+            return [...newNodes, newNode];
+        });
+        setEdges((edges) => {
+            let newEdges = edges.map((edge) => {
+                edge.selected = false;
+                return edge;
+            });
+            return [...newEdges];
+        });
 	};
 
 	const handlePanToStartNode = () => {
@@ -245,7 +263,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		<div className="editor-pane">
 			<div className="navbar">
 				<span className="directory-name">Graph Editor</span>
-				<Button startIcon={<AddCircle />} onClick={handleMenuClick}>
+				<Button startIcon={<AddCircle />} onClick={handleAddNode}>
 					Add Node
 				</Button>
 				<IconButton color="inherit">
@@ -258,37 +276,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 					<Home />
 				</IconButton>
 			</div>
-			<Menu
-				anchorEl={anchorEl}
-				keepMounted
-				open={Boolean(anchorEl)}
-				onClose={handleMenuClose}
-			>
-				<MenuItem
-					onClick={() => {
-						handleAddNode("codeFragmentNode");
-						handleMenuClose();
-					}}
-				>
-					Add Code Fragment
-				</MenuItem>
-				<MenuItem
-					onClick={() => {
-						handleAddNode("codeFragmentNode");
-						handleMenuClose();
-					}}
-				>
-					Add Class
-				</MenuItem>
-				<MenuItem
-					onClick={() => {
-						handleAddNode("codeFragmentNode");
-						handleMenuClose();
-					}}
-				>
-					Add Method
-				</MenuItem>
-			</Menu>
 			<Box
 				sx={{
 					flexGrow: 1,

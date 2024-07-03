@@ -15,44 +15,67 @@
                 "cursor": "grab"
             },
             "width": 23,
-            "height": 23
+            "height": 23,
+            "selected": true
         },
         {
             "id": "1",
-            "type": "libraryNode",
+            "type": "abstractClassNode",
             "data": {
-                "label": "User Class"
+                "label": "Animal",
+                "code": ""
             },
             "position": {
-                "x": -316,
-                "y": -98
+                "x": -132,
+                "y": -142
+            },
+            "width": 154,
+            "height": 84,
+            "selected": true,
+            "positionAbsolute": {
+                "x": -32,
+                "y": -142
+            },
+            "dragging": true
+        },
+        {
+            "id": "2",
+            "type": "classNode",
+            "data": {
+                "label": "Dog",
+                "type": "interfaceNode",
+                "code": ""
+            },
+            "position": {
+                "x": 168,
+                "y": 7
             },
             "width": 154,
             "height": 84,
             "selected": false,
             "positionAbsolute": {
-                "x": -316,
-                "y": -98
+                "x": 168,
+                "y": 7
             },
             "dragging": false
         },
         {
-            "id": "2",
-            "type": "codeFragmentNode",
+            "id": "1719922206047",
+            "type": "baseNode",
             "data": {
-                "label": "Admin Class",
-                "type": "interfaceNode"
+                "label": "Node 3",
+                "code": ""
             },
             "position": {
-                "x": 43,
-                "y": -84
+                "x": -208.27003228642639,
+                "y": 60.57540329167978
             },
+            "selected": false,
             "width": 154,
             "height": 84,
-            "selected": false,
             "positionAbsolute": {
-                "x": 43,
-                "y": -84
+                "x": -208.27003228642639,
+                "y": 60.57540329167978
             },
             "dragging": false
         }
@@ -68,11 +91,12 @@
                 "type": "arrowclosed",
                 "color": "#eeeeee"
             },
-            "source": "start",
+            "elevateEdgesOnSelection": true,
+            "source": "1",
             "sourceHandle": null,
             "target": "2",
             "targetHandle": null,
-            "id": "reactflow__edge-start-2",
+            "id": "reactflow__edge-1-2",
             "selected": false
         }
     ]
