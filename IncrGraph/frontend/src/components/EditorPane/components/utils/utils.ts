@@ -1,4 +1,4 @@
-import { Position, MarkerType, NodeTypes } from "reactflow";
+import { Position, MarkerType, NodeTypes, EdgeTypes } from "reactflow";
 import { Node, Point } from "./types";
 import StartNode from "../nodes/StartNode";
 import BaseNode from "../nodes/BaseNode";
@@ -8,6 +8,7 @@ import AbstractClassNode from "../nodes/AbstractClassNode";
 import InterfaceNode from "../nodes/InterfaceNode";
 import LibraryNode from "../nodes/LibraryNode";
 import MethodNode from "../nodes/MethodNode";
+import BaseRelationship from "../edges/BaseRelationship";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -105,38 +106,38 @@ export const getEdgeParams = (source: Node, target: Node) => {
 	};
 };
 
-export const createNodesAndEdges = () => {
-	const nodes = [];
-	const edges = [];
-	const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+// export const createNodesAndEdges = () => {
+// 	const nodes = [];
+// 	const edges = [];
+// 	const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-	nodes.push({ id: "target", data: { label: "Target" }, position: center });
+// 	nodes.push({ id: "target", data: { label: "Target" }, position: center });
 
-	for (let i = 0; i < 8; i++) {
-		const degrees = i * (360 / 8);
-		const radians = degrees * (Math.PI / 180);
-		const x = 250 * Math.cos(radians) + center.x;
-		const y = 250 * Math.sin(radians) + center.y;
+// 	for (let i = 0; i < 8; i++) {
+// 		const degrees = i * (360 / 8);
+// 		const radians = degrees * (Math.PI / 180);
+// 		const x = 250 * Math.cos(radians) + center.x;
+// 		const y = 250 * Math.sin(radians) + center.y;
 
-		nodes.push({
-			id: `${i}`,
-			data: { label: "Source" },
-			position: { x, y },
-		});
+// 		nodes.push({
+// 			id: `${i}`,
+// 			data: { label: "Source" },
+// 			position: { x, y },
+// 		});
 
-		edges.push({
-			id: `edge-${i}`,
-			target: "target",
-			source: `${i}`,
-			type: "floating",
-			markerEnd: {
-				type: MarkerType.Arrow,
-			},
-		});
-	}
+// 		edges.push({
+// 			id: `edge-${i}`,
+// 			target: "target",
+// 			source: `${i}`,
+// 			type: "baseNode",
+// 			markerEnd: {
+// 				type: MarkerType.Arrow,
+// 			},
+// 		});
+// 	}
 
-	return { nodes, edges };
-};
+// 	return { nodes, edges };
+// };
 
 //Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
 export const nodeTypes: NodeTypes = {
@@ -148,4 +149,8 @@ export const nodeTypes: NodeTypes = {
     libraryNode: LibraryNode,
     methodNode: MethodNode,
 	codeFragmentNode: CodeFragmentNode,
+};
+
+export const edgeTypes: EdgeTypes = {
+	baseRelationship: BaseRelationship,
 };

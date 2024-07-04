@@ -1,13 +1,5 @@
-import React, { useCallback, useState, useRef, useEffect } from "react";
-import {
-	Alert,
-	AlertTitle,
-	Box,
-	Button,
-	IconButton,
-	Menu,
-	MenuItem,
-} from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import { Box, Button, IconButton } from "@mui/material";
 import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
 	ReactFlowProvider,
@@ -23,218 +15,164 @@ import ReactFlow, {
 	NodeChange,
 	EdgeChange,
 	ReactFlowInstance,
-	NodeSelectionChange,
-	EdgeSelectionChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import {nodeTypes} from "./components/utils/utils";
-import FloatingEdge, {
-	defaultEdgeOptions,
-} from "./components/edges/FloatingEdge/index";
+import { edgeTypes, nodeTypes } from "./components/utils/utils";
+import { defaultEdgeOptions } from "./components/edges/BaseRelationship/index";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
-import { Item } from "src/types/common";
+import { Item } from "@/types/common";
+import useStore from "@/store/store";
 
-interface EditorPaneProps {
-	igcContent: string | null;
-	updateGraphContentFileEditor: (content: string) => void;
-	setSelectedItems: React.Dispatch<React.SetStateAction<Item[]>>;
-    nodes: Node[];
-    setNodes: React.Dispatch<React.SetStateAction<Node[]>>
-}
+interface EditorPaneProps {}
 
+const EditorPane: React.FC<EditorPaneProps> = ({}) => {
+	// VARIABLES
+	// Store variables
+	const {
+		fileContent,
+		setLocalContentBuffer,
+		isIGCFile,
+		setSelectedItems,
+		nodes,
+		setNodes,
+		edges,
+		setEdges,
+	} = useStore();
 
-
-const edgeTypes = {
-	floating: FloatingEdge,
-};
-
-type NodesDict = Record<string, Node>;
-type EdgesDict = Record<string, Edge>;
-
-const EditorPane: React.FC<EditorPaneProps> = ({
-	igcContent,
-	updateGraphContentFileEditor,
-	setSelectedItems,
-    nodes,
-    setNodes,
-}) => {
-	// State
-	const [showGraph, setShowGraph] = useState(false);
+	// STATE
+	const [showGraph, setShowGraph] = useState(false); // If the graph should show up or not
 
 	const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
-	const [nodesDict, setNodesDict] = useState<NodesDict>({});
 
-	const [edges, setEdges] = useState<Edge[]>([]);
 	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
-	const [edgesDict, setEdgesDict] = useState<EdgesDict>({});
 
+	// REFERENCES
 	const reactFlowWrapper = useRef<HTMLDivElement>(null);
 	const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-	const serializeGraphData = (
-		igcContent: string,
-	): { nodes: Node[]; edges: Edge[] } => {
-		// Try to parse the IGC content
-		try {
-			const data = JSON.parse(igcContent);
-			return { nodes: data.nodes, edges: data.edges };
-		} catch (error) {
-			console.error("Error parsing IGC content:", error);
-		}
-		return { nodes: [], edges: [] };
-	};
-	const deserializeGraphData = (nodes: Node[], edges: Edge[]): string => {
-		let data = { nodes: nodes, edges: edges };
-
-		return JSON.stringify(data, null, 4);
-	};
-
-	const loadGraphDataFile = () => {
-		if (igcContent !== null) {
-			const { nodes, edges } = serializeGraphData(igcContent);
-			setNodes(nodes);
-			setNodesDict(
-				nodes.reduce((dict, node) => {
-					dict[node.id] = node;
-					return dict;
-				}, {} as NodesDict),
-			);
-			setEdges(edges);
-			setEdgesDict(
-				edges.reduce((dict, edge) => {
-					dict[edge.id] = edge;
-					return dict;
-				}, {} as EdgesDict),
-			);
-			// updateGraphContent();
-		}
-	};
+	// Shows the graph if the file is a valid IGC file
 	useEffect(() => {
-		if (igcContent !== null) {
+		if (fileContent !== null && isIGCFile) {
 			setShowGraph(true);
-			loadGraphDataFile();
 		} else {
 			setShowGraph(false);
 		}
-	}, [igcContent]);
+	}, [fileContent]);
 
+	// Deserialize the graph data into a string
+	const deserializeGraphData = (nodes: Node[], edges: Edge[]): string => {
+		let data = { nodes: nodes, edges: edges };
+		return JSON.stringify(data, null, 4); // Pretty print the JSON
+	};
+
+	// Update the File Editor with the current graph content
 	const updateGraphContent = () => {
-		if (igcContent !== null) {
-			// Make sure that the file is a igc file
+		if (showGraph) {
+			console.log("Updating graph content");
 			const content = deserializeGraphData(nodes, edges);
-			updateGraphContentFileEditor(content);
+			// console.log("Content", content);
+			setLocalContentBuffer(() => content);
 		}
 	};
+
+	// Node Functions
 	const onNodesChange = (changes: NodeChange[]) => {
 		setNodes((nds) => applyNodeChanges(changes, nds));
 	};
-
+	// If a node is changed, check to see if there are any selection changes
 	useEffect(() => {
-		const newNodesDict: NodesDict = {};
-		nodes.forEach((node) => {
-			newNodesDict[node.id] = node;
-		});
-		setNodesDict(newNodesDict);
-
-		let newSelectedNodes: Node[] = [];
-		for (const nodeId in newNodesDict) {
-			const node = newNodesDict[nodeId];
-			if (node.selected) {
-				newSelectedNodes.push(node);
-			}
-		}
+		// Look at which nodes are selected
+		const newSelectedNodes: Node[] = nodes.filter((node) => node.selected);
 
 		setSelectedNodes(newSelectedNodes);
-		// setSelectedEdges([]);
 
 		// Update the file editor with the current Graph content
 		updateGraphContent();
 	}, [nodes]);
 
-	const onEdgesChange = (changes: EdgeChange[]) => {
-		setEdges((eds) => {
-			return applyEdgeChanges(changes, eds);
-		});
-	};
-	useEffect(() => {
-		const newEdgesDict: EdgesDict = {};
-		edges.forEach((edge) => {
-			newEdgesDict[edge.id] = edge;
-		});
-		setEdgesDict(newEdgesDict);
-
-		let newSelectedEdges: Edge[] = [];
-		for (const edgeId in newEdgesDict) {
-			const edge = newEdgesDict[edgeId];
-			if (edge.selected) {
-				newSelectedEdges.push(edge);
-			}
-		}
-		// setSelectedNodes([]);
-		setSelectedEdges(newSelectedEdges);
-
-		updateGraphContent();
-	}, [edges]);
-
-	const onConnect = (params: Edge | Connection) => {
-		const { source, target } = params;
-
-		// Custom logic to handle the connection
-		if (source && target) {
-			console.log(`Creating connection from ${source} to ${target}`);
-			setEdges((eds) => addEdge(params, eds));
-            setNodes((nodes) => {
-                let newNodes = nodes.map((node) => {
-                    node.selected = false;
-                    return node;
-                });
-                return [...newNodes];
-            });
-            setEdges((edges) => {
-                let newEdges = edges.map((edge) => {
-                    edge.id === `reactflow__edge-${params.source}-${params.target}` ? edge.selected = true : edge.selected = false;
-                    return edge;
-                });
-                return [...newEdges];
-            });
-			updateGraphContent();
-		} else {
-			console.error("Invalid connection attempt:", params);
-		}
-	};
-
+	// Add a new node
 	const handleAddNode = () => {
 		const newNode: Node = {
 			id: `${Date.now()}`,
 			type: "baseNode",
-			data: { label: `Node ${nodes.length}`, code: ""},
+			data: { label: `Node ${nodes.length}`, code: "" },
 			position: {
 				x: Math.random() * 500 - 250,
 				y: Math.random() * 500 - 250,
 			},
 			selected: true,
 		};
-        
+
+		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
-            let newNodes = nodes.map((node) => {
-                node.selected = false;
-                return node;
-            });
-            return [...newNodes, newNode];
-        });
-        setEdges((edges) => {
-            let newEdges = edges.map((edge) => {
-                edge.selected = false;
-                return edge;
-            });
-            return [...newEdges];
-        });
+			let newNodes = nodes.map((node) => {
+				node.selected = false;
+				return node;
+			});
+			return [...newNodes, newNode];
+		});
+		setEdges((edges) => {
+			let newEdges = edges.map((edge) => {
+				edge.selected = false;
+				return edge;
+			});
+			return [...newEdges];
+		});
 	};
 
+	// Edge Functions
+	const onEdgesChange = (changes: EdgeChange[]) => {
+		setEdges((eds) => {
+			return applyEdgeChanges(changes, eds);
+		});
+	};
+	// If an edge is changed, check to see if there are any selection changes
+	useEffect(() => {
+		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
+		setSelectedEdges(newSelectedEdges);
+
+		updateGraphContent();
+	}, [edges]);
+
+	// If a new edge is created
+	const onConnect = (params: Edge | Connection) => {
+		const { source, target } = params;
+
+		// Custom logic to handle the connection
+		if (source && target) {
+			console.log(`Creating connection from ${source} to ${target}`);
+			setEdges((eds) =>
+				addEdge(
+					{
+						...params,
+						type: "baseRelationship",
+						id: `${edges.length}-${params.source}>${params.target}`,
+                        selected: true,
+                        data: { backgroundColor: "#ff00ff" },
+					},
+					eds.map((e) => {
+						e.selected = false;
+						return e;
+					}),
+				),
+			);
+			setNodes((nodes) => {
+				let newNodes = nodes.map((node) => {
+					node.selected = false;
+					return node;
+				});
+				return [...newNodes];
+			});
+		} else {
+			console.error("Invalid connection attempt:", params);
+		}
+	};
+
+	// General React Flow Functions
+	// Pan to the center
 	const handlePanToStartNode = () => {
 		if (reactFlowInstance.current) {
 			reactFlowInstance.current.setCenter(0, 0);
@@ -242,16 +180,26 @@ const EditorPane: React.FC<EditorPaneProps> = ({
 		}
 	};
 
+	// When new selections are being made, update the selected items
 	useEffect(() => {
 		const items: Item[] = [];
 		selectedNodes.forEach((node) => {
-			items.push({ type: "Node", item: node, id: node.id, name: node.data.label});
+			items.push({
+				type: "Node",
+				item: node,
+				id: node.id,
+				name: node.data.label,
+			});
 		});
 
 		selectedEdges.forEach((edge) => {
-			items.push({ type: "Edge", item: edge, id: edge.id, name: edge.id});
+			items.push({
+				type: "Edge",
+				item: edge,
+				id: edge.id,
+				name: edge.id,
+			});
 		});
-
 		setSelectedItems(() => items);
 	}, [selectedNodes, selectedEdges]);
 

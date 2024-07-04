@@ -80,31 +80,31 @@
 
 /* Edge colors */
 .selection-pane-edge-base {
-	background-color: #ffffff;
+	background-color: var(--baseRelationshipColor);
 	color: #000000;
 }
 
 .selection-pane-edge-inheritance {
-	background-color: #00ff00;
+	background-color: var(--inheritanceRelationshipColor);
 	color: #000000;
 }
 
 .selection-pane-edge-overrides {
-	background-color: #000000;
+	background-color: var(--overridesRelationshipColor);;
 	color: #000000;
 }
 
 .selection-pane-edge-method {
-	background-color: #ff0000;
+	background-color: var(--methodRelationshipColor);;
 	color: #ffffff;
 }
 
 .selection-pane-edge-execution {
-	background-color: #0000ff;
+	background-color: var(--executionRelationshipColor);;
 	color: #ffffff;
 }
 
 .selection-pane-edge-dependency {
-	background-color: #ffa500;
+	background-color: var(--dependencyRelationshipColor);;
 	color: #000000;
 }

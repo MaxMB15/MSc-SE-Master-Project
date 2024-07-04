@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import "./SelectionPane.css";
-import { Item } from "src/types/common";
-import { Node, Edge } from "reactflow";
+import useStore from "@/store/store";
 
-interface SelectionPaneProps {
-	items: Item[];
-	setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
-    selectedItem: Item | null;
-    setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>
-}
+interface SelectionPaneProps {}
 
-const SelectionPane: React.FC<SelectionPaneProps> = ({ items, setNodes, selectedItem, setSelectedItem }) => {
+const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
+
+    // VARIABLES
+    const { selectedItems, selectedItem, setSelectedItem, setNodes } = useStore();
+
+
+    // STATE
 	const [name, setName] = useState<string>("");
 	const [selectedOption, setSelectedOption] = useState<string>("");
 
 	useEffect(() => {
-		if (items.length > 0) {
+		if (selectedItems.length > 0) {
 			setName(selectedItem?.name || "");
 		}
-	}, [selectedItem, items]);
+	}, [selectedItem, selectedItems]);
 	useEffect(() => {
-		if (items.length > 0) {
-			setSelectedItem(items[0]);
-			let optionType = items[0].type === "Node" ? items[0].item.type : "";
+		if (selectedItems.length > 0) {
+			setSelectedItem(() => selectedItems[0]);
+			let optionType = selectedItems[0].type === "Node" ? selectedItems[0].item.type : "";
 			!optionType && (optionType = "");
 			setSelectedOption(optionType);
 		}
-	}, [items]);
+	}, [selectedItems]);
 
-	if (items.length === 0) {
+	if (selectedItems.length === 0) {
 		return null;
 	}
 
@@ -80,8 +80,8 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({ items, setNodes, selected
 	};
 
 	const handleItemChange = (value: string) => {
-		let item = items.find((item) => item.id === value);
-		setSelectedItem(item ? item : null);
+		let item = selectedItems.find((item) => item.id === value);
+		setSelectedItem(() => item ? item : null);
 	};
 
 	const getOptions = (type: "Node" | "Edge") => {
@@ -160,15 +160,13 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({ items, setNodes, selected
 		return [];
 	};
 
-	console.log("selectedItem", selectedItem);
-	console.log("items", items);
 	return (
 		<div className="selection-pane-formControl">
-			{items.length !== 1 && (
+			{selectedItems.length !== 1 && (
 				<CustomSelect
 					id="item-select"
 					label="Select Item"
-					options={items.map((item) => ({
+					options={selectedItems.map((item) => ({
 						value: item.id,
 						label: item.name,
 						className: "",

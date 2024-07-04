@@ -1,11 +1,4 @@
-import {
-	useState,
-	useEffect,
-	useRef,
-	useCallback,
-	forwardRef,
-	useImperativeHandle,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Box } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ResizableBox } from "react-resizable";
@@ -13,21 +6,17 @@ import { Editor, Monaco } from "@monaco-editor/react";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
 import { useAxiosRequest } from "../../utils";
-import { Item, SaveFilePathRequest } from "src/types/common";
+import { SaveFilePathRequest } from "@/types/common";
 import SelectionPane from "../SelectionPane";
+import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
 
 interface FileEditorProps {
-	selectedFile: string | null;
-	pushFileContent: (content: string) => void;
 	openConfirmDialog: (
 		msg: string,
 		buttonLabelConfirm: string,
 		buttonLabelCancel: string,
 	) => Promise<boolean>;
-	isIGCFile: boolean;
-	selectedItems: Item[];
-	setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
 }
 
 interface GetFilePathRequest {
@@ -39,394 +28,419 @@ interface GetFilePathResponse {
 	lastModified: number;
 }
 
-interface FileHistory {
-	lastSavedTimestamp: number;
-	prevContent: string;
-	prevSavedContent: string;
-}
+const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
+	// VARIABLES
+	// Request for reading file content
+	const {
+		error: readFileError,
+		loading: readFileLoading,
+		sendRequest: readFileSendRequest,
+	} = useAxiosRequest<GetFilePathRequest, GetFilePathResponse>();
+	// Request for saving file content
+	const { error: saveFileError, sendRequest: saveFileSendRequest } =
+		useAxiosRequest<SaveFilePathRequest, null>();
 
-const FileEditor = forwardRef<
-	{ updateModel: (content: string) => void },
-	FileEditorProps
->(
-	(
-		{
-			selectedFile,
-			pushFileContent,
-			openConfirmDialog,
-			isIGCFile,
-			selectedItems,
-			setNodes,
-		},
-		ref,
-	) => {
-		// State
-		const [isCollapsed, setIsCollapsed] = useState(false);
-		const [contentPushed, setContentPushed] = useState(false);
-		const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+	// References to monaco editor
+	const editorRef = useRef<any>(null);
+	const monacoRef = useRef<Monaco | null>(null);
 
-		const [width, setWidth] = useState(500);
-		const [fileContent, setFileContent] = useState<string | null>(null);
-		const [currentSelectedFile, setCurrentSelectedFile] = useState<
-			string | null
-		>(null);
-		const [isSaved, setIsSaved] = useState<boolean>(true);
-		const [fileHistories, setFileHistories] = useState<
-			Map<string, FileHistory>
-		>(new Map());
+	// Store variables
+	const {
+		selectedFile,
+		fileContent,
+		setFileContent,
+		localContentBuffer,
+		setLocalContentBuffer,
+		fileHistories,
+		setFileHistories,
+		isIGCFile,
+		nodes,
+		setNodes,
+		edges,
+		setEdges,
+	} = useStore();
 
-		// Variables
-		const {
-			error: readFileError,
-			loading: readFileLoading,
-			sendRequest: readFileSendRequest,
-		} = useAxiosRequest<GetFilePathRequest, GetFilePathResponse>();
-		const { error: saveFileError, sendRequest: saveFileSendRequest } =
-			useAxiosRequest<SaveFilePathRequest, null>();
-		const editorRef = useRef<any>(null);
-		const monacoRef = useRef<Monaco | null>(null);
-		const modelsRef = useRef<Map<string, any>>(new Map());
+	// STATE
+	const [isCollapsed, setIsCollapsed] = useState(false); // State for collapsing the file editor
+	const [width, setWidth] = useState(500); // State for the width of the file editor
+	const [isSaved, setIsSaved] = useState<boolean>(true); // State for checking if the file is currently saved
+	const [models, setModels] = useState(new Map<string, any>()); // State for storing the monaco models
 
-		const updateModel = (content: string) => {
-			if (currentSelectedFile !== null) {
-				setContentPushed(true);
-				handleEditorChange(content);
-				createOrReuseModel(currentSelectedFile, content);
+	// Toggle the visibility of the file editor
+	const toggleCollapse = () => {
+		setIsCollapsed(!isCollapsed);
+	};
+
+	// MONACO EDITOR FUNCTIONS
+	const handleEditorMount = (editor: any, monaco: Monaco) => {
+		editorRef.current = editor;
+		monacoRef.current = monaco;
+		if (selectedFile && localContentBuffer !== null) {
+			createOrReuseModel();
+		}
+	};
+	const handleResize = useCallback(() => {
+		if (editorRef.current) {
+			editorRef.current.layout();
+		}
+	}, []);
+	const handleEditorChange = (value: string | undefined) => {
+		// Check history if the file is the previously saved file
+		const fileHistory = fileHistories.get(selectedFile || "");
+		if (fileHistory) {
+			if (fileHistory.prevSavedContent !== value) {
+				setIsSaved(false);
+			} else {
+				setIsSaved(true);
+			}
+		}
+
+		// Update the local content buffer
+		setLocalContentBuffer(() => value || "");
+	};
+
+	// IGC set data functions
+	// Check if the string is a valid JSON
+	const isValidJSON = (str: string) => {
+		try {
+			JSON.parse(str);
+			return true;
+		} catch (e) {
+			return false;
+		}
+	};
+
+	// Serialize the file content into graph data
+	const serializeGraphData = (): { nodes: Node[]; edges: Edge[] } | null => {
+		console.log("Serializing graph data");
+		// Try to parse the IGC content
+		if (localContentBuffer === null) {
+			return null;
+		}
+		try {
+			const data = JSON.parse(localContentBuffer);
+			return { nodes: data.nodes, edges: data.edges };
+		} catch (error) {
+			console.error("Error parsing IGC content:", error);
+		}
+		return null;
+	};
+
+	// Create or reuse the model to use for the monaco editor
+	const createOrReuseModel = () => {
+		const debug = true; // Debugging flag
+		if (
+			!selectedFile ||
+			localContentBuffer === null ||
+			!monacoRef.current
+		) {
+			debug &&
+				console.log("Selected file or local content buffer is null");
+			return;
+		}
+
+		// Check if model exists
+		let model = models.get(selectedFile);
+		// If it does not, create one
+		if (!model) {
+			debug && console.log("Creating new model: ", selectedFile);
+			model = monacoRef.current.editor.createModel(
+				localContentBuffer,
+				"python",
+			);
+			setModels(
+				(prevModels) => new Map(prevModels.set(selectedFile, model)),
+			);
+		} else {
+			debug && console.log("Reusing model: ", selectedFile);
+			if (localContentBuffer !== model.getValue()) {
+				debug && console.log("Pushing new value model value");
+				model.pushEditOperations(
+					[],
+					[
+						{
+							range: model.getFullModelRange(),
+							text: localContentBuffer,
+						},
+					],
+					() => null,
+				);
+			}
+		}
+
+		// Set the model to the editor
+		if (editorRef.current) {
+			debug && console.log("Setting model to editor");
+			editorRef.current.setModel(model);
+		}
+	};
+
+	// When the content of the file changes
+	useEffect(() => {
+		// Change model once file content changes
+		createOrReuseModel();
+		// console.log("File content changed", localContentBuffer);
+
+		// Event listener for saving the file
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+				event.preventDefault();
+				saveChanges();
 			}
 		};
 
-		useImperativeHandle(ref, () => ({
-			updateModel,
-		}));
-
-		const toggleCollapse = () => {
-			setIsCollapsed(!isCollapsed);
-		};
-
-		const handleEditorMount = (editor: any, monaco: Monaco) => {
-			editorRef.current = editor;
-			monacoRef.current = monaco;
-			if (selectedFile && fileContent !== null) {
-				createOrReuseModel(selectedFile, fileContent);
+		// Set graph data if the file is an IGC file
+		if (isIGCFile && fileContent !== null && isValidJSON(fileContent)) {
+			const serializedData = serializeGraphData();
+			if (serializedData !== null) {
+				setNodes(() => serializedData.nodes);
+				setEdges(() => serializedData.edges);
 			}
-		};
+		}
 
-		const handleResize = useCallback(() => {
-			if (editorRef.current) {
-				editorRef.current.layout();
-			}
-		}, []);
-		const isValidJSON = (str: string) => {
-			try {
-				JSON.parse(str);
-				return true;
-			} catch (e) {
-				return false;
-			}
-		};
-		const handleEditorChange = (value: string | undefined) => {
-			setFileContent(value || "");
-			// Check history if the file is the previously saved file
-			const fileHistory = fileHistories.get(currentSelectedFile || "");
-			if (fileHistory) {
-				if (fileHistory.prevSavedContent !== value) {
-					setIsSaved(false);
-				} else {
-					setIsSaved(true);
-				}
-			}
-			// if (!contentPushed && isIGCFile && value && isValidJSON(value)) {
-			//     pushFileContent(value || "");
-			// }
-			// if(contentPushed){
-			//     setContentPushed(false);
-			// }
-		};
+		// Window keydown event listener
+		window.addEventListener("keydown", handleKeyDown);
 
-		const saveChanges = () => {
-			// if(selectedItem !== null && selectedItem.type === "Node") {
-			//     setFileContent((prev))
-			// }
-			if (fileContent !== null && selectedFile !== null) {
-				saveFileSendRequest({
-					method: "POST",
-					data: { path: selectedFile, content: fileContent },
-					route: "/api/file-explorer/file-content",
-					useJWT: false,
-				}).then(() => {
-					setIsSaved(true);
-					const currentTime = Date.now();
-					setFileHistories(
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [localContentBuffer]);
+
+	// FILE OPERATION FUNCTIONS
+	const saveChanges = () => {
+		// if(selectedItem !== null && selectedItem.type === "Node") {
+		//     setFileContent((prev))
+		// }
+
+		if (localContentBuffer !== null && selectedFile !== null) {
+			saveFileSendRequest({
+				method: "POST",
+				data: { path: selectedFile, content: localContentBuffer },
+				route: "/api/file-explorer/file-content",
+				useJWT: false,
+			}).then(() => {
+				setIsSaved(true);
+				const currentTime = Date.now();
+				setFileHistories(
+					() =>
 						new Map(
 							fileHistories.set(selectedFile, {
 								lastSavedTimestamp: currentTime,
-								prevContent: fileContent,
-								prevSavedContent: fileContent,
+								prevContent: localContentBuffer,
+								prevSavedContent: localContentBuffer,
 							}),
 						),
-					);
-					isIGCFile && pushFileContent(fileContent);
-				});
-			}
-		};
+				);
+				// Update the file content with what was saved
+				setFileContent(() => localContentBuffer);
+				// isIGCFile && pushFileContent(fileContent);
+			});
+		}
+	};
 
-		const fetchFileContent = async (filePath: string) => {
-			// Save the previous file history
-			if (currentSelectedFile !== null && fileContent !== null) {
-				const fileHistory = fileHistories.get(currentSelectedFile);
-				if (fileHistory) {
+	// Fetch the file content
+	const fetchFileContent = async () => {
+		// Make sure a file is valid
+		if (selectedFile === null) {
+			return;
+		}
+		// Read the new file content
+		try {
+			const response = await readFileSendRequest({
+				method: "GET",
+				data: { path: selectedFile },
+				route: "/api/file-explorer/file-content",
+				useJWT: false,
+			});
+
+			const { content, lastModified } = response;
+			const fileHistory = fileHistories.get(selectedFile);
+			const previousTimestamp = fileHistory?.lastSavedTimestamp;
+
+			// Push the file content to the store
+			setFileContent(() => content);
+
+			// Check if the file has changed externally
+			if (previousTimestamp && lastModified > previousTimestamp) {
+				const shouldRefresh = await openConfirmDialog(
+					"The file has changed externally. Would you like to refresh?",
+					"Refresh",
+					"Keep Changes",
+				);
+				if (shouldRefresh) {
+					setLocalContentBuffer(() => content);
+					setIsSaved(true);
 					setFileHistories(
-						new Map(
-							fileHistories.set(currentSelectedFile, {
-								lastSavedTimestamp:
-									fileHistory.lastSavedTimestamp,
-								prevContent: fileContent,
-								prevSavedContent: fileHistory.prevSavedContent,
-							}),
-						),
-					);
-				}
-			}
-
-			// Write the new file content
-			setCurrentSelectedFile(filePath);
-			try {
-				const response = await readFileSendRequest({
-					method: "GET",
-					data: { path: filePath },
-					route: "/api/file-explorer/file-content",
-					useJWT: false,
-				});
-
-				const { content, lastModified } = response;
-				const fileHistory = fileHistories.get(filePath);
-				const previousTimestamp = fileHistory?.lastSavedTimestamp;
-
-				// Push the file content to the parent component
-				pushFileContent(content);
-
-				// Check if the file has changed externally
-				if (previousTimestamp && lastModified > previousTimestamp) {
-					const shouldRefresh = await openConfirmDialog(
-						"The file has changed externally. Would you like to refresh?",
-						"Refresh",
-						"Keep Changes",
-					);
-					if (shouldRefresh) {
-						setFileContent(content);
-						setIsSaved(true);
-						setFileHistories(
+						() =>
 							new Map(
-								fileHistories.set(filePath, {
+								fileHistories.set(selectedFile, {
 									lastSavedTimestamp: lastModified,
 									prevContent: content,
 									prevSavedContent: content,
 								}),
 							),
-						);
-						return;
-					}
+					);
 				}
-
-				if (fileHistory) {
-					setFileContent(fileHistory.prevContent);
-					if (editorRef.current && monacoRef.current) {
-						createOrReuseModel(filePath, fileHistory.prevContent);
-					}
-					if (content !== fileHistory.prevContent) {
-						setIsSaved(false);
-					} else {
-						setIsSaved(true);
-					}
+			}
+			// Check if there was previous history of the file
+			else if (fileHistory) {
+				setLocalContentBuffer(() => fileHistory.prevContent);
+				if (content !== fileHistory.prevContent) {
+					setIsSaved(false);
 				} else {
-					setFileContent(content);
 					setIsSaved(true);
-					setFileHistories(
+				}
+			} else {
+				setLocalContentBuffer(() => content);
+				setIsSaved(true);
+				setFileHistories(
+					() =>
 						new Map(
-							fileHistories.set(filePath, {
+							fileHistories.set(selectedFile, {
 								lastSavedTimestamp: lastModified,
 								prevContent: content,
 								prevSavedContent: content,
 							}),
 						),
-					);
-					if (editorRef.current && monacoRef.current) {
-						createOrReuseModel(filePath, content);
-					}
-				}
-			} catch (error) {
-				console.error("Error fetching the file:", error);
-			}
-		};
-
-		const createOrReuseModel = (filePath: string, content: string) => {
-			if (!monacoRef.current) {
-				return;
-			}
-			let model = modelsRef.current.get(filePath);
-			if (!model) {
-				model = monacoRef.current.editor.createModel(content, "python");
-				modelsRef.current.set(filePath, model);
-			}
-			if (editorRef.current) {
-				editorRef.current.setModel(model);
-			}
-		};
-
-		useEffect(() => {
-			if (selectedFile !== null) {
-				fetchFileContent(selectedFile);
-			}
-		}, [selectedFile]);
-
-		useEffect(() => {
-			const handleKeyDown = (event: KeyboardEvent) => {
-				if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-					event.preventDefault();
-					saveChanges();
-				}
-			};
-
-			// Window keydown event listener
-			window.addEventListener("keydown", handleKeyDown);
-
-			return () => {
-				window.removeEventListener("keydown", handleKeyDown);
-			};
-		}, [fileContent]);
-
-		useEffect(() => {
-			// Window resize event listener
-			window.addEventListener("resize", handleResize);
-
-			return () => {
-				window.removeEventListener("resize", handleResize);
-			};
-		}, [handleResize]);
-
-		useEffect(() => {
-			if (selectedItem !== null && selectedItem.type === "Node") {
-				createOrReuseModel(
-					`${selectedFile}-code`,
-					selectedItem.item.data.code,
 				);
 			}
-		}, [selectedItem]);
+		} catch (error) {
+			console.error("Error fetching the file:", error);
+		}
+	};
+	// If the selected file changes, fetch the new file content
+	useEffect(() => {
+		if (selectedFile !== null) {
+			fetchFileContent();
+		}
+	}, [selectedFile]);
 
-		console.log(selectedItems);
-		return (
-			<ResizableBox
-				width={isCollapsed ? 40 : width}
-				height={Infinity}
-				axis="x"
-				minConstraints={[40, Infinity]}
-				maxConstraints={[800, Infinity]}
-				onResize={(_, { size }) => setWidth(size.width)}
-				onResizeStop={handleResize}
-				resizeHandles={["w"]}
-				handle={
-					<div className="resize-handle-container-left">
-						<div
-							className="resize-handle"
-							style={{
-								cursor: "ew-resize",
-								height: "100%",
-								width: "5px",
-								position: "absolute",
-								left: 0,
-								top: 0,
-								backgroundColor: "transparent",
-							}}
-						/>
-					</div>
-				}
-			>
-				<div className="file-editor-container">
+	// Resizing the editor
+	useEffect(() => {
+		// Window resize event listener
+		window.addEventListener("resize", handleResize);
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, [handleResize]);
+
+	// IGC File Functions
+	// Update editor if the graph data changes
+	useEffect(() => {
+		if (isIGCFile) {
+		}
+	}, [nodes, edges]);
+
+	// useEffect(() => {
+	// 	if (selectedItem !== null && selectedItem.type === "Node") {
+	// 		createOrReuseModel(
+	// 			`${selectedFile}-code`,
+	// 			selectedItem.item.data.code,
+	// 		);
+	// 	}
+	// }, [selectedItem]);
+
+	return (
+		<ResizableBox
+			width={isCollapsed ? 40 : width}
+			height={Infinity}
+			axis="x"
+			minConstraints={[40, Infinity]}
+			maxConstraints={[800, Infinity]}
+			onResize={(_, { size }) => setWidth(size.width)}
+			onResizeStop={handleResize}
+			resizeHandles={["w"]}
+			handle={
+				<div className="resize-handle-container-left">
 					<div
-						className={`file-editor ${
-							isCollapsed ? "collapsed" : ""
-						}`}
-					>
-						<div
-							className={`navbar ${
-								isCollapsed ? "collapsed" : ""
-							}`}
-						>
-							{!isCollapsed && (
-								<>
-									<span className="navbar-title">
-										Code Editor
-									</span>
-									{selectedFile && (
-										<span
-											className="navbar-circle-icon"
-											style={{
-												backgroundColor:
-													saveFileError != null
-														? "red"
-														: isSaved
-														? "green"
-														: "orange",
-											}}
-										></span>
-									)}
-									<span className="take-full-width"></span>
-								</>
-							)}
-							<button
-								className="icon-button"
-								title="Toggle Visibility"
-								onClick={toggleCollapse}
-							>
-								<VisibilityIcon />
-							</button>
-						</div>
+						className="resize-handle"
+						style={{
+							cursor: "ew-resize",
+							height: "100%",
+							width: "5px",
+							position: "absolute",
+							left: 0,
+							top: 0,
+							backgroundColor: "transparent",
+						}}
+					/>
+				</div>
+			}
+		>
+			<div className="file-editor-container">
+				<div
+					className={`file-editor ${isCollapsed ? "collapsed" : ""}`}
+				>
+					<div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
 						{!isCollapsed && (
-							<Box
-								sx={{
-									flexGrow: 1,
-									backgroundColor: "#1e1e1e",
-									overflowY: "auto",
-								}}
-							>
-								{readFileLoading && <div>Loading...</div>}
-								{readFileError !== null && (
-									<div>Error: {readFileError}</div>
+							<>
+								<span className="navbar-title">
+									Code Editor
+								</span>
+								{selectedFile && (
+									<span
+										className="navbar-circle-icon"
+										style={{
+											backgroundColor:
+												saveFileError != null
+													? "red"
+													: isSaved
+													? "green"
+													: "orange",
+										}}
+									></span>
 								)}
-								{selectedFile !== null &&
-									fileContent !== null &&
-									readFileError === null && (
-										<Editor
-											height="100%"
-											language="python"
-											value={fileContent}
-											theme="vs-dark"
-											options={{ readOnly: false }}
-											onMount={handleEditorMount}
-											onChange={handleEditorChange}
-											loading={readFileLoading}
-										/>
-									)}
-								{!selectedFile && (
-									<div style={{ textAlign: "center" }}>
-										Select a file to view its content.
-									</div>
-								)}
-							</Box>
+								<span className="take-full-width"></span>
+							</>
 						)}
-						<div className="selection-pane-container">
-							<SelectionPane
-								items={selectedItems}
-								setNodes={setNodes}
-								selectedItem={selectedItem}
-								setSelectedItem={setSelectedItem}
-							/>
-						</div>
+						<button
+							className="icon-button"
+							title="Toggle Visibility"
+							onClick={toggleCollapse}
+						>
+							<VisibilityIcon />
+						</button>
+					</div>
+					{!isCollapsed && (
+						<Box
+							sx={{
+								flexGrow: 1,
+								backgroundColor: "#1e1e1e",
+								overflowY: "auto",
+							}}
+						>
+							{readFileLoading && <div>Loading...</div>}
+							{readFileError !== null && (
+								<div>Error: {readFileError}</div>
+							)}
+							{selectedFile !== null &&
+								fileContent !== null &&
+								readFileError === null && (
+									<Editor
+										height="100%"
+										language="python"
+										theme="vs-dark"
+										options={{ readOnly: false }}
+										onMount={handleEditorMount}
+										onChange={handleEditorChange}
+										loading={readFileLoading}
+									/>
+								)}
+							{!selectedFile && (
+								<div style={{ textAlign: "center" }}>
+									Select a file to view its content.
+								</div>
+							)}
+						</Box>
+					)}
+					<div className="selection-pane-container">
+						<SelectionPane />
 					</div>
 				</div>
-			</ResizableBox>
-		);
-	},
-);
+			</div>
+		</ResizableBox>
+	);
+};
 
 export default FileEditor;

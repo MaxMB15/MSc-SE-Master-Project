@@ -1,7 +1,7 @@
 import React from "react";
 import "./AbstractClassNode.css";
 import BaseNode from "../BaseNode";
-import { STYLES } from "../../../../../styles/constants";
+import { STYLES } from "@/styles/constants";
 
 interface AbstractClassNodeProps {
     id: string

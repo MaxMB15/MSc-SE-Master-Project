@@ -1,12 +1,13 @@
-import { Handle, Position, ReactFlowState, useStore } from "reactflow";
-import { STYLES } from "../../../../../styles/constants";
+import { Handle, NodeProps, Position, ReactFlowState, useStore as reactflowStore } from "reactflow";
+import { STYLES } from "@/styles/constants";
+import useStore from "@/store/store";
 
-import "./baseNode.css";
+import "./BaseNode.css";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
 
-interface BaseNodeProps {
+interface BaseNodeProps extends NodeProps {
 	id: string;
 	data: {
 		label: string;
@@ -14,7 +15,31 @@ interface BaseNodeProps {
 	};
 }
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
-	const connectionNodeId = useStore(connectionNodeIdSelector);
+    const {
+		setNodes,
+	} = useStore();
+    const addSelectedNodes = reactflowStore((rfstate) => rfstate.addSelectedNodes);
+
+    // Override single click and unselect all nodes
+	const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
+		event.stopPropagation(); // Prevent the default single click behavior
+        console.log("Node clicked", id);
+        setNodes((nodes) => {
+            let newNodes = nodes.map((node) => {
+                node.selected = false;
+                return node;
+            });
+            return [...newNodes];
+        });
+	};
+    // Double click is highlight
+	const onNodeDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+		event.stopPropagation();
+		addSelectedNodes([id]); // Manually set the node as selected on double-click
+        console.log("Node double clicked", id);
+	};
+
+	const connectionNodeId = reactflowStore(connectionNodeIdSelector);
 	const defaultData = {
 		backgroundColor: STYLES.defaultNodeColor,
 	};
@@ -27,7 +52,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const label = isTarget ? "Drop here" : "Drag to connect";
 
 	return (
-		<div className="customNode">
+		<div className="customNode" onClick={onNodeClick} onDoubleClick={onNodeDoubleClick}>
 			<div
 				className="customNodeBody"
 				style={{
@@ -37,7 +62,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 							? STYLES.nodeDropColor
 							: STYLES.nodePickColor
 						: data.backgroundColor,
-                    // border: "2px solid transparent",
+					// border: "2px solid transparent",
 				}}
 			>
 				{/* If handles are conditionally rendered and not present initially, you need to update the node internals https://reactflow.dev/docs/api/hooks/use-update-node-internals/ */}

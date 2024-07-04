@@ -11,19 +11,22 @@ import { useAxiosRequest } from "../../utils";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import "./FileExplorer.css";
+import useStore from "@/store/store";
 
-interface FileExplorerProps {
-	onFileSelect: (filePath: string) => void;
-}
+interface FileExplorerProps {}
 
-const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
-	const [isCollapsed, setIsCollapsed] = useState(false);
-	const [width, setWidth] = useState(300); // Initial width of 300px
-	const [currentDir, setCurrentDir] = useState("File Explorer");
+const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
+	// VARIABLES
+	// Request to get the file tree
 	const { response, error, loading, sendRequest } = useAxiosRequest<
 		null,
 		FileNode[]
 	>();
+
+	// STATE
+	const [isCollapsed, setIsCollapsed] = useState(false);
+	const [width, setWidth] = useState(300); // Initial width of 300px
+	const [currentDir, setCurrentDir] = useState("File Explorer");
 
 	const toggleCollapse = () => {
 		setIsCollapsed(!isCollapsed);
@@ -49,7 +52,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
 				axis="x"
 				minConstraints={[40, Infinity]}
 				maxConstraints={[800, Infinity]}
-				onResize={(event, { size }) => setWidth(size.width)}
+				onResize={(_, { size }) => setWidth(size.width)}
 				resizeHandles={["e"]}
 				handle={
 					<div className="resize-handle-container">
@@ -109,7 +112,6 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
 					</div>
 					{!isCollapsed && (
 						<FileExplorerContent
-							onFileSelect={onFileSelect}
 							response={response}
 							error={error}
 							loading={loading}
@@ -122,13 +124,16 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
 };
 
 const FileExplorerContent: React.FC<{
-	onFileSelect: (filePath: string) => void;
 	response: FileNode[] | null;
 	error: string | null;
 	loading: boolean;
-}> = ({ onFileSelect, response, error, loading }) => {
+}> = ({ response, error, loading }) => {
+	// VARIABLES
+	// Store variables
+	const { setSelectedFile } = useStore();
+
 	const handleFileSelect = (filePath: string) => {
-		onFileSelect(filePath);
+		setSelectedFile(() => filePath);
 	};
 
 	const renderTree = (nodes: FileNode[], currentPath: string = "") => {

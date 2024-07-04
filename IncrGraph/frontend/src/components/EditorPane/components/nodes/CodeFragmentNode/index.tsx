@@ -1,7 +1,7 @@
 import React from "react";
 import "./CodeFragmentNode.css";
 import BaseNode from "../BaseNode";
-import { STYLES } from "../../../../../styles/constants";
+import { STYLES } from "@/styles/constants";
 
 interface CodeFragmentNodeProps {
     id: string

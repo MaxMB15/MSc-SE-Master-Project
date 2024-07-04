@@ -1,5 +1,5 @@
 import { ConnectionLineComponent, getStraightPath } from "reactflow";
-import { STYLES } from "../../../../styles/constants";
+import { STYLES } from "@/styles/constants";
 
 const CustomConnectionLine: ConnectionLineComponent = ({
 	fromX,
