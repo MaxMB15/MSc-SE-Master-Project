@@ -6,12 +6,11 @@ import useStore from "@/store/store";
 interface SelectionPaneProps {}
 
 const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
+	// VARIABLES
+	const { selectedItems, selectedItem, setSelectedItem, setNodes, setEdges } =
+		useStore();
 
-    // VARIABLES
-    const { selectedItems, selectedItem, setSelectedItem, setNodes } = useStore();
-
-
-    // STATE
+	// STATE
 	const [name, setName] = useState<string>("");
 	const [selectedOption, setSelectedOption] = useState<string>("");
 
@@ -23,7 +22,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	useEffect(() => {
 		if (selectedItems.length > 0) {
 			setSelectedItem(() => selectedItems[0]);
-			let optionType = selectedItems[0].type === "Node" ? selectedItems[0].item.type : "";
+			let optionType = selectedItems[0].item.type;
 			!optionType && (optionType = "");
 			setSelectedOption(optionType);
 		}
@@ -35,18 +34,32 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 
 	const handleOptionChange = (value: string) => {
 		setSelectedOption(value);
-        if (selectedItem) {
-			setNodes((prevNodes) =>
-                prevNodes.map((node) => {
-                    if (node.id === selectedItem.id) {
-                        return {
-                            ...node,
-                            type: value,
-                        };
-                    }
-                    return node;
-                }),
-            );
+		if (selectedItem) {
+			if (selectedItem.type === "Node") {
+				setNodes((prevNodes) =>
+					prevNodes.map((node) => {
+						if (node.id === selectedItem.id) {
+							return {
+								...node,
+								type: value,
+							};
+						}
+						return node;
+					}),
+				);
+			} else if (selectedItem.type === "Edge") {
+				setEdges((prevEdges) =>
+					prevEdges.map((edge) => {
+						if (edge.id === selectedItem.id) {
+							return {
+								...edge,
+								type: value,
+							};
+						}
+						return edge;
+					}),
+				);
+			}
 		}
 	};
 
@@ -73,15 +86,21 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	const handleDelete = () => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
-			setNodes((prevNodes) =>
-				prevNodes.filter((node) => node.id !== selectedItem.id),
-			);
+			if (selectedItem.type === "Node") {
+				setNodes((prevNodes) =>
+					prevNodes.filter((node) => node.id !== selectedItem.id),
+				);
+			} else if (selectedItem.type === "Edge") {
+				setEdges((prevEdges) =>
+					prevEdges.filter((edge) => edge.id !== selectedItem.id),
+				);
+			}
 		}
 	};
 
 	const handleItemChange = (value: string) => {
 		let item = selectedItems.find((item) => item.id === value);
-		setSelectedItem(() => item ? item : null);
+		setSelectedItem(() => (item ? item : null));
 	};
 
 	const getOptions = (type: "Node" | "Edge") => {
@@ -126,32 +145,32 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		} else if (type === "Edge") {
 			return [
 				{
-					value: "Base",
+					value: "baseRelationship",
 					label: "Base",
 					className: "selection-pane-edge-base",
 				},
 				{
-					value: "Inheritance",
+					value: "inheritanceRelationship",
 					label: "Inheritance",
 					className: "selection-pane-edge-inheritance",
 				},
 				{
-					value: "Overrides",
+					value: "overridesRelationship",
 					label: "Overrides",
 					className: "selection-pane-edge-overrides",
 				},
 				{
-					value: "Method",
+					value: "methodRelationship",
 					label: "Method",
 					className: "selection-pane-edge-method",
 				},
 				{
-					value: "Execution",
+					value: "executionRelationship",
 					label: "Execution",
 					className: "selection-pane-edge-execution",
 				},
 				{
-					value: "Dependency",
+					value: "dependencyRelationship",
 					label: "Dependency",
 					className: "selection-pane-edge-dependency",
 				},

@@ -151,7 +151,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						type: "baseRelationship",
 						id: `${edges.length}-${params.source}>${params.target}`,
                         selected: true,
-                        data: { backgroundColor: "#ff00ff" },
 					},
 					eds.map((e) => {
 						e.selected = false;
@@ -243,7 +242,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 							nodeTypes={nodeTypes}
 							onNodeDoubleClick={onNodeDoubleClick}
 							edgeTypes={edgeTypes}
-							defaultEdgeOptions={defaultEdgeOptions}
 							connectionLineComponent={CustomConnectionLine}
 							connectionLineStyle={connectionLineStyle}
 							zoomOnScroll

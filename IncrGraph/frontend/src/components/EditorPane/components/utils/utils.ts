@@ -9,6 +9,11 @@ import InterfaceNode from "../nodes/InterfaceNode";
 import LibraryNode from "../nodes/LibraryNode";
 import MethodNode from "../nodes/MethodNode";
 import BaseRelationship from "../edges/BaseRelationship";
+import InheritanceRelationship from "../edges/InheritanceRelationship";
+import OverridesRelationship from "../edges/OverridesRelationship";
+import MethodRelationship from "../edges/MethodRelationship";
+import ExecutionRelationship from "../edges/ExecutionRelationship";
+import DependencyRelationship from "../edges/DependencyRelationship";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -153,4 +158,9 @@ export const nodeTypes: NodeTypes = {
 
 export const edgeTypes: EdgeTypes = {
 	baseRelationship: BaseRelationship,
+	inheritanceRelationship: InheritanceRelationship,
+	overridesRelationship: OverridesRelationship,
+	methodRelationship: MethodRelationship,
+	executionRelationship: ExecutionRelationship,
+	dependencyRelationship: DependencyRelationship,
 };

@@ -4,9 +4,9 @@ import { STYLES } from "@/styles/constants";
 import BaseRelation from "../BaseRelationship";
 import { EdgeProps } from "reactflow";
 
-interface InheritanceRelationshipProps extends EdgeProps {}
+interface ExecutionRelationshipProps extends EdgeProps {}
 
-const InheritanceRelationship: ComponentType<InheritanceRelationshipProps> = (
+const ExecutionRelationship: ComponentType<ExecutionRelationshipProps> = (
 	props,
 ) => {
 	return (
@@ -14,10 +14,10 @@ const InheritanceRelationship: ComponentType<InheritanceRelationshipProps> = (
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: STYLES.inheritanceRelationshipColor,
+				backgroundColor: STYLES.executionRelationshipColor,
 			}}
 		/>
 	);
 };
 
-export default InheritanceRelationship;
+export default ExecutionRelationship;

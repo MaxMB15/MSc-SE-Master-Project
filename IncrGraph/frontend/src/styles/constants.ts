@@ -1,5 +1,3 @@
-import { exec } from "child_process";
-
 export const STYLES = {
     startNodeColor1: "#0080ff",
     startNodeColor2: "#00f2ff",
