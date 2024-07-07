@@ -12,8 +12,13 @@ import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
 import { applyFilter, mergeChanges } from "@/utils/json";
-import { disposeAllProviders, showSuggestionSnippet, getSuggestions } from "@/utils/codeTemplates";
+import {
+	disposeAllProviders,
+	showSuggestionSnippet,
+	getSuggestions,
+} from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
+import { PlayArrow } from "@mui/icons-material";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -328,10 +333,20 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			}),
 		);
 
-        // If empty, add suggestions
-        if (changeValue === "" && monacoRef.current && editorRef.current && selectedItem !== null) {
-            showSuggestionSnippet(selectedItem.item.type || null, "python", monacoRef.current, editorRef.current);
-        }
+		// If empty, add suggestions
+		if (
+			changeValue === "" &&
+			monacoRef.current &&
+			editorRef.current &&
+			selectedItem !== null
+		) {
+			showSuggestionSnippet(
+				selectedItem.item.type || null,
+				"python",
+				monacoRef.current,
+				editorRef.current,
+			);
+		}
 	};
 	// When filtered text changes
 	const filterChange = () => {
@@ -604,10 +619,18 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (editorRef.current) {
 			debug && console.log("Setting model to editor");
 			editorRef.current.setModel(model);
-			if (displayType === EditorDisplayContentType.CODE && selectedItem !== null) {
-                if (model.getValue() === "") {
-                    showSuggestionSnippet(selectedItem.item.type || null, "python", monacoRef.current, editorRef.current);
-                }
+			if (
+				displayType === EditorDisplayContentType.CODE &&
+				selectedItem !== null
+			) {
+				if (model.getValue() === "") {
+					showSuggestionSnippet(
+						selectedItem.item.type || null,
+						"python",
+						monacoRef.current,
+						editorRef.current,
+					);
+				}
 			}
 		}
 	};
@@ -792,6 +815,16 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									></span>
 								)}
 								<span className="take-full-width"></span>
+								{selectedItem &&
+									selectedItem.type === "Node" && (
+										<button
+											className="icon-button"
+											title="Toggle Visibility"
+											onClick={toggleCollapse}
+										>
+											<PlayArrow />
+										</button>
+									)}
 							</>
 						)}
 						<button
@@ -802,39 +835,42 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							<VisibilityIcon />
 						</button>
 					</div>
-					{!isCollapsed && (
-						<Box
-							sx={{
-								flexGrow: 1,
-								backgroundColor: "#1e1e1e",
-								overflowY: "auto",
-							}}
-						>
-							{readFileLoading && <div>Loading...</div>}
-							{readFileError !== null && (
-								<div>Error: {readFileError}</div>
+					<Box
+						sx={{
+							flexGrow: 1,
+							backgroundColor: "#1e1e1e",
+							overflowY: "auto",
+							display: isCollapsed ? "none" : "block",
+						}}
+					>
+						{readFileLoading && <div>Loading...</div>}
+						{readFileError !== null && (
+							<div>Error: {readFileError}</div>
+						)}
+						{selectedFile !== null &&
+							fileContent !== null &&
+							readFileError === null && (
+								<Editor
+									height="100%"
+									language="python"
+									theme="vs-dark"
+									options={{ readOnly: false }}
+									onMount={handleEditorMount}
+									onChange={handleEditorChange}
+									loading={<div>Loading...</div>}
+								/>
 							)}
-							{selectedFile !== null &&
-								fileContent !== null &&
-								readFileError === null && (
-									<Editor
-										height="100%"
-										language="python"
-										theme="vs-dark"
-										options={{ readOnly: false }}
-										onMount={handleEditorMount}
-										onChange={handleEditorChange}
-										loading={<div>Loading...</div>}
-									/>
-								)}
-							{!selectedFile && (
-								<div style={{ textAlign: "center" }}>
-									Select a file to view its content.
-								</div>
-							)}
-						</Box>
-					)}
-					<div className="selection-pane-container">
+						{!selectedFile && (
+							<div style={{ textAlign: "center" }}>
+								Select a file to view its content.
+							</div>
+						)}
+					</Box>
+
+					<div
+						className="selection-pane-container"
+						style={{ display: isCollapsed ? "none" : "block" }}
+					>
 						<SelectionPane />
 					</div>
 				</div>

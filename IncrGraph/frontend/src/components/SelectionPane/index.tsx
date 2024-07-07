@@ -7,8 +7,14 @@ interface SelectionPaneProps {}
 
 const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	// VARIABLES
-	const { selectedItems, selectedItem, setSelectedItem, setNodes, setEdges } =
-		useStore();
+	const {
+		isIGCFile,
+		selectedItems,
+		selectedItem,
+		setSelectedItem,
+		setNodes,
+		setEdges,
+	} = useStore();
 
 	// STATE
 	const [name, setName] = useState<string>("");
@@ -17,10 +23,9 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	useEffect(() => {
 		if (selectedItems.length > 0) {
 			setName(selectedItem?.name || "");
+		} else {
+			setSelectedItem(() => null);
 		}
-        else {
-            setSelectedItem(() => null);
-        }
 	}, [selectedItem, selectedItems]);
 	useEffect(() => {
 		if (selectedItems.length > 0) {
@@ -182,6 +187,9 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		return [];
 	};
 
+	if (!isIGCFile) {
+		return;
+	}
 	return (
 		<div className="selection-pane-formControl">
 			{selectedItems.length !== 1 && (
