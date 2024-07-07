@@ -8,96 +8,35 @@
             },
             "position": {
                 "x": 0,
-                "y": -200
+                "y": -100
             },
-            "draggable": false,
             "style": {
                 "cursor": "grab"
             },
             "width": 23,
             "height": 23,
-            "selected": true
+            "selected": false,
+            "draggable": false
         },
         {
             "id": "1",
-            "type": "abstractClassNode",
-            "data": {
-                "label": "Animal",
-                "code": ""
-            },
-            "position": {
-                "x": -132,
-                "y": -142
-            },
-            "width": 154,
-            "height": 84,
-            "selected": true,
-            "positionAbsolute": {
-                "x": -32,
-                "y": -142
-            },
-            "dragging": true
-        },
-        {
-            "id": "2",
             "type": "classNode",
             "data": {
-                "label": "Dog",
-                "type": "interfaceNode",
-                "code": ""
+                "label": "Animal",
+                "code": "code Animal"
             },
             "position": {
-                "x": 168,
-                "y": 7
+                "x": -264,
+                "y": -188
             },
             "width": 154,
             "height": 84,
             "selected": false,
             "positionAbsolute": {
-                "x": 168,
-                "y": 7
-            },
-            "dragging": false
-        },
-        {
-            "id": "1719922206047",
-            "type": "baseNode",
-            "data": {
-                "label": "Node 3",
-                "code": ""
-            },
-            "position": {
-                "x": -208.27003228642639,
-                "y": 60.57540329167978
-            },
-            "selected": false,
-            "width": 154,
-            "height": 84,
-            "positionAbsolute": {
-                "x": -208.27003228642639,
-                "y": 60.57540329167978
-            },
-            "dragging": false
+                "x": -264,
+                "y": -188
+            }
         }
     ],
-    "edges": [
-        {
-            "style": {
-                "strokeWidth": "3px",
-                "stroke": "#eeeeee"
-            },
-            "type": "floating",
-            "markerEnd": {
-                "type": "arrowclosed",
-                "color": "#eeeeee"
-            },
-            "elevateEdgesOnSelection": true,
-            "source": "1",
-            "sourceHandle": null,
-            "target": "2",
-            "targetHandle": null,
-            "id": "reactflow__edge-1-2",
-            "selected": false
-        }
-    ]
+    "edges": []
 }

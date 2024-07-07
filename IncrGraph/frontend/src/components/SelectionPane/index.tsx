@@ -18,6 +18,9 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		if (selectedItems.length > 0) {
 			setName(selectedItem?.name || "");
 		}
+        else {
+            setSelectedItem(() => null);
+        }
 	}, [selectedItem, selectedItems]);
 	useEffect(() => {
 		if (selectedItems.length > 0) {

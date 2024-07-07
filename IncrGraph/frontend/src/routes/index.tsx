@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import LoginPage from "../pages/login";
 import HomePage from "../pages/home";
-import { isLoggedIn } from "../utils";
+import { isLoggedIn } from "../utils/requests";
 
 // Create router
 const AppRouter = createBrowserRouter([

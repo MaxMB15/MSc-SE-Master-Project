@@ -95,6 +95,4 @@ export const useAxiosRequest = <TRequest, TResponse>() => {
 	return { response, error, loading, sendRequest, setResponse };
 };
 
-export const isLoggedIn = () => {
-	return true;
-};
+export const isLoggedIn = (): boolean => true;

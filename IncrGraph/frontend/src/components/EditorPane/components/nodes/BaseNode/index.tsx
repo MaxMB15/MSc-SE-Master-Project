@@ -23,7 +23,6 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
     // Override single click and unselect all nodes
 	const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
 		event.stopPropagation(); // Prevent the default single click behavior
-        console.log("Node clicked", id);
         setNodes((nodes) => {
             let newNodes = nodes.map((node) => {
                 node.selected = false;
@@ -36,7 +35,6 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const onNodeDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
 		event.stopPropagation();
 		addSelectedNodes([id]); // Manually set the node as selected on double-click
-        console.log("Node double clicked", id);
 	};
 
 	const connectionNodeId = reactflowStore(connectionNodeIdSelector);

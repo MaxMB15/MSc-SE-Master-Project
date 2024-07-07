@@ -19,12 +19,11 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
 import { edgeTypes, nodeTypes } from "./components/utils/utils";
-import { defaultEdgeOptions } from "./components/edges/BaseRelationship/index";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
 import { Item } from "@/types/common";
-import useStore from "@/store/store";
+import useStore, { ChangeSource } from "@/store/store";
 
 interface EditorPaneProps {}
 
@@ -33,7 +32,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// Store variables
 	const {
 		fileContent,
-		setLocalContentBuffer,
 		isIGCFile,
 		setSelectedItems,
 		nodes,
@@ -62,22 +60,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		}
 	}, [fileContent]);
 
-	// Deserialize the graph data into a string
-	const deserializeGraphData = (nodes: Node[], edges: Edge[]): string => {
-		let data = { nodes: nodes, edges: edges };
-		return JSON.stringify(data, null, 4); // Pretty print the JSON
-	};
-
-	// Update the File Editor with the current graph content
-	const updateGraphContent = () => {
-		if (showGraph) {
-			console.log("Updating graph content");
-			const content = deserializeGraphData(nodes, edges);
-			// console.log("Content", content);
-			setLocalContentBuffer(() => content);
-		}
-	};
-
 	// Node Functions
 	const onNodesChange = (changes: NodeChange[]) => {
 		setNodes((nds) => applyNodeChanges(changes, nds));
@@ -89,8 +71,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 		setSelectedNodes(newSelectedNodes);
 
-		// Update the file editor with the current Graph content
-		updateGraphContent();
 	}, [nodes]);
 
 	// Add a new node
@@ -133,8 +113,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	useEffect(() => {
 		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
 		setSelectedEdges(newSelectedEdges);
-
-		updateGraphContent();
 	}, [edges]);
 
 	// If a new edge is created
