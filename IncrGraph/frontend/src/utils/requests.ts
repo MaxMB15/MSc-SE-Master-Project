@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
-interface UseAxiosRequestOptions<T> {
+export interface UseAxiosRequestOptions<T> {
 	method: Method;
 	route: string;
 	data?: T;

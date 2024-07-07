@@ -22,8 +22,8 @@ import { edgeTypes, nodeTypes } from "./components/utils/utils";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
-import { Item } from "@/types/common";
-import useStore, { ChangeSource } from "@/store/store";
+import { Item } from "@/types/frontend";
+import useStore from "@/store/store";
 
 interface EditorPaneProps {}
 

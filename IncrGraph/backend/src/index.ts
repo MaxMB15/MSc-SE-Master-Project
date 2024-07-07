@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import fileExplorerRoutes from "./routes/file-explorer";
+import codeHandlerRoutes from "./routes/code-handler";
 import { logger } from "./utils/logger";
 
 import * as dotenv from "dotenv";
@@ -19,6 +20,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use("/api/file-explorer", fileExplorerRoutes);
+app.use("/api/code-handler", codeHandlerRoutes);
 
 app.listen(PORT, () => {
 	logger.info(`Server running on http://localhost:${PORT}`);

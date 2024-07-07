@@ -1,5 +1,5 @@
 import { Node, Edge } from "reactflow";
-import { Item } from "@/types/common";
+import { Item } from "@/types/frontend";
 import { create } from "zustand";
 
 interface FileHistory {

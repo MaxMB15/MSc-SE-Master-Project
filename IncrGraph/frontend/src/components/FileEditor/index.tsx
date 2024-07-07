@@ -1,24 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Box } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { PlayArrow } from "@mui/icons-material";
 import { ResizableBox } from "react-resizable";
 import { Editor, Monaco } from "@monaco-editor/react";
-import * as monacoEditor from "monaco-editor";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
-import { useAxiosRequest } from "@/utils/requests";
-import { SaveFilePathRequest } from "@/types/common";
+import { SaveFilePathRequest, CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
 import { applyFilter, mergeChanges } from "@/utils/json";
+import { useAxiosRequest } from "@/utils/requests";
 import {
-	disposeAllProviders,
 	showSuggestionSnippet,
-	getSuggestions,
 } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
-import { PlayArrow } from "@mui/icons-material";
+import { runCode } from "@/utils/codeExecution";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -56,6 +54,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Request for saving file content
 	const { error: saveFileError, sendRequest: saveFileSendRequest } =
 		useAxiosRequest<SaveFilePathRequest, null>();
+    // Request for running code
+    const {
+		error: codeRunError,
+		loading: codeRunLoading,
+		sendRequest: runCodeSendRequest,
+	} = useAxiosRequest<CodeExecutionRequest, CodeExecutionResponse>();
 
 	// References to monaco editor
 	const editorRef = useRef<any>(null);
@@ -815,12 +819,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									></span>
 								)}
 								<span className="take-full-width"></span>
-								{selectedItem &&
+								{isIGCFile && selectedItem &&
 									selectedItem.type === "Node" && (
 										<button
 											className="icon-button"
 											title="Toggle Visibility"
-											onClick={toggleCollapse}
+											onClick={() => runCode(runCodeSendRequest, selectedItem.item.data.code)}
 										>
 											<PlayArrow />
 										</button>

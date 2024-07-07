@@ -31,10 +31,45 @@
             },
             "width": 154,
             "height": 84,
-            "selected": true,
+            "selected": false,
             "positionAbsolute": {
                 "x": -255,
                 "y": -76
+            },
+            "dragging": false
+        },
+        {
+            "id": "1720366866914",
+            "type": "codeFragmentNode",
+            "data": {
+                "label": "Node 2",
+                "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)"
+            },
+            "position": {
+                "x": 219.83937149147891,
+                "y": -17.053406375857833
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84
+        },
+        {
+            "id": "1720374720502",
+            "type": "codeFragmentNode",
+            "data": {
+                "label": "Node 3",
+                "code": "c = c * 2\n\nprint(c)"
+            },
+            "position": {
+                "x": -26.48413252760878,
+                "y": 81.44874678249545
+            },
+            "selected": true,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": -26.48413252760878,
+                "y": 81.44874678249545
             },
             "dragging": false
         }
