@@ -213,7 +213,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					[
 						{
 							range: model.getFullModelRange(),
-							text: filteredIGCVersion(),
+							text: deserializeGraphData(nodes, edges),
 						},
 					],
 					() => null,
@@ -255,15 +255,22 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				} else {
 					updateAllModels();
 				}
+			} else {
+				// Initialize essential models
+				createModel(selectedFile, localContentBuffer);
+				createModel(`${selectedFile}-filtered`, filteredIGCVersion());
 			}
-            else {
-                // Initialize essential models
-                createModel(selectedFile, localContentBuffer);
-                createModel(
-                    `${selectedFile}-filtered`,
-                    filteredIGCVersion(),
-                );
-            }
+			// Save icon logic
+			const fileHistory = fileHistories.get(selectedFile);
+			if (fileHistory) {
+				const psc = fileHistory.prevSavedContent;
+				const current = deserializeGraphData(nodes, edges);
+				if (psc !== current) {
+					setIsSaved(false);
+				} else {
+					setIsSaved(true);
+				}
+			}
 		}
 	}, [nodes, edges]);
 
@@ -316,34 +323,27 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const filterChange = () => {
 		setChangeFromType(EditorDisplayContentType.FILTERED);
 		// Needs to be called every update of the editor to make sure we do not lose the changes
-		const rawIGCKey = getDisplayTypeRawContent(
-			EditorDisplayContentType.IGC_NORMAL,
-		).key;
-		const rawIGCModel = models.get(rawIGCKey);
-		const rawIGCContent: string = rawIGCModel.getValue();
-		if (!isValidJSON(rawIGCContent)) {
-			return null;
-		}
 		const filteredIGCContent: string = models
 			.get(
 				getDisplayTypeRawContent(EditorDisplayContentType.FILTERED).key,
 			)
 			.getValue();
 		if (!isValidJSON(filteredIGCContent)) {
-			return null;
+			return;
 		}
 
 		// Merge to the raw IGC data
-		const jsonIGCContent = JSON.parse(rawIGCContent);
-        console.log("jsonIGCContent\n", jsonIGCContent);
+		const jsonIGCContent = serializeGraphData(
+			deserializeGraphData(nodes, edges),
+		);
+		console.log("jsonIGCContent\n", jsonIGCContent);
 		const jsonFilteredIGCContent = JSON.parse(filteredIGCContent);
-        console.log("jsonFilteredIGCContent\n", jsonFilteredIGCContent);
+		console.log("jsonFilteredIGCContent\n", jsonFilteredIGCContent);
 		const newIGCContent = mergeChanges(
 			jsonIGCContent,
 			jsonFilteredIGCContent,
-			filterRulesIGC,
 		);
-        console.log("newIGCContent\n", newIGCContent);
+		console.log("newIGCContent\n", newIGCContent);
 
 		// Update Nodes and Edges to the newIGCContent
 		setNodes(() => newIGCContent.nodes);
@@ -359,7 +359,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		const rawIGCModel = models.get(rawIGCKey);
 		const rawIGCContent: string = rawIGCModel.getValue();
 		if (!isValidJSON(rawIGCContent)) {
-			return null;
+			return;
 		}
 		const newIGCContent = JSON.parse(rawIGCContent);
 		setNodes(() => newIGCContent.nodes);
@@ -447,6 +447,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const handleEditorMount = (editor: any, monaco: Monaco) => {
 		monacoRef.current = monaco;
 		editorRef.current = editor;
+        
 		// Make sure there is an update for when editor.current is updated
 		checkInitializeModels();
 	};
@@ -469,9 +470,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Event listener for keydown
 	const handleKeyDown = (event: KeyboardEvent) => {
 		// Setting the filter to false
-		if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+		if ((event.ctrlKey || event.metaKey) && event.code === "Backslash") {
 			event.preventDefault();
-			setFilterContent(false);
+            if (filterContent) {
+			    setFilterContent(false);
+            }
+            else {
+                setFilterContent(true);
+            }
 		}
 		// For saving the file
 		if ((event.ctrlKey || event.metaKey) && event.key === "s") {
@@ -479,35 +485,31 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			saveChanges();
 		}
 	};
-	// Event listener for keyup
-	const handleKeyUp = (event: KeyboardEvent) => {
-		// Setting the filter to true
-		if (event.ctrlKey || event.metaKey || event.shiftKey) {
-			event.preventDefault();
-			setFilterContent(true);
-		}
-	};
 
 	useEffect(() => {
 		window.addEventListener("keydown", handleKeyDown);
-		window.addEventListener("keyup", handleKeyUp);
 
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
-			window.removeEventListener("keyup", handleKeyUp);
 		};
-	}, [handleKeyDown, handleKeyUp]);
+	}, [handleKeyDown]);
 
 	// Overall change handler from editor
 	const handleEditorChange = (value: string | undefined) => {
 		// Check history if the file is the previously saved file
 		const fileHistory = fileHistories.get(selectedFile || "");
 		if (fileHistory) {
-			if (fileHistory.prevSavedContent !== value) {
+			if (isIGCFile) {
+				// Logic should happen after node/edge change
+			} else if (fileHistory.prevSavedContent !== value) {
 				setIsSaved(false);
 			} else {
 				setIsSaved(true);
 			}
+		} else {
+			throw new Error(
+				"File history does not exist, this should not happen!",
+			);
 		}
 
 		// Update the local content buffer
@@ -615,9 +617,13 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// FILE OPERATION FUNCTIONS
 	const saveChanges = () => {
 		if (localContentBuffer !== null && selectedFile !== null) {
+			let saveContent = localContentBuffer;
+			if (isIGCFile) {
+				saveContent = deserializeGraphData(nodes, edges);
+			}
 			saveFileSendRequest({
 				method: "POST",
-				data: { path: selectedFile, content: localContentBuffer },
+				data: { path: selectedFile, content: saveContent },
 				route: "/api/file-explorer/file-content",
 				useJWT: false,
 			}).then(() => {
@@ -629,13 +635,13 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						new Map(
 							fileHistories.set(selectedFile, {
 								lastSavedTimestamp: currentTime,
-								prevContent: localContentBuffer,
-								prevSavedContent: localContentBuffer,
+								prevContent: saveContent,
+								prevSavedContent: saveContent,
 							}),
 						),
 				);
 				// Update the file content with what was saved
-				setFileContent(() => localContentBuffer);
+				setFileContent(() => saveContent);
 			});
 		}
 	};

@@ -1,1 +1,1 @@
-["nodes.draggable", "nodes.dragging"]
+["nodes.draggable", "nodes.dragging", "nodes.position", "nodes.positionAbsolute"]

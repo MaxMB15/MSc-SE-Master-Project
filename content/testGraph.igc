@@ -20,23 +20,34 @@
         },
         {
             "id": "1",
-            "type": "classNode",
+            "type": "methodNode",
             "data": {
                 "label": "Animal",
-                "code": "code Animal"
+                "code": "code Animal tes\nbg"
             },
             "position": {
-                "x": -264,
-                "y": -188
+                "x": -255,
+                "y": -76
             },
             "width": 154,
             "height": 84,
-            "selected": false,
+            "selected": true,
             "positionAbsolute": {
-                "x": -264,
-                "y": -188
-            }
+                "x": -255,
+                "y": -76
+            },
+            "dragging": false
         }
     ],
-    "edges": []
+    "edges": [
+        {
+            "source": "start",
+            "sourceHandle": null,
+            "target": "1",
+            "targetHandle": null,
+            "type": "baseRelationship",
+            "id": "0-start>1",
+            "selected": false
+        }
+    ]
 }
