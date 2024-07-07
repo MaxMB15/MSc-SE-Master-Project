@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { ResizableBox } from "react-resizable";
 import { Editor, Monaco } from "@monaco-editor/react";
+import * as monacoEditor from "monaco-editor";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
 import { useAxiosRequest } from "@/utils/requests";
@@ -11,6 +12,7 @@ import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
 import { applyFilter, mergeChanges } from "@/utils/json";
+import { disposeAllProviders, showSuggestionSnippet, getSuggestions } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
 
 interface FileEditorProps {
@@ -289,7 +291,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (selectedFile !== null && localContentBuffer !== null) {
 			const displayType = getDisplayType();
 			if (modelExists(displayType)) {
-				showModel(displayType);
+				if (
+					editorRef.current.getModel() !==
+					models.get(getDisplayTypeRawContent(displayType).key)
+				) {
+					showModel(displayType);
+				} else {
+					console.log("Model already is being shown!");
+				}
 			}
 		}
 	};
@@ -302,7 +311,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 
 	// WHEN SPECIFIC METHODS CHANGE TEXT HANDLERS
 	// When code changes
-	const codeChange = () => {
+	const codeChange = (changeValue: string) => {
 		setChangeFromType(EditorDisplayContentType.CODE);
 		// Needs to be called every update of the editor to make sure we do not lose the changes
 		const codeIGCContent: string = models
@@ -318,6 +327,11 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				return node;
 			}),
 		);
+
+        // If empty, add suggestions
+        if (changeValue === "" && monacoRef.current && editorRef.current && selectedItem !== null) {
+            showSuggestionSnippet(selectedItem.item.type || null, "python", monacoRef.current, editorRef.current);
+        }
 	};
 	// When filtered text changes
 	const filterChange = () => {
@@ -447,7 +461,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const handleEditorMount = (editor: any, monaco: Monaco) => {
 		monacoRef.current = monaco;
 		editorRef.current = editor;
-        
+
 		// Make sure there is an update for when editor.current is updated
 		checkInitializeModels();
 	};
@@ -472,12 +486,11 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		// Setting the filter to false
 		if ((event.ctrlKey || event.metaKey) && event.code === "Backslash") {
 			event.preventDefault();
-            if (filterContent) {
-			    setFilterContent(false);
-            }
-            else {
-                setFilterContent(true);
-            }
+			if (filterContent) {
+				setFilterContent(false);
+			} else {
+				setFilterContent(true);
+			}
 		}
 		// For saving the file
 		if ((event.ctrlKey || event.metaKey) && event.key === "s") {
@@ -518,7 +531,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		// Update the Node/Edge data from the change;
 		if (changeFromType !== EditorDisplayContentType.EDITOR)
 			if (getDisplayType() === EditorDisplayContentType.CODE) {
-				codeChange();
+				codeChange(value || "");
 			} else if (getDisplayType() === EditorDisplayContentType.FILTERED) {
 				filterChange();
 			} else if (
@@ -591,6 +604,11 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (editorRef.current) {
 			debug && console.log("Setting model to editor");
 			editorRef.current.setModel(model);
+			if (displayType === EditorDisplayContentType.CODE && selectedItem !== null) {
+                if (model.getValue() === "") {
+                    showSuggestionSnippet(selectedItem.item.type || null, "python", monacoRef.current, editorRef.current);
+                }
+			}
 		}
 	};
 
