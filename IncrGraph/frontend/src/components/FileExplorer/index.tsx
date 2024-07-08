@@ -12,6 +12,7 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import "./FileExplorer.css";
 import useStore from "@/store/store";
+import ConfigurationOverview from "../ConfigurationOverview";
 
 interface FileExplorerProps {}
 
@@ -111,11 +112,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
 						</button>
 					</div>
 					{!isCollapsed && (
-						<FileExplorerContent
-							response={response}
-							error={error}
-							loading={loading}
-						/>
+                        <>
+                            <FileExplorerContent
+                                response={response}
+                                error={error}
+                                loading={loading}
+                            />
+                            <ConfigurationOverview />
+                        </>
 					)}
 				</div>
 			</ResizableBox>

@@ -38,6 +38,12 @@ interface State {
 
 	edges: Edge[];
 	setEdges: (updater: (prev: Edge[]) => Edge[]) => void;
+
+    currentSessionId: string | null;
+    setCurrentSessionId: (updater: (prev: string | null) => string | null) => void;
+
+    sessions: Map<string, any>;
+    setSessions: (updater: (prev: Map<string, any>) => Map<string, any>) => void;
 }
 
 const useStore = create<State>((set) => ({
@@ -112,6 +118,14 @@ const useStore = create<State>((set) => ({
 	edges: [],
 	setEdges: (updater: (prev: Edge[]) => Edge[]) =>
 		set((state) => ({ edges: updater(state.edges) })),
+
+    currentSessionId: null,
+    setCurrentSessionId: (updater: (prev: string | null) => string | null) =>
+        set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
+
+    sessions: new Map<string, any>(),
+    setSessions: (updater: (prev: Map<string, any>) => Map<string, any>) =>
+        set((state) => ({ sessions: updater(state.sessions) })),
 }));
 
 export default useStore;

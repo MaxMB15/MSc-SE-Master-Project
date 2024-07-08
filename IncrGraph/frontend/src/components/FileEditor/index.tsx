@@ -1,22 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { PlayArrow } from "@mui/icons-material";
 import { ResizableBox } from "react-resizable";
 import { Editor, Monaco } from "@monaco-editor/react";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
-import { SaveFilePathRequest, CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
+import {
+	SaveFilePathRequest,
+	CodeExecutionRequest,
+	CodeExecutionResponse,
+} from "@/types/common";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
 import { applyFilter, mergeChanges } from "@/utils/json";
 import { useAxiosRequest } from "@/utils/requests";
-import {
-	showSuggestionSnippet,
-} from "@/utils/codeTemplates";
+import { showSuggestionSnippet } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
 import { runCode } from "@/utils/codeExecution";
+import { FitAddon } from "@xterm/addon-fit";
+import TabbedCodeOutput from "../TabbedCodeOutput";
+import { CodeRunData } from "@/types/frontend";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -54,8 +59,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Request for saving file content
 	const { error: saveFileError, sendRequest: saveFileSendRequest } =
 		useAxiosRequest<SaveFilePathRequest, null>();
-    // Request for running code
-    const {
+	// Request for running code
+	const {
 		error: codeRunError,
 		loading: codeRunLoading,
 		sendRequest: runCodeSendRequest,
@@ -64,6 +69,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// References to monaco editor
 	const editorRef = useRef<any>(null);
 	const monacoRef = useRef<Monaco | null>(null);
+
+	// References to the console terminal
+    const fitAddons = useRef<(FitAddon | null)[]>([]);
 
 	// Store variables
 	const {
@@ -80,16 +88,22 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		setNodes,
 		edges,
 		setEdges,
+        currentSessionId,
+        setCurrentSessionId,
+        setSessions
 	} = useStore();
 
 	// STATE
-	const [isCollapsed, setIsCollapsed] = useState(false); // State for collapsing the file editor
+	const [isCollapsed, setIsCollapsed] = useState<boolean>(false); // State for collapsing the file editor
 	const [width, setWidth] = useState(500); // State for the width of the file editor
 	const [isSaved, setIsSaved] = useState<boolean>(true); // State for checking if the file is currently saved
 	const [models, setModels] = useState(new Map<string, any>()); // State for storing the monaco models
-	const [filterContent, setFilterContent] = useState<boolean>(true);
+	const [filterContent, setFilterContent] = useState<boolean>(true); // Whether to filter the main IGC content
 	const [changeFromType, setChangeFromType] =
-		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE);
+		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE); // Checking what is responsible for the node update
+    const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
+    const [codeRunData, setCodeRunData] = useState<Map<string, CodeRunData>>(new Map<string, CodeRunData>()); // State to control terminal visibility
+
 
 	// UTIL FUNCTIONS
 	// Check if the string is a valid JSON
@@ -488,6 +502,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (editorRef.current) {
 			editorRef.current.layout();
 		}
+        fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
+
 	}, []);
 
 	// Resizing the editor
@@ -627,6 +643,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				displayType === EditorDisplayContentType.CODE &&
 				selectedItem !== null
 			) {
+				setShowTerminal(true);
 				if (model.getValue() === "") {
 					showSuggestionSnippet(
 						selectedItem.item.type || null,
@@ -635,6 +652,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						editorRef.current,
 					);
 				}
+			} else {
+				setShowTerminal(false);
 			}
 		}
 	};
@@ -819,12 +838,23 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									></span>
 								)}
 								<span className="take-full-width"></span>
-								{isIGCFile && selectedItem &&
+								{isIGCFile &&
+									selectedItem &&
 									selectedItem.type === "Node" && (
 										<button
 											className="icon-button"
 											title="Toggle Visibility"
-											onClick={() => runCode(runCodeSendRequest, selectedItem.item.data.code)}
+											onClick={() =>
+												runCode(
+													runCodeSendRequest,
+													selectedItem.item.data.code,
+                                                    selectedItem.id,
+                                                    setCodeRunData,
+                                                    currentSessionId,
+                                                    setCurrentSessionId,
+                                                    setSessions
+												)
+											}
 										>
 											<PlayArrow />
 										</button>
@@ -870,6 +900,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							</div>
 						)}
 					</Box>
+					{showTerminal && selectedItem !== null && codeRunData.get(selectedItem.id) !== undefined && (
+						<TabbedCodeOutput codeRunData={codeRunData.get(selectedItem.id)} fitAddons={fitAddons} />
+                    )}
 
 					<div
 						className="selection-pane-container"

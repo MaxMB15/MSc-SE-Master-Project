@@ -1,0 +1,43 @@
+/* ConfigurationOverview.css */
+
+.configuration-overview {
+	width: 100%;
+	max-width: 300px;
+	background-color: #1e1e1e;
+	color: #ffffff;
+	padding: 16px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	border-top: 5px solid #121212;
+	margin-bottom: 40px; /* Add margin-bottom */
+}
+
+.configuration-overview-title {
+	margin-bottom: 8px;
+	text-align: center;
+}
+
+.configuration-overview-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.configuration-overview-button {
+	width: 100%;
+	background-color: #007acc;
+	color: #ffffff;
+	text-transform: none;
+}
+.configuration-overview-button:disabled {
+	background-color: #555555 !important; /* Lighter gray for disabled state */
+	color: #ffffff; /* Ensure text color is still white */
+}
+
+.configuration-placeholder {
+	color: #cccccc;
+	text-align: center;
+	margin-top: 16px;
+}
