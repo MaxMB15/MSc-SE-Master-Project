@@ -20,22 +20,22 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	} = useStore();
     const addSelectedNodes = reactflowStore((rfstate) => rfstate.addSelectedNodes);
 
-    // Override single click and unselect all nodes
-	const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
-		event.stopPropagation(); // Prevent the default single click behavior
-        setNodes((nodes) => {
-            let newNodes = nodes.map((node) => {
-                node.selected = false;
-                return node;
-            });
-            return [...newNodes];
-        });
-	};
-    // Double click is highlight
-	const onNodeDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
-		event.stopPropagation();
-		addSelectedNodes([id]); // Manually set the node as selected on double-click
-	};
+    // // Override single click and unselect all nodes
+	// const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
+	// 	event.stopPropagation(); // Prevent the default single click behavior
+    //     setNodes((nodes) => {
+    //         let newNodes = nodes.map((node) => {
+    //             node.selected = false;
+    //             return node;
+    //         });
+    //         return [...newNodes];
+    //     });
+	// };
+    // // Double click is highlight
+	// const onNodeDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+	// 	event.stopPropagation();
+	// 	addSelectedNodes([id]); // Manually set the node as selected on double-click
+	// };
 
 	const connectionNodeId = reactflowStore(connectionNodeIdSelector);
 	const defaultData = {
@@ -50,7 +50,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const label = isTarget ? "Drop here" : "Drag to connect";
 
 	return (
-		<div className="customNode" onClick={onNodeClick} onDoubleClick={onNodeDoubleClick}>
+		<div className="customNode">
 			<div
 				className="customNodeBody"
 				style={{

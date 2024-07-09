@@ -63,7 +63,7 @@ export const getOffsetPath = (
 	}
 
 	return `M ${sourceX} ${sourceY} Q ${controlX} ${
-		controlY + offset
+		controlY
 	} ${targetX} ${targetY}`;
 };
 
@@ -88,16 +88,17 @@ export const createSmartQuadraticPath = (
 	offsetGap = 50,
 ) => {
 	let offset = calculateOffset(edgeId, idList, offsetGap);
-    if (sourceNode.id > targetNode.id) {
-        offset = -offset;
-    }
+	if (sourceNode.id > targetNode.id) {
+		offset = -offset;
+	}
 	return createQuadraticPath(sourceNode, targetNode, offset);
 };
+
 const createQuadraticPath = (
 	sourceNode: Node,
 	targetNode: Node,
 	offset: number,
-): string => {
+): { path: string; labelPoint: Point } => {
 	if (
 		sourceNode.width == null ||
 		sourceNode.height == null ||
@@ -106,7 +107,7 @@ const createQuadraticPath = (
 		sourceNode.positionAbsolute.y == null
 	) {
 		console.error("Intersection Node is missing width, height, x or y");
-		return "";
+		return { path: "", labelPoint: { x: 0, y: 0 } };
 	}
 	if (
 		targetNode.width == null ||
@@ -116,7 +117,7 @@ const createQuadraticPath = (
 		targetNode.positionAbsolute.y == null
 	) {
 		console.error("Intersection Node is missing width, height, x or y");
-		return "";
+		return { path: "", labelPoint: { x: 0, y: 0 } };
 	}
 	const sourceCenter: Point = {
 		x: sourceNode.positionAbsolute.x + sourceNode.width / 2,
@@ -126,8 +127,14 @@ const createQuadraticPath = (
 		x: targetNode.positionAbsolute.x + targetNode.width / 2,
 		y: targetNode.positionAbsolute.y + targetNode.height / 2,
 	};
-
+    
 	const offsetPoint = calculatePerpendicularOffsetPoint(
+		sourceCenter,
+		targetCenter,
+		offset * 1
+			
+	);
+	const labelPoint = calculatePerpendicularOffsetPoint(
 		sourceCenter,
 		targetCenter,
 		offset,
@@ -152,12 +159,21 @@ const createQuadraticPath = (
 		targetCenter,
 	);
 
+    // Calculate the adjusted control point
+	const adjustedControlPoint: Point = {
+		x: 2 * offsetPoint.x - 0.5 * (sourceIntersection.x + targetIntersection.x),
+		y: 2 * offsetPoint.y - 0.5 * (sourceIntersection.y + targetIntersection.y),
+	};
+
 	// If intersections were not found, fallback to original points
 	const finalSource = sourceIntersection || sourceCenter;
 	const finalTarget = targetIntersection || targetCenter;
 
 	// Create the quadratic Bezier path command
-	return `M ${finalSource.x},${finalSource.y} Q ${controlPoint.x},${controlPoint.y} ${finalTarget.x},${finalTarget.y}`;
+	return {
+		path: `M ${finalSource.x},${finalSource.y} Q ${adjustedControlPoint.x},${adjustedControlPoint.y} ${finalTarget.x},${finalTarget.y}`,
+		labelPoint: labelPoint,
+	};
 };
 
 const CustomConnectionLine: ConnectionLineComponent = ({

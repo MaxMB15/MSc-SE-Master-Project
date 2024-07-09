@@ -175,7 +175,7 @@ export const getBezierNodeIntersection = (
 	p0: Point,
 	p1: Point,
 	p2: Point,
-): Point | null => {
+): Point => {
 	if (
 		node.width == null ||
 		node.height == null ||
@@ -227,7 +227,7 @@ export const getBezierNodeIntersection = (
 	if (intersections.length > 0) {
 		return intersections[0]; // Return the first valid intersection
 	}
-	return null;
+	return { x: 0, y: 0 };;
 };
 
 export const getEdgeId = ({ source, target }: Edge | Connection): string =>

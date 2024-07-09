@@ -1,5 +1,11 @@
 import { ComponentType, useCallback } from "react";
-import { useStore, getStraightPath, EdgeProps, MarkerType } from "reactflow";
+import {
+	useStore,
+	getStraightPath,
+	EdgeProps,
+	MarkerType,
+	EdgeLabelRenderer,
+} from "reactflow";
 import { STYLES } from "@/styles/constants";
 
 import { createSmartQuadraticPath } from "../CustomConnectionLine";
@@ -11,7 +17,8 @@ interface BaseRelationProps extends EdgeProps {
 	style?: React.CSSProperties;
 	data?: {
 		backgroundColor?: string;
-        offset?: number;
+		offset?: number;
+		label?: string;
 	};
 	selected?: boolean;
 }
@@ -30,15 +37,26 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	const targetNode = useStore(
 		useCallback((store) => store.nodeInternals.get(target), [target]),
 	);
-    const samePathEdges = useStore(
-		(store) => store.edges.filter((edge) => (edge.source === source && edge.target === target) || (edge.source === target && edge.target === source)).map((edge) => edge.id)
+	const samePathEdges = useStore((store) =>
+		store.edges
+			.filter(
+				(edge) =>
+					(edge.source === source && edge.target === target) ||
+					(edge.source === target && edge.target === source),
+			)
+			.map((edge) => edge.id),
 	);
 
 	if (!sourceNode || !targetNode) {
 		return null;
 	}
 
-	const edgePath = createSmartQuadraticPath(sourceNode, targetNode, id, samePathEdges);
+	const { path: edgePath, labelPoint } = createSmartQuadraticPath(
+		sourceNode,
+		targetNode,
+		id,
+		samePathEdges,
+	);
 
 	const hexToRGBA = (hex: string): string => {
 		// Remove the leading '#' if present
@@ -102,7 +120,7 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 						...style,
 						strokeWidth: parseInt(STYLES.edgeWidth) + 5,
 						stroke: hexToRGBA(color),
-                        fill: "transparent",
+						fill: "transparent",
 					}}
 				/>
 			)}
@@ -117,6 +135,40 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 					stroke: color,
 				}}
 			/>
+			{data?.label !== undefined && (
+				<EdgeLabelRenderer>
+					<div
+						style={{
+							position: "absolute",
+							transform: `translate(-50%, -50%) translate(${labelPoint.x}px,${labelPoint.y}px)`,
+							fontSize: 12,
+							// everything inside EdgeLabelRenderer has no pointer events by default
+							// if you have an interactive element, set pointer-events: all
+							pointerEvents: "all",
+						}}
+						className="nodrag nopan"
+					>
+						<div
+							style={{
+								height: "20px",
+								minWidth: "20px",
+								background: "#2e2e2ef0",
+								padding: "0px 1px",
+								// paddingTop: "4px",
+								border: `2px solid ${color}`,
+								cursor: "pointer",
+								borderRadius: "50%",
+								fontSize: "12px",
+								lineHeight: "19px",
+								textAlign: "center",
+								color: "#eeeeee",
+							}}
+						>
+							{data.label}
+						</div>
+					</div>
+				</EdgeLabelRenderer>
+			)}
 		</>
 	);
 };
