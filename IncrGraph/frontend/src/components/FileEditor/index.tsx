@@ -61,8 +61,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		useAxiosRequest<SaveFilePathRequest, null>();
 	// Request for running code
 	const {
-		error: codeRunError,
-		loading: codeRunLoading,
+		// error: codeRunError,
+		// loading: codeRunLoading,
 		sendRequest: runCodeSendRequest,
 	} = useAxiosRequest<CodeExecutionRequest, CodeExecutionResponse>();
 
@@ -71,7 +71,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const monacoRef = useRef<Monaco | null>(null);
 
 	// References to the console terminal
-    const fitAddons = useRef<(FitAddon | null)[]>([]);
+	const fitAddons = useRef<(FitAddon | null)[]>([]);
 
 	// Store variables
 	const {
@@ -88,9 +88,11 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		setNodes,
 		edges,
 		setEdges,
-        currentSessionId,
-        setCurrentSessionId,
-        setSessions
+		currentSessionId,
+		setCurrentSessionId,
+		setSessions,
+		codeRunData,
+		setCodeRunData,
 	} = useStore();
 
 	// STATE
@@ -101,9 +103,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const [filterContent, setFilterContent] = useState<boolean>(true); // Whether to filter the main IGC content
 	const [changeFromType, setChangeFromType] =
 		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE); // Checking what is responsible for the node update
-    const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
-    const [codeRunData, setCodeRunData] = useState<Map<string, CodeRunData>>(new Map<string, CodeRunData>()); // State to control terminal visibility
-
+	const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
 
 	// UTIL FUNCTIONS
 	// Check if the string is a valid JSON
@@ -502,8 +502,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (editorRef.current) {
 			editorRef.current.layout();
 		}
-        fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
-
+		fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
 	}, []);
 
 	// Resizing the editor
@@ -818,10 +817,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				<div
 					className={`file-editor ${isCollapsed ? "collapsed" : ""}`}
 				>
-					<div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
+					<div
+						className={`navbar-component ${
+							isCollapsed ? "collapsed" : ""
+						}`}
+					>
 						{!isCollapsed && (
 							<>
-								<span className="navbar-title">
+								<span className="navbar-component-title">
 									Code Editor
 								</span>
 								{selectedFile && (
@@ -848,11 +851,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 												runCode(
 													runCodeSendRequest,
 													selectedItem.item.data.code,
-                                                    selectedItem.id,
-                                                    setCodeRunData,
-                                                    currentSessionId,
-                                                    setCurrentSessionId,
-                                                    setSessions
+													selectedItem.id,
+													setCodeRunData,
+													currentSessionId,
+													setCurrentSessionId,
+													setSessions,
+                                                    setEdges,
 												)
 											}
 										>
@@ -900,9 +904,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							</div>
 						)}
 					</Box>
-					{showTerminal && selectedItem !== null && codeRunData.get(selectedItem.id) !== undefined && (
-						<TabbedCodeOutput codeRunData={codeRunData.get(selectedItem.id)} fitAddons={fitAddons} />
-                    )}
+					{showTerminal &&
+						selectedItem !== null &&
+						codeRunData.get(selectedItem.id) !== undefined && (
+							<TabbedCodeOutput
+								codeRunData={codeRunData.get(selectedItem.id)}
+								fitAddons={fitAddons}
+							/>
+						)}
 
 					<div
 						className="selection-pane-container"

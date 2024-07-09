@@ -1,11 +1,15 @@
 import { Node, Edge } from "reactflow";
-import { Item } from "@/types/frontend";
+import { CodeRunData, Item } from "@/types/frontend";
 import { create } from "zustand";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
 	prevContent: string;
 	prevSavedContent: string;
+}
+interface SessionData {
+    state: any;
+    executionPath: string[];
 }
 
 interface State {
@@ -39,11 +43,20 @@ interface State {
 	edges: Edge[];
 	setEdges: (updater: (prev: Edge[]) => Edge[]) => void;
 
-    currentSessionId: string | null;
-    setCurrentSessionId: (updater: (prev: string | null) => string | null) => void;
+	currentSessionId: string | null;
+	setCurrentSessionId: (
+		updater: (prev: string | null) => string | null,
+	) => void;
 
-    sessions: Map<string, any>;
-    setSessions: (updater: (prev: Map<string, any>) => Map<string, any>) => void;
+	sessions: Map<string, SessionData>;
+	setSessions: (
+		updater: (prev: Map<string, SessionData>) => Map<string, SessionData>,
+	) => void;
+
+	codeRunData: Map<string, CodeRunData>;
+	setCodeRunData: (
+		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
+	) => void;
 }
 
 const useStore = create<State>((set) => ({
@@ -119,13 +132,18 @@ const useStore = create<State>((set) => ({
 	setEdges: (updater: (prev: Edge[]) => Edge[]) =>
 		set((state) => ({ edges: updater(state.edges) })),
 
-    currentSessionId: null,
-    setCurrentSessionId: (updater: (prev: string | null) => string | null) =>
-        set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
+	currentSessionId: null,
+	setCurrentSessionId: (updater: (prev: string | null) => string | null) =>
+		set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
 
-    sessions: new Map<string, any>(),
-    setSessions: (updater: (prev: Map<string, any>) => Map<string, any>) =>
-        set((state) => ({ sessions: updater(state.sessions) })),
+	sessions: new Map<string, SessionData>(),
+	setSessions: (updater: (prev: Map<string, SessionData>) => Map<string, SessionData>) =>
+		set((state) => ({ sessions: updater(state.sessions) })),
+
+	codeRunData: new Map<string, CodeRunData>(),
+	setCodeRunData: (
+		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
+	) => set((state) => ({ codeRunData: updater(state.codeRunData) })),
 }));
 
 export default useStore;

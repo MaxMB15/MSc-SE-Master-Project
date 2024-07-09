@@ -76,10 +76,10 @@ const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
 					className="file-explorer"
 					style={{ width: isCollapsed ? 40 : width }}
 				>
-					<div className={`navbar ${isCollapsed ? "collapsed" : ""}`}>
+					<div className={`navbar-component ${isCollapsed ? "collapsed" : ""}`}>
 						{!isCollapsed && (
 							<>
-								<span className="directory-name">
+								<span className="navbar-component-title take-full-width">
 									{currentDir}
 								</span>
 								<button

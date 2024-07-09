@@ -41,8 +41,8 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 		store.edges
 			.filter(
 				(edge) =>
-					(edge.source === source && edge.target === target) ||
-					(edge.source === target && edge.target === source),
+					edge.hidden !== true && ((edge.source === source && edge.target === target) ||
+					(edge.source === target && edge.target === source)),
 			)
 			.map((edge) => edge.id),
 	);

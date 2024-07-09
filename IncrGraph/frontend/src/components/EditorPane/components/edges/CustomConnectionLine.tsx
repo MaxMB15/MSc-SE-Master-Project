@@ -62,9 +62,7 @@ export const getOffsetPath = (
 		controlY = (sourceY + targetY) / 2 + offset;
 	}
 
-	return `M ${sourceX} ${sourceY} Q ${controlX} ${
-		controlY
-	} ${targetX} ${targetY}`;
+	return `M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`;
 };
 
 export const getSmartOffsetPath = (
@@ -127,12 +125,11 @@ const createQuadraticPath = (
 		x: targetNode.positionAbsolute.x + targetNode.width / 2,
 		y: targetNode.positionAbsolute.y + targetNode.height / 2,
 	};
-    
+
 	const offsetPoint = calculatePerpendicularOffsetPoint(
 		sourceCenter,
 		targetCenter,
-		offset * 1
-			
+		offset * 1,
 	);
 	const labelPoint = calculatePerpendicularOffsetPoint(
 		sourceCenter,
@@ -159,10 +156,14 @@ const createQuadraticPath = (
 		targetCenter,
 	);
 
-    // Calculate the adjusted control point
+	// Calculate the adjusted control point
 	const adjustedControlPoint: Point = {
-		x: 2 * offsetPoint.x - 0.5 * (sourceIntersection.x + targetIntersection.x),
-		y: 2 * offsetPoint.y - 0.5 * (sourceIntersection.y + targetIntersection.y),
+		x:
+			2 * offsetPoint.x -
+			0.5 * (sourceIntersection.x + targetIntersection.x),
+		y:
+			2 * offsetPoint.y -
+			0.5 * (sourceIntersection.y + targetIntersection.y),
 	};
 
 	// If intersections were not found, fallback to original points

@@ -4,9 +4,11 @@ import ConfigurationDisplay from "../ConfigurationDisplay"; // Adjust the path a
 import CustomSelect from "../CustomSelect"; // Adjust the path as needed
 import "./ConfigurationOverview.css";
 import useStore from "@/store/store";
+import { addEdge, getEdgeId } from "../EditorPane/components/utils/utils";
 
 const ConfigurationOverview: React.FC = () => {
-	const { currentSessionId, setCurrentSessionId, sessions } = useStore();
+	const { setEdges, currentSessionId, setCurrentSessionId, sessions } =
+		useStore();
 	const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
 		null,
 	);
@@ -18,10 +20,44 @@ const ConfigurationOverview: React.FC = () => {
 	const handleSessionChange = (value: string) => {
 		setSelectedSessionId(value);
 		setCurrentSessionId(() => value);
+		// Remove all execution relationship edges
+		setEdges((prevEdges) =>
+			prevEdges.filter((edge) => edge.type !== "executionRelationship"),
+		);
+		// Restore the edges from the selected session
+		const sessionEdges = sessions.get(value)?.executionPath || [];
+		setEdges((prevEdges) =>
+			sessionEdges.reduce((acc, nodeId, index) => {
+				if (index === 0) {
+					return acc;
+				}
+				return addEdge(
+					{
+						source: sessionEdges[index - 1],
+						target: nodeId,
+						sourceHandle: null,
+						targetHandle: null,
+						type: "executionRelationship",
+						id: getEdgeId({
+							source: sessionEdges[index - 1],
+							target: nodeId,
+							sourceHandle: null,
+							targetHandle: null,
+						}),
+						data: { label: index },
+					},
+					acc,
+				);
+			}, prevEdges),
+		);
 	};
 
 	const handleStartNewSession = () => {
 		setCurrentSessionId(() => null); // Set current session to null initially
+		// Remove all execution relationship edges
+		setEdges((prevEdges) =>
+			prevEdges.filter((edge) => edge.type !== "executionRelationship"),
+		);
 	};
 
 	return (
@@ -54,7 +90,9 @@ const ConfigurationOverview: React.FC = () => {
 				/>
 			</Box>
 			{selectedSessionId && (
-				<ConfigurationDisplay data={sessions.get(selectedSessionId)} />
+				<ConfigurationDisplay
+					data={sessions.get(selectedSessionId)?.state}
+				/>
 			)}
 			{selectedSessionId === null && (
 				<Typography className="configuration-placeholder">

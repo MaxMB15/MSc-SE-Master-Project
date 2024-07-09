@@ -1,36 +1,12 @@
-:root {
-	/* WILL GET POPULATED FROM CSS INJECTION */
-}
-
 .editor-pane {
 	display: flex;
 	flex-direction: column;
 	background-color: #1e1e1e;
 	color: #ffffff;
 	overflow: hidden;
-	height: 100%; /* Ensure the editor pane takes full height */
-	flex-grow: 1; /* Allow the editor pane to grow */
-	min-width: 0; /* Prevent overflow */
-}
-
-.navbar {
-	display: flex;
-	align-items: center;
-	background-color: #252526;
-	padding: 8px;
-	border-bottom: 1px solid #333333;
-	position: sticky;
-	top: 0;
-	z-index: 10;
-}
-.navbar button {
-	padding-top: 0;
-	padding-bottom: 0;
-}
-
-.directory-name {
+	height: 100%;
 	flex-grow: 1;
-	font-weight: bold;
+	min-width: 0;
 }
 
 .editor-pane-content {

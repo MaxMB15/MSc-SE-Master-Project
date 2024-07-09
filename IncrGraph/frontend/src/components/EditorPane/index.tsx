@@ -17,12 +17,18 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import { addEdge, getEdgeId, edgeTypes, nodeTypes } from "./components/utils/utils";
+import {
+	addEdge,
+	getEdgeId,
+	edgeTypes,
+	nodeTypes,
+} from "./components/utils/utils";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
 import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
+import FilterPane from "../FilterPane";
 
 interface EditorPaneProps {}
 
@@ -69,7 +75,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		const newSelectedNodes: Node[] = nodes.filter((node) => node.selected);
 
 		setSelectedNodes(newSelectedNodes);
-
 	}, [nodes]);
 
 	// Add a new node
@@ -127,7 +132,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						...params,
 						type: "baseRelationship",
 						id: getEdgeId(params),
-                        selected: true,
+						selected: true,
 					},
 					eds.map((e) => {
 						e.selected = false;
@@ -185,20 +190,38 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 	return (
 		<div className="editor-pane">
-			<div className="navbar">
-				<span className="directory-name">Graph Editor</span>
-				<Button startIcon={<AddCircle />} onClick={handleAddNode}>
-					Add Node
-				</Button>
-				<IconButton color="inherit">
-					<PlayArrow />
-				</IconButton>
-				<IconButton color="inherit">
-					<BugReport />
-				</IconButton>
-				<IconButton color="inherit" onClick={handlePanToStartNode}>
-					<Home />
-				</IconButton>
+			<div className="navbar-component">
+				<span className="navbar-component-title take-full-width">Graph Editor</span>
+				{isIGCFile && (
+					<>
+						<Button
+							startIcon={<AddCircle />}
+							onClick={handleAddNode}
+						>
+							Add Node
+						</Button>
+						<FilterPane />
+						<button
+							className="icon-button"
+							title="Play Current Execution"
+						>
+							<PlayArrow />
+						</button>
+						<button
+							className="icon-button"
+							title="Debug Current Execution"
+						>
+							<BugReport />
+						</button>
+						<button
+							className="icon-button"
+							title="Pan Back to Start"
+							onClick={handlePanToStartNode}
+						>
+							<Home />
+						</button>
+					</>
+				)}
 			</div>
 			<Box
 				sx={{

@@ -10,11 +10,15 @@
                 "x": 0,
                 "y": -100
             },
+            "positionAbsolute": {
+                "x": 0,
+                "y": -100
+            },
             "style": {
                 "cursor": "grab"
             },
-            "width": 23,
-            "height": 23,
+            "width": 20,
+            "height": 20,
             "selected": false,
             "draggable": false
         },
@@ -26,15 +30,15 @@
                 "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)"
             },
             "position": {
-                "x": 0,
-                "y": 0
+                "x": -38.15624781133954,
+                "y": 57.08234573908453
             },
             "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
-                "x": 0,
-                "y": 0
+                "x": -38.15624781133954,
+                "y": 57.08234573908453
             },
             "dragging": false
         },
@@ -57,16 +61,36 @@
                 "y": 500
             },
             "dragging": false
+        },
+        {
+            "id": "1720551680833",
+            "type": "baseNode",
+            "data": {
+                "label": "Node 3",
+                "code": "x = 6"
+            },
+            "position": {
+                "x": 247.1828299192208,
+                "y": 41.24328865744002
+            },
+            "selected": true,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": 247.1828299192208,
+                "y": 41.24328865744002
+            },
+            "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "1720366866914",
+            "source": "start",
             "sourceHandle": null,
-            "target": "1720374720502",
+            "target": "1720366866914",
             "targetHandle": null,
             "type": "baseRelationship",
-            "id": "1720481075501-1720366866914>1720374720502",
+            "id": "1720551366889-start>1720366866914",
             "selected": false
         }
     ]

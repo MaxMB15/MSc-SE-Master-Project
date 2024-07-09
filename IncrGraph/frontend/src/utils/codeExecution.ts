@@ -1,7 +1,11 @@
 import { CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
 import { UseAxiosRequestOptions } from "./requests";
 import { CodeRunData } from "@/types/frontend";
-import { set } from "lodash";
+import { Edge } from "reactflow";
+import {
+	addEdge,
+	getEdgeId,
+} from "@/components/EditorPane/components/utils/utils";
 
 // export const runCodeAnalysis = (
 // 	runCodeSendRequest: (options: UseAxiosRequestOptions<CodeExecutionRequest>) => Promise<CodeExecutionResponse>,
@@ -23,9 +27,9 @@ export const runCode = (
 	) => Promise<CodeExecutionResponse>,
 	code: string,
 	nodeId: string,
-	setRunCodeData: React.Dispatch<
-		React.SetStateAction<Map<string, CodeRunData>>
-	>,
+	setRunCodeData: (
+		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
+	) => void,
 	currentSessionId: string | null,
 	setCurrentSessionId: (
 		updater: (prev: string | null) => string | null,
@@ -33,6 +37,7 @@ export const runCode = (
 	setSessions: (
 		updater: (prev: Map<string, any>) => Map<string, any>,
 	) => void,
+	setEdges: (updater: (prev: Edge[]) => Edge[]) => void,
 ): void => {
 	runCodeSendRequest({
 		method: "POST",
@@ -55,9 +60,45 @@ export const runCode = (
 				},
 			}),
 		);
-		setSessions((prevSessions) =>
-			prevSessions.set(response.sessionId, response.state),
-		);
+		setSessions((prevSessions) => {
+			const prevSession:
+				| { state: any; executionPath: string[] }
+				| undefined = prevSessions.get(response.sessionId);
+			let executionPath: string[] | undefined =
+				prevSession?.executionPath;
+			// Add the node to the execution path
+			if (executionPath === undefined) {
+				executionPath = ["start", nodeId];
+			} else {
+				executionPath.push(nodeId);
+			}
+			// Create a new edge for the execution path
+			setEdges((eds) => {
+				const params = {
+					source: executionPath[executionPath.length - 2],
+					target: nodeId,
+					sourceHandle: null,
+					targetHandle: null,
+				};
+				return addEdge(
+					{
+						...params,
+						type: "executionRelationship",
+						id: getEdgeId(params),
+						data: { label: executionPath.length - 1 },
+					},
+					eds.map((e) => {
+						e.selected = false;
+						return e;
+					}),
+				);
+			});
+
+			return prevSessions.set(response.sessionId, {
+				state: response.state,
+				executionPath: executionPath,
+			});
+		});
 		setCurrentSessionId(() => response.sessionId);
 	});
 };

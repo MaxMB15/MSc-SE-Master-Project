@@ -38,25 +38,6 @@ body {
 	position: relative; /* Ensure relative positioning for the resize handle */
 }
 
-.file-explorer .navbar {
-	display: flex;
-	align-items: center;
-	background-color: #252526;
-	padding: 8px;
-	border-bottom: 1px solid #333333;
-	position: sticky;
-	top: 0;
-	z-index: 10;
-}
-
-.file-explorer .navbar.collapsed {
-	justify-content: center;
-}
-
-.file-explorer .directory-name {
-	flex-grow: 1;
-	font-weight: bold;
-}
 
 .file-explorer .icon-button {
 	background: none;
@@ -68,7 +49,7 @@ body {
 	align-items: center;
 }
 
-.file-explorer .icon-button:hover {
+.icon-button:hover {
 	color: #007acc;
 }
 

@@ -16,26 +16,6 @@
 	flex: 0 0 auto; /* Prevent the file explorer from growing */
 }
 
-.navbar {
-	display: flex;
-	align-items: center;
-	background-color: #252526;
-	padding: 8px;
-	border-bottom: 1px solid #333333;
-	position: sticky;
-	top: 0;
-	z-index: 10;
-}
-
-.navbar.collapsed {
-	justify-content: center;
-}
-
-.directory-name {
-	flex-grow: 1;
-	font-weight: bold;
-}
-
 .icon-button {
 	background: none;
 	border: none;

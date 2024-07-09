@@ -1,8 +1,19 @@
-import { Handle, NodeProps, Position, ReactFlowState, useStore as reactflowStore } from "reactflow";
+import React, { useState } from "react";
+import {
+	Handle,
+	NodeProps,
+	Position,
+	ReactFlowState,
+	useStore as reactflowStore,
+} from "reactflow";
 import { STYLES } from "@/styles/constants";
 import useStore from "@/store/store";
+import ContextMenu from "@components/ContextMenu"; // Make sure to adjust the import path
 
 import "./BaseNode.css";
+import { CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
+import { useAxiosRequest } from "@/utils/requests";
+import { runCode } from "@/utils/codeExecution";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
@@ -12,37 +23,96 @@ interface BaseNodeProps extends NodeProps {
 	data: {
 		label: string;
 		backgroundColor?: string;
+		code?: string;
 	};
 }
-const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
-    const {
-		setNodes,
-	} = useStore();
-    const addSelectedNodes = reactflowStore((rfstate) => rfstate.addSelectedNodes);
 
-    // // Override single click and unselect all nodes
-	// const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
-	// 	event.stopPropagation(); // Prevent the default single click behavior
-    //     setNodes((nodes) => {
-    //         let newNodes = nodes.map((node) => {
-    //             node.selected = false;
-    //             return node;
-    //         });
-    //         return [...newNodes];
-    //     });
-	// };
-    // // Double click is highlight
-	// const onNodeDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
-	// 	event.stopPropagation();
-	// 	addSelectedNodes([id]); // Manually set the node as selected on double-click
-	// };
+const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
+	const {
+		setNodes,
+		setEdges,
+		currentSessionId,
+		setCurrentSessionId,
+		setSessions,
+		setCodeRunData,
+	} = useStore();
+	const { sendRequest: runCodeSendRequest } = useAxiosRequest<
+		CodeExecutionRequest,
+		CodeExecutionResponse
+	>();
+
+	const [contextMenu, setContextMenu] = useState<{
+		mouseX: number;
+		mouseY: number;
+	} | null>(null);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+	const handleContextMenu = (event: React.MouseEvent) => {
+		event.preventDefault();
+		setContextMenu({
+			mouseX: event.clientX - 2,
+			mouseY: event.clientY - 4,
+		});
+		setAnchorEl(event.currentTarget as HTMLElement);
+	};
+
+	const handleClose = () => {
+		setContextMenu(null);
+		setAnchorEl(null);
+	};
+
+	const handleRun = () => {
+		console.log("Run action triggered for node:", id);
+		if (data.code !== undefined) {
+			runCode(
+				runCodeSendRequest,
+				data.code,
+				id,
+				setCodeRunData,
+				currentSessionId,
+				setCurrentSessionId,
+				setSessions,
+				setEdges,
+			);
+		}
+		// Select the node
+		setNodes((prevNodes) => {
+			const newNodes = prevNodes.map((node) => {
+				if (node.id === id) {
+					node.selected = true;
+				} else {
+					node.selected = false;
+				}
+				return node;
+			});
+			return newNodes;
+		});
+		// Deselect all edges
+		setEdges((prevEdges) => {
+			const newEdges = prevEdges.map((edge) => {
+				edge.selected = false;
+				return edge;
+			});
+			return newEdges;
+		});
+		handleClose();
+	};
+
+	const handleDelete = () => {
+		console.log("Delete action triggered for node:", id);
+		// Delete Node
+		setNodes((prevNodes) => {
+			const newNodes = prevNodes.filter((node) => node.id !== id);
+			return newNodes;
+		});
+		handleClose();
+	};
 
 	const connectionNodeId = reactflowStore(connectionNodeIdSelector);
 	const defaultData = {
 		backgroundColor: STYLES.defaultNodeColor,
 	};
 
-	// Merge provided props with default values
 	data = { ...defaultData, ...data };
 
 	const isConnecting = !!connectionNodeId;
@@ -50,7 +120,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const label = isTarget ? "Drop here" : "Drag to connect";
 
 	return (
-		<div className="customNode">
+		<div className="customNode" onContextMenu={handleContextMenu}>
 			<div
 				className="customNodeBody"
 				style={{
@@ -60,11 +130,8 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 							? STYLES.nodeDropColor
 							: STYLES.nodePickColor
 						: data.backgroundColor,
-					// border: "2px solid transparent",
 				}}
 			>
-				{/* If handles are conditionally rendered and not present initially, you need to update the node internals https://reactflow.dev/docs/api/hooks/use-update-node-internals/ */}
-				{/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
 				{!isConnecting && (
 					<Handle
 						className="customHandle"
@@ -84,7 +151,16 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				{!isConnecting && data.label}
 				{!isConnecting && <div className="base"></div>}
 			</div>
+
+			<ContextMenu
+				anchorEl={anchorEl}
+				handleClose={handleClose}
+				position={contextMenu}
+				onRun={handleRun}
+				onDelete={handleDelete}
+			/>
 		</div>
 	);
 };
+
 export default BaseNode;

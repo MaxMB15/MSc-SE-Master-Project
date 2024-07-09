@@ -1,0 +1,52 @@
+.filter-pane-icon-button {
+	color: inherit; /* This ensures the icon button inherits the theme color */
+}
+
+.filter-pane-popper {
+	z-index: 1300;
+}
+
+.filter-pane-paper {
+	background-color: #252526 !important;
+	color: #ffffff !important;
+	margin-top: 8px;
+	box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+}
+
+.filter-pane-menu-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.filter-pane-color {
+	width: 12px;
+	height: 12px;
+	margin-right: 8px;
+}
+
+.filter-pane-base .filter-pane-color {
+	background-color: var(--baseRelationshipColor);
+}
+
+.filter-pane-inheritance .filter-pane-color {
+	background-color: var(--inheritanceRelationshipColor);
+}
+
+.filter-pane-overrides .filter-pane-color {
+	background-color: var(--overridesRelationshipColor);
+}
+
+.filter-pane-method .filter-pane-color {
+	background-color: var(--methodRelationshipColor);
+}
+
+.filter-pane-execution .filter-pane-color {
+	background-color: var(--executionRelationshipColor);
+}
+
+.filter-pane-dependency .filter-pane-color {
+	background-color: var(--dependencyRelationshipColor);
+}
