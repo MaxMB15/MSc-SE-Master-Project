@@ -26,7 +26,7 @@ export interface Node {
 	label: string;
 	children?: Node[];
 	versions: NodeVersion[];
-	currentVersion: string; // ID of the currently selected version
+	currentVersion: string; // Id of the currently selected version
 }
 
 // Interface for a node version

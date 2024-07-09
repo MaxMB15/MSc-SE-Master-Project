@@ -14,5 +14,5 @@
 		"resolveJsonModule": true,
 		"baseUrl": "."
 	},
-	"include": ["src", "../types"]
+	"include": ["src"]
 }

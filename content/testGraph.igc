@@ -19,26 +19,6 @@
             "draggable": false
         },
         {
-            "id": "1",
-            "type": "classNode",
-            "data": {
-                "label": "Animal",
-                "code": "class Animal:\n    \"\"\"\n    Animal Class\n    \"\"\"\n"
-            },
-            "position": {
-                "x": -255,
-                "y": -76
-            },
-            "width": 154,
-            "height": 84,
-            "selected": false,
-            "positionAbsolute": {
-                "x": -255,
-                "y": -76
-            },
-            "dragging": false
-        },
-        {
             "id": "1720366866914",
             "type": "codeFragmentNode",
             "data": {
@@ -46,12 +26,17 @@
                 "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)"
             },
             "position": {
-                "x": 219.83937149147891,
-                "y": -17.053406375857833
+                "x": 0,
+                "y": 0
             },
             "selected": false,
             "width": 154,
-            "height": 84
+            "height": 84,
+            "positionAbsolute": {
+                "x": 0,
+                "y": 0
+            },
+            "dragging": false
         },
         {
             "id": "1720374720502",
@@ -61,27 +46,27 @@
                 "code": "c = c * 2\n\nprint(c)"
             },
             "position": {
-                "x": -26.48413252760878,
-                "y": 81.44874678249545
+                "x": 0,
+                "y": 500
             },
-            "selected": true,
+            "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
-                "x": -26.48413252760878,
-                "y": 81.44874678249545
+                "x": 0,
+                "y": 500
             },
             "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "start",
+            "source": "1720366866914",
             "sourceHandle": null,
-            "target": "1",
+            "target": "1720374720502",
             "targetHandle": null,
             "type": "baseRelationship",
-            "id": "0-start>1",
+            "id": "1720481075501-1720366866914>1720374720502",
             "selected": false
         }
     ]

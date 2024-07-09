@@ -2,7 +2,7 @@ import { ComponentType, useCallback } from "react";
 import { useStore, getStraightPath, EdgeProps, MarkerType } from "reactflow";
 import { STYLES } from "@/styles/constants";
 
-import { getEdgeParams } from "../../utils/utils";
+import { createSmartQuadraticPath } from "../CustomConnectionLine";
 
 interface BaseRelationProps extends EdgeProps {
 	id: string;
@@ -11,6 +11,7 @@ interface BaseRelationProps extends EdgeProps {
 	style?: React.CSSProperties;
 	data?: {
 		backgroundColor?: string;
+        offset?: number;
 	};
 	selected?: boolean;
 }
@@ -29,19 +30,15 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	const targetNode = useStore(
 		useCallback((store) => store.nodeInternals.get(target), [target]),
 	);
+    const samePathEdges = useStore(
+		(store) => store.edges.filter((edge) => (edge.source === source && edge.target === target) || (edge.source === target && edge.target === source)).map((edge) => edge.id)
+	);
 
 	if (!sourceNode || !targetNode) {
 		return null;
 	}
 
-	const { sx, sy, tx, ty } = getEdgeParams(sourceNode, targetNode);
-
-	const [edgePath] = getStraightPath({
-		sourceX: sx,
-		sourceY: sy,
-		targetX: tx,
-		targetY: ty,
-	});
+	const edgePath = createSmartQuadraticPath(sourceNode, targetNode, id, samePathEdges);
 
 	const hexToRGBA = (hex: string): string => {
 		// Remove the leading '#' if present
@@ -86,7 +83,11 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 					refY="0"
 				>
 					<polyline
-						style={{ stroke: color, fill: color, strokeWidth: STYLES.edgeWidth }}
+						style={{
+							stroke: color,
+							fill: color,
+							strokeWidth: STYLES.edgeWidth,
+						}}
 						strokeLinecap="round"
 						strokeLinejoin="round"
 						points="-5,-4 0,0 -5,4 -5,-4"
@@ -95,12 +96,13 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 			</defs>
 			{selected && (
 				<path
-					id={id}
+					id={`${id}-selected`}
 					d={edgePath}
 					style={{
 						...style,
 						strokeWidth: parseInt(STYLES.edgeWidth) + 5,
 						stroke: hexToRGBA(color),
+                        fill: "transparent",
 					}}
 				/>
 			)}

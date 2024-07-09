@@ -22,7 +22,7 @@ export const runCode = (
 		options: UseAxiosRequestOptions<CodeExecutionRequest>,
 	) => Promise<CodeExecutionResponse>,
 	code: string,
-	nodeID: string,
+	nodeId: string,
 	setRunCodeData: React.Dispatch<
 		React.SetStateAction<Map<string, CodeRunData>>
 	>,
@@ -45,7 +45,7 @@ export const runCode = (
 		useJWT: false,
 	}).then((response: CodeExecutionResponse) => {
 		setRunCodeData((prevData) =>
-			prevData.set(nodeID, {
+			prevData.set(nodeId, {
 				stdout: response.output,
 				stderr: response.error,
 				configuration: response.state,

@@ -205,7 +205,7 @@ const Navbar: React.FC = () => {
 									</ListItem>
 									<ListItem>
 										<ListItemText
-											primary="Session ID"
+											primary="Session Id"
 											secondary="abc123"
 										/>
 									</ListItem>

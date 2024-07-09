@@ -3,7 +3,6 @@ import { Box, Button, IconButton } from "@mui/material";
 import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
 	ReactFlowProvider,
-	addEdge,
 	Background,
 	Controls,
 	MiniMap,
@@ -18,7 +17,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import { edgeTypes, nodeTypes } from "./components/utils/utils";
+import { addEdge, getEdgeId, edgeTypes, nodeTypes } from "./components/utils/utils";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
@@ -127,7 +126,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 					{
 						...params,
 						type: "baseRelationship",
-						id: `${edges.length}-${params.source}>${params.target}`,
+						id: getEdgeId(params),
                         selected: true,
 					},
 					eds.map((e) => {
