@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
 	ReactFlowProvider,
@@ -17,7 +17,13 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import { addEdge, getEdgeId, getNodeId } from "./components/utils/utils";
+import {
+	addEdge,
+	getEdgeId,
+	getNodeId,
+	updateExecutionPath,
+	updateExecutionPathEdge,
+} from "./components/utils/utils";
 import { edgeTypes, nodeTypes } from "./components/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
@@ -39,6 +45,9 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setNodes,
 		edges,
 		setEdges,
+		sessions,
+		setSessions,
+		currentSessionId,
 	} = useStore();
 
 	// STATE
@@ -63,6 +72,27 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 	// Node Functions
 	const onNodesChange = (changes: NodeChange[]) => {
+        // Get current session data
+        if (currentSessionId !== null) {
+            const session = sessions.get(currentSessionId);
+            if (session !== undefined) {
+                let vSession = session;
+                let currentExecutionPath: string[] = vSession.executionPath;
+                // Go through each change and update eds accordingly
+                for (let change of changes) {
+                    if (change.type === "remove") {
+                        vSession.executionPath = vSession.executionPath.filter(node => node !== change.id);
+                    }
+                }
+                if (vSession.executionPath !== currentExecutionPath) {
+                    // Shallow is okay
+                    setSessions((prevSessions) => {
+                        return prevSessions.set(currentSessionId, vSession);
+                    });
+                    setEdges((prevEdges) => updateExecutionPath(prevEdges, vSession));
+                }
+            }
+        }
 		setNodes((nds) => applyNodeChanges(changes, nds));
 	};
 	// If a node is changed, check to see if there are any selection changes
@@ -77,16 +107,16 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const handleAddNode = () => {
 		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
-            const newNode: Node = {
-                id: getNodeId(nodes),
-                type: "baseNode",
-                data: { label: `Node ${nodes.length}`, code: "" },
-                position: {
-                    x: Math.random() * 500 - 250,
-                    y: Math.random() * 500 - 250,
-                },
-                selected: true,
-            };
+			const newNode: Node = {
+				id: getNodeId(nodes),
+				type: "baseNode",
+				data: { label: `Node ${nodes.length}`, code: "" },
+				position: {
+					x: Math.random() * 500 - 250,
+					y: Math.random() * 500 - 250,
+				},
+				selected: true,
+			};
 			let newNodes = nodes.map((node) => {
 				node.selected = false;
 				return node;
@@ -105,6 +135,32 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// Edge Functions
 	const onEdgesChange = (changes: EdgeChange[]) => {
 		setEdges((eds) => {
+			// Get current session data
+			if (currentSessionId !== null) {
+				const session = sessions.get(currentSessionId);
+				if (session !== undefined) {
+					let vSession = session;
+					let currentExecutionPath: string[] = vSession.executionPath;
+					// Go through each change and update eds accordingly
+					for (let change of changes) {
+						if (change.type === "remove") {
+							const uepData = updateExecutionPathEdge(
+								change.id,
+								eds,
+								vSession,
+							);
+							eds = uepData.edges;
+							vSession = uepData.session;
+						}
+					}
+					if (vSession.executionPath !== currentExecutionPath) {
+						// Shallow is okay
+						setSessions((prevSessions) => {
+							return prevSessions.set(currentSessionId, vSession);
+						});
+					}
+				}
+			}
 			return applyEdgeChanges(changes, eds);
 		});
 	};

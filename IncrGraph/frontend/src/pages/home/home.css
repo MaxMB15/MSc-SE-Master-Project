@@ -17,8 +17,8 @@ body {
 	height: calc(100vh - 64px); /* Adjust based on your navbar height */
 	overflow: hidden;
 	width: 100%;
-    gap: 5px; /* Add a gap between the components */
-    margin-top: 5px;
+	gap: 5px; /* Add a gap between the components */
+	margin-top: 5px;
 }
 
 .file-explorer-container {
@@ -38,8 +38,17 @@ body {
 	position: relative; /* Ensure relative positioning for the resize handle */
 }
 
-
 .file-explorer .icon-button {
+	background: none;
+	border: none;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 0 8px;
+	display: flex;
+	align-items: center;
+}
+
+.icon-button {
 	background: none;
 	border: none;
 	color: #ffffff;
@@ -51,6 +60,11 @@ body {
 
 .icon-button:hover {
 	color: #007acc;
+}
+.icon-button:disabled {
+	background-color: #555555; /* Disabled background color */
+	color: #aaaaaa; /* Disabled text color */
+	cursor: not-allowed;
 }
 
 .file-explorer .loading {

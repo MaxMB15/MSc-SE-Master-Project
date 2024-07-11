@@ -5,7 +5,7 @@ import {
 	Connection,
     Node,
 } from "reactflow";
-import { Point, Rectangle } from "@/types/frontend";
+import { Point, Rectangle, SessionData } from "@/types/frontend";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -277,6 +277,7 @@ export const getNodeIntersectionWithCircle = (
 	return intersections.slice(0, 2);
 };
 
+// Create a new Node id
 export const getNodeId = (nodes: Node[]): string => {
     // Create an unused edge id
     let i = 0
@@ -288,6 +289,7 @@ export const getNodeId = (nodes: Node[]): string => {
     return id;
 }
 
+// Create a new Edge id
 export const getEdgeId = (source: string, target: string, edges: Edge[]): string => {
     // Create an unused edge id
     let i = 0;
@@ -319,3 +321,62 @@ export const addEdge = (
 
 	return edges.concat(edge);
 };
+
+// Logic for whenever an edge gets removed
+export const updateExecutionPathEdge = (id: string, edges: Edge[], session: SessionData): {edges: Edge[], session: SessionData } => {
+
+    // Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
+    // If an execution relationship is removed, update the session data
+    const edgeObject = edges.find(edge => edge.id === id);
+    if(edgeObject?.type !== "executionRelationship" || edgeObject.data === undefined || edgeObject.data.label === undefined) {
+        return {edges, session};
+    }
+    edgeObject.data.will_delete = true;
+    const label: string = edgeObject.data.label;
+    session.executionPath.splice(parseInt(label), 1);
+
+    // Remove all execution relationship edges
+    let filteredEdges = edges.filter(
+        (edge) => edge.type !== "executionRelationship" || edge.data.will_delete === true,
+    );
+
+    // Add execution relationship edges
+    for (let i = 0; i < session.executionPath.length - 1; i++) {
+        const source = session.executionPath[i];
+        const target = session.executionPath[i + 1];
+        filteredEdges.push({
+            id: getEdgeId(source, target, filteredEdges),
+            source,
+            target,
+            type: "executionRelationship",
+            data: { label: `${i+1}` },
+        });
+    }
+    
+    return {edges: filteredEdges, session};
+
+}
+
+// Refresh the execution path edges
+export const updateExecutionPath = (edges: Edge[], session: SessionData): Edge[] => {
+    // Remove all execution relationship edges
+    let filteredEdges = edges.filter(
+        (edge) => edge.type !== "executionRelationship",
+    );
+
+    // Add execution relationship edges
+    for (let i = 0; i < session.executionPath.length - 1; i++) {
+        const source = session.executionPath[i];
+        const target = session.executionPath[i + 1];
+        filteredEdges.push({
+            id: getEdgeId(source, target, filteredEdges),
+            source,
+            target,
+            type: "executionRelationship",
+            data: { label: `${i+1}` },
+        });
+    }
+    
+    return filteredEdges;
+
+}

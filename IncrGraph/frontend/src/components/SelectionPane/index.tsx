@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import "./SelectionPane.css";
 import useStore from "@/store/store";
+import { applyEdgeChanges } from "reactflow";
+import {
+	updateExecutionPath,
+	updateExecutionPathEdge,
+} from "../EditorPane/components/utils/utils";
+import _ from "lodash";
 
 interface SelectionPaneProps {}
 
@@ -14,6 +20,9 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		setSelectedItem,
 		setNodes,
 		setEdges,
+		currentSessionId,
+		sessions,
+		setSessions,
 	} = useStore();
 
 	// STATE
@@ -95,13 +104,118 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
 			if (selectedItem.type === "Node") {
+				// setEdges((prevEdges) => {
+				//     // Get current session data
+				// 	if (currentSessionId !== null) {
+				// 		const session = sessions.get(currentSessionId);
+				// 		if (session !== undefined) {
+				// 			let vSession = session;
+				// 			let currentExecutionPath: string[] =
+				// 				vSession.executionPath;
+
+				// 			const uepData = updateExecutionPathNode(
+				// 				selectedItem.id,
+				// 				prevEdges,
+				// 				vSession,
+				// 			);
+				// 			prevEdges = uepData.edges;
+				// 			vSession = uepData.session;
+				// 			if (
+				// 				vSession.executionPath !== currentExecutionPath
+				// 			) {
+				// 				// Shallow is okay
+				// 				setSessions((prevSessions) => {
+				// 					return prevSessions.set(
+				// 						currentSessionId,
+				// 						vSession,
+				// 					);
+				// 				});
+				// 			}
+				// 		}
+				// 	}
+				//     return prevEdges;
+				// });
+				// Get current session data
+				if (currentSessionId !== null) {
+					const session = sessions.get(currentSessionId);
+					if (session !== undefined) {
+						setEdges((prevEdges) => {
+							let vSession = _.cloneDeep(session);
+							let currentExecutionPath: string[] = _.cloneDeep(
+								vSession.executionPath,
+							);
+							vSession.executionPath;
+							let edgesConnectedToNode = prevEdges.filter(
+								(edge) =>
+									edge.source === selectedItem.id ||
+									edge.target === selectedItem.id,
+							);
+
+							for (let edge of edgesConnectedToNode.reverse()) {
+								let edgeId = edge.id;
+								let changes = updateExecutionPathEdge(
+									edgeId,
+									prevEdges,
+									vSession,
+								);
+								prevEdges = changes.edges;
+								vSession = changes.session;
+							}
+							if (
+								vSession.executionPath !== currentExecutionPath
+							) {
+								// Shallow is okay
+								setSessions((prevSessions) => {
+									return prevSessions.set(
+										currentSessionId,
+										vSession,
+									);
+								});
+							}
+
+							return updateExecutionPath(prevEdges, vSession);
+						});
+					}
+				}
 				setNodes((prevNodes) =>
 					prevNodes.filter((node) => node.id !== selectedItem.id),
 				);
 			} else if (selectedItem.type === "Edge") {
-				setEdges((prevEdges) =>
-					prevEdges.filter((edge) => edge.id !== selectedItem.id),
-				);
+				setEdges((prevEdges) => {
+					// Get current session data
+					if (currentSessionId !== null) {
+						const session = sessions.get(currentSessionId);
+						if (session !== undefined) {
+							let vSession = session;
+							let currentExecutionPath: string[] = _.cloneDeep(
+								vSession.executionPath,
+							);
+
+							const uepData = updateExecutionPathEdge(
+								selectedItem.id,
+								prevEdges,
+								vSession,
+							);
+							prevEdges = uepData.edges;
+							vSession = uepData.session;
+							if (
+								vSession.executionPath !== currentExecutionPath
+							) {
+								// Shallow is okay
+								setSessions((prevSessions) => {
+									return prevSessions.set(
+										currentSessionId,
+										vSession,
+									);
+								});
+							}
+						}
+					}
+					return applyEdgeChanges(
+						[{ type: "remove", id: selectedItem.id }],
+						prevEdges,
+					);
+				});
 			}
 		}
 	};

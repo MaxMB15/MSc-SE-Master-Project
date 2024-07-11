@@ -4,16 +4,21 @@ import ConfigurationDisplay from "../ConfigurationDisplay";
 import CustomSelect from "../CustomSelect";
 import "./ConfigurationOverview.css";
 import useStore from "@/store/store";
-import { Edge } from "reactflow";
 import { getEdgeId } from "../EditorPane/components/utils/utils";
 
-const ConfigurationOverview: React.FC = () => {
+interface ConfigurationOverviewProps {
+	openTextDialog: (defaultName: string) => Promise<string | null>;
+}
+const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
+	openTextDialog,
+}) => {
 	const {
 		isIGCFile,
 		setEdges,
 		currentSessionId,
 		setCurrentSessionId,
 		sessions,
+		setSessions,
 	} = useStore();
 	const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
 		null,
@@ -35,30 +40,54 @@ const ConfigurationOverview: React.FC = () => {
 
 			// Get session data if it exists
 			const session = sessions.get(value);
-            let executionEdges: Edge[] = [];
 			if (session) {
 				// Add execution relationship edges
 				for (let i = 0; i < session.executionPath.length - 1; i++) {
 					const source = session.executionPath[i];
 					const target = session.executionPath[i + 1];
-                    executionEdges.push({
-                        id: getEdgeId(source, target, executionEdges),
-                        source,
-                        target,
-                        type: "executionRelationship",
-                        data: { label: `${i+1}` },
-                    });
+					filteredEdges.push({
+						id: getEdgeId(source, target, filteredEdges),
+						source,
+						target,
+						type: "executionRelationship",
+						data: { label: `${i + 1}` },
+					});
 				}
 			}
-			return [...filteredEdges, ...executionEdges];
+			return filteredEdges;
 		});
 	};
 
-	const handleStartNewSession = () => {
-		setCurrentSessionId(() => null);
-		setEdges((prevEdges) =>
-			prevEdges.filter((edge) => edge.type !== "executionRelationship"),
-		);
+	const handleStartNewSession = async () => {
+		const defaultSessionName = `IGC_${new Intl.DateTimeFormat("en-GB", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: false,
+		})
+			.format(new Date())
+			.replace(/,/, "")
+			.replace(/\//g, "-")
+			.replace(" ", "_")}`;
+
+		const sessionName = await openTextDialog(defaultSessionName);
+		if (sessionName) {
+			setSessions((prevSessions) =>
+				new Map(prevSessions).set(sessionName, {
+					state: {},
+					executionPath: ["start"],
+				}),
+			);
+			setCurrentSessionId(() => sessionName);
+			setEdges((prevEdges) =>
+				prevEdges.filter(
+					(edge) => edge.type !== "executionRelationship",
+				),
+			);
+		}
 	};
 
 	return (
@@ -71,11 +100,12 @@ const ConfigurationOverview: React.FC = () => {
 					variant="contained"
 					onClick={handleStartNewSession}
 					className="configuration-overview-button"
-					disabled={selectedSessionId === null}
+					// disabled={selectedSessionId === null}
 				>
-					{selectedSessionId === null
+					{/* {selectedSessionId === null
 						? "New Session Active"
-						: "Start New Session"}
+						: "Start New Session"} */}
+					Start New Session
 				</Button>
 				<CustomSelect
 					id="session-select"

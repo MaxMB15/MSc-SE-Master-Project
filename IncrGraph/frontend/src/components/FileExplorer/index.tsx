@@ -14,9 +14,11 @@ import "./FileExplorer.css";
 import useStore from "@/store/store";
 import ConfigurationOverview from "../ConfigurationOverview";
 
-interface FileExplorerProps {}
+interface FileExplorerProps {
+	openTextDialog: (defaultName: string) => Promise<string | null>;
+}
 
-const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
+const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 	// VARIABLES
 	// Request to get the file tree
 	const { response, error, loading, sendRequest } = useAxiosRequest<
@@ -76,7 +78,11 @@ const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
 					className="file-explorer"
 					style={{ width: isCollapsed ? 40 : width }}
 				>
-					<div className={`navbar-component ${isCollapsed ? "collapsed" : ""}`}>
+					<div
+						className={`navbar-component ${
+							isCollapsed ? "collapsed" : ""
+						}`}
+					>
 						{!isCollapsed && (
 							<>
 								<span className="navbar-component-title take-full-width">
@@ -112,14 +118,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({}) => {
 						</button>
 					</div>
 					{!isCollapsed && (
-                        <>
-                            <FileExplorerContent
-                                response={response}
-                                error={error}
-                                loading={loading}
-                            />
-                            <ConfigurationOverview />
-                        </>
+						<>
+							<FileExplorerContent
+								response={response}
+								error={error}
+								loading={loading}
+							/>
+							<ConfigurationOverview openTextDialog={openTextDialog}/>
+						</>
 					)}
 				</div>
 			</ResizableBox>

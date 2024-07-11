@@ -846,7 +846,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									selectedItem.type === "Node" && (
 										<button
 											className="icon-button"
-											title="Toggle Visibility"
+											title="Run Code"
 											onClick={() =>
 												runCode(
 													runCodeSendRequest,
@@ -859,6 +859,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
                                                     setEdges,
 												)
 											}
+                                            disabled={selectedItem.item.data.code === "" || currentSessionId === null}
 										>
 											<PlayArrow />
 										</button>

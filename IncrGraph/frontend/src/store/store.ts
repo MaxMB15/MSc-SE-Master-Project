@@ -1,15 +1,11 @@
 import { Node, Edge } from "reactflow";
-import { CodeRunData, Item } from "@/types/frontend";
+import { CodeRunData, Item, SessionData } from "@/types/frontend";
 import { create } from "zustand";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
 	prevContent: string;
 	prevSavedContent: string;
-}
-interface SessionData {
-    state: any;
-    executionPath: string[];
 }
 
 interface State {

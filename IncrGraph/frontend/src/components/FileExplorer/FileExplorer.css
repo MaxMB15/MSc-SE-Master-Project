@@ -16,20 +16,6 @@
 	flex: 0 0 auto; /* Prevent the file explorer from growing */
 }
 
-.icon-button {
-	background: none;
-	border: none;
-	color: #ffffff;
-	cursor: pointer;
-	padding: 0 8px;
-	display: flex;
-	align-items: center;
-}
-
-.icon-button:hover {
-	color: #007acc;
-}
-
 .loading {
 	border: 1px solid #333333;
 	padding: 10px;
