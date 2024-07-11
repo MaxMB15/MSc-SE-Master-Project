@@ -8,8 +8,7 @@ import {
 } from "reactflow";
 import { STYLES } from "@/styles/constants";
 import useStore from "@/store/store";
-import ContextMenu from "@components/ContextMenu"; // Make sure to adjust the import path
-
+import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
 import { CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
 import { useAxiosRequest } from "@/utils/requests";
@@ -75,36 +74,29 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				setEdges,
 			);
 		}
+
 		// Select the node
 		setNodes((prevNodes) => {
-			const newNodes = prevNodes.map((node) => {
-				if (node.id === id) {
-					node.selected = true;
-				} else {
-					node.selected = false;
-				}
+			return prevNodes.map((node) => {
+				node.selected = node.id === id;
 				return node;
 			});
-			return newNodes;
 		});
+
 		// Deselect all edges
 		setEdges((prevEdges) => {
-			const newEdges = prevEdges.map((edge) => {
+			return prevEdges.map((edge) => {
 				edge.selected = false;
 				return edge;
 			});
-			return newEdges;
 		});
+
 		handleClose();
 	};
 
 	const handleDelete = () => {
 		console.log("Delete action triggered for node:", id);
-		// Delete Node
-		setNodes((prevNodes) => {
-			const newNodes = prevNodes.filter((node) => node.id !== id);
-			return newNodes;
-		});
+		setNodes((prevNodes) => prevNodes.filter((node) => node.id !== id));
 		handleClose();
 	};
 
@@ -139,19 +131,16 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 						type="source"
 					/>
 				)}
-
 				<Handle
 					className="customHandle"
 					position={Position.Left}
 					type="target"
 					isConnectableStart={false}
 				/>
-
 				{isConnecting && label}
 				{!isConnecting && data.label}
 				{!isConnecting && <div className="base"></div>}
 			</div>
-
 			<ContextMenu
 				anchorEl={anchorEl}
 				handleClose={handleClose}

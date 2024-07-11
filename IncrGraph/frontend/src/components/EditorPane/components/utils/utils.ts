@@ -227,7 +227,96 @@ export const getBezierNodeIntersection = (
 	if (intersections.length > 0) {
 		return intersections[0]; // Return the first valid intersection
 	}
-	return { x: 0, y: 0 };;
+	return { x: 0, y: 0 };
+};
+
+export const getNodeIntersectionWithCircle = (
+	node: Node,
+	circleCenter: Point,
+	r: number,
+): Point[] => {
+	if (
+		node.width == null ||
+		node.height == null ||
+		node.positionAbsolute == null ||
+		node.positionAbsolute.x == null ||
+		node.positionAbsolute.y == null
+	) {
+		console.error("Intersection Node is missing width, height, x or y");
+		return [];
+	}
+
+	const { width, height, positionAbsolute } = node;
+	const intersections: Point[] = [];
+
+	// Check each side of the node for intersection
+	const sides = [
+		{
+			x1: positionAbsolute.x,
+			y1: positionAbsolute.y,
+			x2: positionAbsolute.x + width,
+			y2: positionAbsolute.y,
+		}, // Top
+		{
+			x1: positionAbsolute.x,
+			y1: positionAbsolute.y + height,
+			x2: positionAbsolute.x + width,
+			y2: positionAbsolute.y + height,
+		}, // Bottom
+		{
+			x1: positionAbsolute.x,
+			y1: positionAbsolute.y,
+			x2: positionAbsolute.x,
+			y2: positionAbsolute.y + height,
+		}, // Left
+		{
+			x1: positionAbsolute.x + width,
+			y1: positionAbsolute.y,
+			x2: positionAbsolute.x + width,
+			y2: positionAbsolute.y + height,
+		}, // Right
+	];
+
+	sides.forEach((side) => {
+		const dx = side.x2 - side.x1;
+		const dy = side.y2 - side.y1;
+		const A = dx * dx + dy * dy;
+		const B =
+			2 *
+			(dx * (side.x1 - circleCenter.x) + dy * (side.y1 - circleCenter.y));
+		const C =
+			(side.x1 - circleCenter.x) * (side.x1 - circleCenter.x) +
+			(side.y1 - circleCenter.y) * (side.y1 - circleCenter.y) -
+			r * r;
+		const det = B * B - 4 * A * C;
+
+		if (det >= 0) {
+			const t1 = (-B + Math.sqrt(det)) / (2 * A);
+			const t2 = (-B - Math.sqrt(det)) / (2 * A);
+			const addIntersection = (t: number) => {
+				if (0 <= t && t <= 1) {
+					const ix = side.x1 + t * dx;
+					const iy = side.y1 + t * dy;
+					intersections.push({ x: ix, y: iy });
+				}
+			};
+			addIntersection(t1);
+			addIntersection(t2);
+		}
+	});
+	// Ensure exactly 2 intersection points by removing duplicates or points that are too close
+	intersections.sort((a, b) => a.x - b.x || a.y - b.y);
+	for (let i = 1; i < intersections.length; i++) {
+		const dist = Math.hypot(
+			intersections[i].x - intersections[i - 1].x,
+			intersections[i].y - intersections[i - 1].y,
+		);
+		if (dist < 1e-5) {
+			intersections.splice(i, 1);
+			i--;
+		}
+	}
+	return intersections.slice(0, 2);
 };
 
 export const getEdgeId = ({ source, target }: Edge | Connection): string =>

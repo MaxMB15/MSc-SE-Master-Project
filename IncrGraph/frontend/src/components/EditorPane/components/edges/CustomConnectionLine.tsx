@@ -5,6 +5,7 @@ import { Point } from "../utils/types";
 import {
 	calculatePerpendicularOffsetPoint,
 	getBezierNodeIntersection,
+	getNodeIntersectionWithCircle,
 } from "../utils/utils";
 
 export const getSimpleStraightPath = (
@@ -174,6 +175,57 @@ const createQuadraticPath = (
 	return {
 		path: `M ${finalSource.x},${finalSource.y} Q ${adjustedControlPoint.x},${adjustedControlPoint.y} ${finalTarget.x},${finalTarget.y}`,
 		labelPoint: labelPoint,
+	};
+};
+
+export const createSmartSelfLoopPath = (
+	node: Node,
+	edgeId: string,
+	idList: string[],
+	offsetGap = 20,
+	startOffset = 0,
+) => {
+	let radius = startOffset + offsetGap * idList.indexOf(edgeId);
+	return createSelfLoopPath(node, radius);
+};
+
+const createSelfLoopPath = (node: Node, r: number) => {
+	if (
+		node.width == null ||
+		node.height == null ||
+		node.positionAbsolute == null ||
+		node.positionAbsolute.x == null ||
+		node.positionAbsolute.y == null
+	) {
+		console.error("Intersection Node is missing width, height, x or y");
+		return { path: "", labelPoint: { x: 0, y: 0 } };
+	}
+	const centerX = node.positionAbsolute.x + node.width / 2;
+	const centerY = node.positionAbsolute.y + node.height / 2;
+
+	// Calculate circle center
+	const circleCenter = { x: centerX, y: centerY + r };
+
+	// Calculate label point
+	const labelPoint = { x: centerX, y: centerY + 2 * r };
+
+	// Calculate the intersection points of the node bounds and the circle
+	const intersections = getNodeIntersectionWithCircle(node, circleCenter, r);
+
+	if (intersections.length < 2) {
+		console.error("Not enough intersection points found");
+		return { path: "", labelPoint: { x: 0, y: 0 } };
+	}
+
+    // Calculate large-arc-flag and sweep-flag for arc
+    const largeArcFlag = 0;
+    const sweepFlag = 1;
+
+    // Create the arc path command
+    const path = `M ${intersections[0].x},${intersections[0].y} A ${r},${r} 0 1,0 ${intersections[1].x},${intersections[1].y}`;
+    return {
+		path,
+		labelPoint,
 	};
 };
 

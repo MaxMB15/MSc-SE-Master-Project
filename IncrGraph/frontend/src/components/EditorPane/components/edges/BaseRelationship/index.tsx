@@ -8,7 +8,11 @@ import {
 } from "reactflow";
 import { STYLES } from "@/styles/constants";
 
-import { createSmartQuadraticPath } from "../CustomConnectionLine";
+import {
+	createSmartQuadraticPath,
+	createSmartSelfLoopPath,
+} from "../CustomConnectionLine";
+import { Point } from "../../utils/types";
 
 interface BaseRelationProps extends EdgeProps {
 	id: string;
@@ -37,26 +41,42 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	const targetNode = useStore(
 		useCallback((store) => store.nodeInternals.get(target), [target]),
 	);
-	const samePathEdges = useStore((store) =>
-		store.edges
-			.filter(
-				(edge) =>
-					edge.hidden !== true && ((edge.source === source && edge.target === target) ||
-					(edge.source === target && edge.target === source)),
-			)
-			.map((edge) => edge.id),
-	);
 
 	if (!sourceNode || !targetNode) {
 		return null;
 	}
 
-	const { path: edgePath, labelPoint } = createSmartQuadraticPath(
-		sourceNode,
-		targetNode,
-		id,
-		samePathEdges,
-	);
+	let edgePath: string;
+	let labelPoint: Point;
+	if (source === target) {
+		const samePathEdges = useStore((store) =>
+			store.edges
+				.filter((edge) => edge.hidden !== true && source === target)
+				.map((edge) => edge.id),
+		);
+		const selfPath = createSmartSelfLoopPath(sourceNode, id, samePathEdges);
+        edgePath = selfPath.path;
+		labelPoint = selfPath.labelPoint;
+	} else {
+		const samePathEdges = useStore((store) =>
+			store.edges
+				.filter(
+					(edge) =>
+						edge.hidden !== true &&
+						((edge.source === source && edge.target === target) ||
+							(edge.source === target && edge.target === source)),
+				)
+				.map((edge) => edge.id),
+		);
+		const quadPath = createSmartQuadraticPath(
+			sourceNode,
+			targetNode,
+			id,
+			samePathEdges,
+		);
+		edgePath = quadPath.path;
+		labelPoint = quadPath.labelPoint;
+	}
 
 	const hexToRGBA = (hex: string): string => {
 		// Remove the leading '#' if present

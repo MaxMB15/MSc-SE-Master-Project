@@ -1,60 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
-import ConfigurationDisplay from "../ConfigurationDisplay"; // Adjust the path as needed
-import CustomSelect from "../CustomSelect"; // Adjust the path as needed
+import ConfigurationDisplay from "../ConfigurationDisplay";
+import CustomSelect from "../CustomSelect";
 import "./ConfigurationOverview.css";
 import useStore from "@/store/store";
-import { addEdge, getEdgeId } from "../EditorPane/components/utils/utils";
+import { Edge } from "reactflow";
 
 const ConfigurationOverview: React.FC = () => {
-	const { setEdges, currentSessionId, setCurrentSessionId, sessions } =
-		useStore();
+	const {
+		isIGCFile,
+		setEdges,
+		currentSessionId,
+		setCurrentSessionId,
+		sessions,
+	} = useStore();
 	const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
 		null,
 	);
 
 	useEffect(() => {
-		setSelectedSessionId(currentSessionId);
-	}, [currentSessionId]);
+		if (isIGCFile) {
+			setSelectedSessionId(currentSessionId);
+		}
+	}, [currentSessionId, isIGCFile]);
 
 	const handleSessionChange = (value: string) => {
-		setSelectedSessionId(value);
 		setCurrentSessionId(() => value);
-		// Remove all execution relationship edges
-		setEdges((prevEdges) =>
-			prevEdges.filter((edge) => edge.type !== "executionRelationship"),
-		);
-		// Restore the edges from the selected session
-		const sessionEdges = sessions.get(value)?.executionPath || [];
-		setEdges((prevEdges) =>
-			sessionEdges.reduce((acc, nodeId, index) => {
-				if (index === 0) {
-					return acc;
+		setEdges((prevEdges) => {
+			// Remove all execution relationship edges
+			let filteredEdges = prevEdges.filter(
+				(edge) => edge.type !== "executionRelationship",
+			);
+
+			// Get session data if it exists
+			const session = sessions.get(value);
+            let executionEdges: Edge[] = [];
+			if (session) {
+				// Add execution relationship edges
+				for (let i = 0; i < session.executionPath.length - 1; i++) {
+					const source = session.executionPath[i];
+					const target = session.executionPath[i + 1];
+                    executionEdges.push({
+                        id: `${Date.now()}-${source}>${target}`,
+                        source,
+                        target,
+                        type: "executionRelationship",
+                        data: { label: `${i+1}` },
+                    });
 				}
-				return addEdge(
-					{
-						source: sessionEdges[index - 1],
-						target: nodeId,
-						sourceHandle: null,
-						targetHandle: null,
-						type: "executionRelationship",
-						id: getEdgeId({
-							source: sessionEdges[index - 1],
-							target: nodeId,
-							sourceHandle: null,
-							targetHandle: null,
-						}),
-						data: { label: index },
-					},
-					acc,
-				);
-			}, prevEdges),
-		);
+			}
+			return [...filteredEdges, ...executionEdges];
+		});
 	};
 
 	const handleStartNewSession = () => {
-		setCurrentSessionId(() => null); // Set current session to null initially
-		// Remove all execution relationship edges
+		setCurrentSessionId(() => null);
 		setEdges((prevEdges) =>
 			prevEdges.filter((edge) => edge.type !== "executionRelationship"),
 		);
@@ -68,7 +68,6 @@ const ConfigurationOverview: React.FC = () => {
 			<Box className="configuration-overview-controls">
 				<Button
 					variant="contained"
-					// color={selectedSessionId === null ? "secondary" : "primary"}
 					onClick={handleStartNewSession}
 					className="configuration-overview-button"
 					disabled={selectedSessionId === null}
@@ -81,20 +80,19 @@ const ConfigurationOverview: React.FC = () => {
 					id="session-select"
 					label="Select Session"
 					options={[...sessions.keys()].map((sessionId) => ({
+						className: "",
 						value: sessionId,
 						label: sessionId,
-						className: "", // Add any class name if needed for color coding
 					}))}
 					value={selectedSessionId || ""}
-					onChange={handleSessionChange}
+					onChange={(e) => handleSessionChange(e)}
 				/>
 			</Box>
-			{selectedSessionId && (
+			{selectedSessionId ? (
 				<ConfigurationDisplay
 					data={sessions.get(selectedSessionId)?.state}
 				/>
-			)}
-			{selectedSessionId === null && (
+			) : (
 				<Typography className="configuration-placeholder">
 					No Configurations
 				</Typography>
