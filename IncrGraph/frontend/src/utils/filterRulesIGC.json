@@ -1,1 +1,12 @@
-["nodes.draggable", "nodes.dragging", "nodes.position", "nodes.positionAbsolute"]
+[
+	"nodes.draggable",
+	"nodes.dragging",
+	"nodes.position",
+	"nodes.positionAbsolute",
+    "nodes.selected",
+    "nodes.hidden",
+    "edges.sourceHandle",
+    "edges.targetHandle",
+    "edges.selected",
+    "edges.hidden"
+]

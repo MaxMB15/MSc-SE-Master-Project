@@ -380,3 +380,27 @@ export const updateExecutionPath = (edges: Edge[], session: SessionData): Edge[]
     return filteredEdges;
 
 }
+
+// Get all incoming edges to a node
+export const getIncomingEdges = (nodeId: string, edges: Edge[]): Edge[] => {
+    return edges.filter(edge => edge.target === nodeId);
+}
+
+// Get all outgoing edges to a node
+export const getOutgoingEdges = (nodeId: string, edges: Edge[]): Edge[] => {
+    return edges.filter(edge => edge.source === nodeId);
+}
+
+// Get all nodes that are directed at a specific node
+export const getIncomingNodes = (nodeId: string, nodes: Node[], edges: Edge[], nodeTypeFilter: string[]=[]): Node[] => {
+    const incomingEdges = getIncomingEdges(nodeId, edges);
+    const incomingNodeIds = incomingEdges.map(edge => edge.source);
+    return nodes.filter(node => incomingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
+}
+
+// Get all nodes that are out of a specific node
+export const getOutgoingNodes = (nodeId: string, nodes: Node[], edges: Edge[], nodeTypeFilter: string[]=[]): Node[] => {
+    const outgoingEdges = getOutgoingEdges(nodeId, edges);
+    const outgoingNodeIds = outgoingEdges.map(edge => edge.target);
+    return nodes.filter(node => outgoingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box, Tab, Tabs } from "@mui/material";
+import { Box } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { PlayArrow } from "@mui/icons-material";
 import { ResizableBox } from "react-resizable";
@@ -21,7 +21,8 @@ import filterRulesIGC from "@/utils/filterRulesIGC.json";
 import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
-import { CodeRunData } from "@/types/frontend";
+import MarkdownDisplay from "../MarkdownDisplay";
+import { getIncomingNodes } from "../EditorPane/components/utils/utils";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -144,7 +145,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (selectedFile !== null && localContentBuffer !== null) {
 			if (!isIGCFile) {
 				if (!modelExists(EditorDisplayContentType.NORMAL)) {
-					createModel(selectedFile, localContentBuffer);
+					createModel(selectedFile, localContentBuffer, "text");
 					// showModel(EditorDisplayContentType.NORMAL);
 				} else {
 					tryShowModel();
@@ -282,8 +283,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				}
 			} else {
 				// Initialize essential models
-				createModel(selectedFile, localContentBuffer);
-				createModel(`${selectedFile}-filtered`, filteredIGCVersion());
+				createModel(selectedFile, localContentBuffer, "json");
+				createModel(
+					`${selectedFile}-filtered`,
+					filteredIGCVersion(),
+					"json",
+				);
 			}
 			// Save icon logic
 			const fileHistory = fileHistories.get(selectedFile);
@@ -642,8 +647,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				displayType === EditorDisplayContentType.CODE &&
 				selectedItem !== null
 			) {
+                showRelaventDocumentation(selectedItem.item as Node);
 				setShowTerminal(true);
-				if (model.getValue() === "") {
+				if (model.getValue() === "" && model.languageId === "python") {
 					showSuggestionSnippet(
 						selectedItem.item.type || null,
 						"python",
@@ -653,8 +659,50 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				}
 			} else {
 				setShowTerminal(false);
+                showRelaventDocumentation(null);
+
 			}
 		}
+	};
+
+	// Show only connected documentation nodes
+	const showRelaventDocumentation = (node: Node | null): void => {
+		if (node === null) {
+			setNodes((prevNodes) =>
+				prevNodes.map((n) => {
+					if (n.type === "documentationNode") {
+						n.hidden = true;
+					}
+					return n;
+				}),
+			);
+			return;
+		}
+		setNodes((prevNodes) => {
+			let nodesToShow: string[] = [];
+			if (node.type === "documentationNode") {
+				nodesToShow.push(node.id);
+			} else {
+				const incomingDocumentationNodes = getIncomingNodes(
+					node.id,
+					nodes,
+					edges,
+					["documentationNode"],
+				);
+				if (incomingDocumentationNodes.length !== 0) {
+					nodesToShow.push(incomingDocumentationNodes[0].id);
+				}
+			}
+
+			return prevNodes.map((n) => {
+				if (nodesToShow.includes(n.id)) {
+					n.hidden = false;
+				} else if (n.type === "documentationNode") {
+					n.hidden = true;
+				}
+				return n;
+			});
+		});
 	};
 
 	// If the selected item changes, ensure it has a model
@@ -668,8 +716,22 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		) {
 			const codeKey = generateCodeKey(selectedFile, selectedItem.id);
 			if (!models.has(codeKey)) {
-				createModel(codeKey, selectedItem.item.data.code);
+				createModel(
+					codeKey,
+					selectedItem.item.data.code,
+					selectedItem.item.data.language
+						? selectedItem.item.data.language
+						: "python",
+				);
 			}
+			// Show any documentation if it exists
+			//showRelaventDocumentation(selectedItem.item as Node);
+		} else if (
+			isIGCFile &&
+			selectedFile !== null &&
+			localContentBuffer !== null
+		) {
+			// showRelaventDocumentation(null);
 		}
 	}, [selectedItem]);
 
@@ -856,10 +918,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 													currentSessionId,
 													setCurrentSessionId,
 													setSessions,
-                                                    setEdges,
+													setEdges,
 												)
 											}
-                                            disabled={selectedItem.item.data.code === "" || currentSessionId === null}
+											disabled={
+												selectedItem.item.data.code ===
+													"" ||
+												currentSessionId === null
+											}
 										>
 											<PlayArrow />
 										</button>
@@ -886,12 +952,20 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						{readFileError !== null && (
 							<div>Error: {readFileError}</div>
 						)}
+						{isIGCFile &&
+							selectedFile !== null &&
+							fileContent !== null &&
+							selectedItem !== null &&
+							selectedItem.type === "Node" && selectedItem.item.type !== "documentationNode" && (
+								<MarkdownDisplay
+									node={selectedItem.item as Node}
+								/>
+							)}
 						{selectedFile !== null &&
 							fileContent !== null &&
 							readFileError === null && (
 								<Editor
 									height="100%"
-									language="python"
 									theme="vs-dark"
 									options={{ readOnly: false }}
 									onMount={handleEditorMount}

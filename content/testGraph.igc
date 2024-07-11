@@ -70,17 +70,39 @@
                 "code": "x = 6"
             },
             "position": {
-                "x": 247.1828299192208,
-                "y": 41.24328865744002
+                "x": 282.1828299192208,
+                "y": 3.2432886574399618
             },
             "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
-                "x": 247.1828299192208,
-                "y": 41.24328865744002
+                "x": 282.1828299192208,
+                "y": 3.2432886574399618
             },
             "dragging": false
+        },
+        {
+            "id": "documentation-2",
+            "type": "documentationNode",
+            "position": {
+                "x": 308.1828299192208,
+                "y": -165.75671134256004
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# This Node creates an x variable",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": 308.1828299192208,
+                "y": -165.75671134256004
+            },
+            "dragging": false,
+            "hidden": true
         }
     ],
     "edges": [
@@ -92,6 +114,12 @@
             "type": "baseRelationship",
             "id": "0-start>0",
             "selected": false
+        },
+        {
+            "id": "0-documentation-2>2",
+            "source": "documentation-2",
+            "target": "2",
+            "type": "documentationRelationship"
         }
     ]
 }

@@ -1,8 +1,8 @@
-import { Node as rfNode, Edge } from "reactflow";
+import { Node, Edge } from "reactflow";
 
 export interface Item {
 	type: "Node" | "Edge";
-	item: rfNode | Edge;
+	item: Node | Edge;
 	id: string;
 	name: string;
 }
@@ -34,7 +34,7 @@ export class Rectangle {
 		this.height = height;
 	}
 
-	static fromNode(node: rfNode): Rectangle | null {
+	static fromNode(node: Node): Rectangle | null {
 		if (
 			node.positionAbsolute == null ||
 			node.positionAbsolute.x == null ||

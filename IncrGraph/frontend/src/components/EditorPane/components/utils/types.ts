@@ -15,6 +15,8 @@ import InterfaceNode from "../nodes/InterfaceNode";
 import LibraryNode from "../nodes/LibraryNode";
 import MethodNode from "../nodes/MethodNode";
 import StartNode from "../nodes/StartNode";
+import DocumentationNode from "../nodes/DocumentationNode";
+import DocumentationRelationship from "../edges/DocumentationRelationship";
 
 //Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
 export const nodeTypes: NodeTypes = {
@@ -26,6 +28,7 @@ export const nodeTypes: NodeTypes = {
 	libraryNode: LibraryNode,
 	methodNode: MethodNode,
 	codeFragmentNode: CodeFragmentNode,
+    documentationNode: DocumentationNode,
 };
 
 export const edgeTypes: EdgeTypes = {
@@ -35,4 +38,5 @@ export const edgeTypes: EdgeTypes = {
 	methodRelationship: MethodRelationship,
 	executionRelationship: ExecutionRelationship,
 	dependencyRelationship: DependencyRelationship,
+    documentationRelationship: DocumentationRelationship,
 };

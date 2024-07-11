@@ -9,6 +9,7 @@ export const STYLES = {
     libraryNodeColor: "#ffa500",
     methodNodeColor: "#ff0000",
 	codeFragmentNodeColor: "#0077ff",
+    documentationNodeColor: "#ff00ff",
 
     baseRelationshipColor: "#ffffff",
     inheritanceRelationshipColor: "#00ff00",
@@ -16,6 +17,7 @@ export const STYLES = {
     methodRelationshipColor: "#ff0000",
     executionRelationshipColor: "#0000ff",
     dependencyRelationshipColor: "#ffa500",
+    documentationRelationshipColor: "#ff00ff",
 
 
 
