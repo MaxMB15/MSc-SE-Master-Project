@@ -1,0 +1,43 @@
+.tabbed-code-output {
+	height: 200px;
+}
+
+.tabbed-code-output-tabs {
+	background-color: #252526;
+	color: #ffffff;
+	min-height: 30px !important;
+}
+
+.tabbed-code-output-tabs .MuiTab-root {
+	min-height: 30px !important;
+	padding: 0px 12px !important;
+    color: #ffffff;
+}
+
+.tabbed-code-output-container {
+	height: calc(100% - 35px);
+	position: relative;
+
+}
+
+.tabbed-code-output-terminal {
+	height: 100%;
+	background-color: #1a1a1a;
+	padding: 10px 10px 10px 10px;
+	box-sizing: border-box; /* Ensure padding is included in height calculation */
+	overflow: hidden; /* Hide overflow to prevent it from affecting other components */
+}
+
+.tabbed-code-output-terminal.hidden {
+	display: none;
+}
+
+.tabbed-code-output-config {
+	height: 100%;
+	display: block;
+	background-color: #1e1e1e;
+	overflow-y: auto;
+	color: white;
+	padding: 16px;
+	box-sizing: border-box;
+}

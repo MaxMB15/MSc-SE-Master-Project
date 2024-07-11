@@ -1,0 +1,1 @@
+Assets folder contains different kinds of files like image, audio, icon, etc. Those files are shared across the project, so keeping those files in a separate folder will help you manage assets effectively.

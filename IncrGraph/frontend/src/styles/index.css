@@ -1,0 +1,114 @@
+/* General reset */
+body {
+	margin: 0;
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	background-color: #121212; /* Dark background for the body */
+	color: #ffffff; /* Light text color for better readability on dark background */
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+html,
+body,
+#root {
+	height: 100%;
+	margin: 0;
+	overflow: hidden; /* Prevent scrolling */
+}
+
+/* Root container styles */
+.root-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+/* Main content styles */
+main {
+	flex-grow: 1; /* Allow main to grow and take up remaining space */
+	padding: 0px;
+	overflow: hidden; /* Prevent scrolling in the main content */
+}
+
+/* Footer styles */
+.footer {
+	background: #101010; /* Darker background for the footer */
+	color: #ffffff;
+	text-align: center;
+	padding: 2px 10px; /* Reduce padding to make the footer thinner */
+	width: 100%;
+	box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+}
+.footer-logo p {
+    margin: 0;
+    padding: 2px 0; /* Vertical padding */
+}
+
+.footer-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2px 10px; /* Adjust padding to match the footer padding */
+	box-sizing: border-box;
+}
+
+.footer-logo {
+	flex: 1;
+	text-align: center;
+}
+
+.footer-social {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.footer-social a {
+	display: flex;
+	align-items: center;
+}
+
+.footer-social svg {
+	width: 20px;
+	height: 20px;
+}
+
+.navbar-component {
+	display: flex;
+	align-items: center;
+	background-color: #252526;
+	padding: 8px;
+	border-bottom: 1px solid #333333;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+    height: 30px;
+}
+
+.navbar-component.collapsed {
+	justify-content: center;
+}
+.navbar-component button {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.navbar-component-title {
+	font-weight: bold;
+}
+.take-full-width {
+	flex-grow: 1;
+}
+
+.navbar-circle-icon {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-left: 8px;
+	display: inline-block;
+}

@@ -1,0 +1,25 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+        {
+          "type": "pwa-chrome",
+          "request": "launch",
+          "name": "Launch Chrome against localhost",
+          "url": "http://localhost:5174",
+          "webRoot": "${workspaceFolder}/IncrGraph/frontend/src",
+          "sourceMaps": true,
+          "resolveSourceMapLocations": [
+            "${workspaceFolder}/IncrGraph/frontend/src/**/*.js",
+            "${workspaceFolder}/IncrGraph/frontend/src/**/*.ts",
+            "${workspaceFolder}/IncrGraph/frontend/src/**/*.jsx",
+            "${workspaceFolder}/IncrGraph/frontend/src/**/*.tsx"
+          ],
+          "pathMapping": {
+            "/src": "${workspaceFolder}/IncrGraph/frontend/src",
+            "/@components": "${workspaceFolder}/IncrGraph/frontend/src/components",
+            "/node_modules": "${workspaceFolder}/IncrGraph/frontend/node_modules"
+          },
+          "skipFiles": ["<node_internals>/**", "node_modules/**/*.js"]
+        }
+      ]
+}
