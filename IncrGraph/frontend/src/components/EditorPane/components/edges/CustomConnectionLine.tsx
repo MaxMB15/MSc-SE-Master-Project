@@ -1,7 +1,7 @@
 import { ConnectionLineComponent, getStraightPath } from "reactflow";
 import { STYLES } from "@/styles/constants";
 import { Node } from "reactflow";
-import { Point } from "../utils/types";
+import { Point, Rectangle } from "@/types/frontend";
 import {
 	calculatePerpendicularOffsetPoint,
 	getBezierNodeIntersection,
@@ -23,6 +23,7 @@ export const getSimpleStraightPath = (
 	return path;
 };
 
+// Calculate the offset for the edge based on the id in the idList
 const calculateOffset = (
 	id: string,
 	idList: string[],
@@ -42,43 +43,7 @@ const calculateOffset = (
 	return offset;
 };
 
-export const getOffsetPath = (
-	sourceX: number,
-	sourceY: number,
-	targetX: number,
-	targetY: number,
-	offset: number,
-) => {
-	const isVertical =
-		Math.abs(targetY - sourceY) > Math.abs(targetX - sourceX);
-	let controlX, controlY;
-
-	if (isVertical) {
-		// For vertical alignment, offset in the X direction
-		controlX = (sourceX + targetX) / 2 + offset;
-		controlY = (sourceY + targetY) / 2;
-	} else {
-		// For horizontal alignment, offset in the Y direction
-		controlX = (sourceX + targetX) / 2;
-		controlY = (sourceY + targetY) / 2 + offset;
-	}
-
-	return `M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`;
-};
-
-export const getSmartOffsetPath = (
-	sourceX: number,
-	sourceY: number,
-	targetX: number,
-	targetY: number,
-	edgeId: string,
-	idList: string[],
-	offsetGap = 50,
-) => {
-	const offset = calculateOffset(edgeId, idList, offsetGap);
-	return getOffsetPath(sourceX, sourceY, targetX, targetY, offset);
-};
-
+// Create a quadratic path based on the source and target nodes where the offset is calculated based on the id in the idList
 export const createSmartQuadraticPath = (
 	sourceNode: Node,
 	targetNode: Node,
@@ -86,46 +51,27 @@ export const createSmartQuadraticPath = (
 	idList: string[],
 	offsetGap = 50,
 ) => {
+    const sNode = Rectangle.fromNode(sourceNode);
+    const tNode = Rectangle.fromNode(targetNode);
+
+    if (sNode === null || tNode === null) {
+        return {path: "", labelPoint: Point.ZERO}
+    }
 	let offset = calculateOffset(edgeId, idList, offsetGap);
 	if (sourceNode.id > targetNode.id) {
 		offset = -offset;
 	}
-	return createQuadraticPath(sourceNode, targetNode, offset);
+	return createQuadraticPath(sNode, tNode, offset);
 };
 
+// Create a quadratic bezier path based on the source and target nodes with a given offset
 const createQuadraticPath = (
-	sourceNode: Node,
-	targetNode: Node,
+	sourceNode: Rectangle,
+	targetNode: Rectangle,
 	offset: number,
 ): { path: string; labelPoint: Point } => {
-	if (
-		sourceNode.width == null ||
-		sourceNode.height == null ||
-		sourceNode.positionAbsolute == null ||
-		sourceNode.positionAbsolute.x == null ||
-		sourceNode.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return { path: "", labelPoint: { x: 0, y: 0 } };
-	}
-	if (
-		targetNode.width == null ||
-		targetNode.height == null ||
-		targetNode.positionAbsolute == null ||
-		targetNode.positionAbsolute.x == null ||
-		targetNode.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return { path: "", labelPoint: { x: 0, y: 0 } };
-	}
-	const sourceCenter: Point = {
-		x: sourceNode.positionAbsolute.x + sourceNode.width / 2,
-		y: sourceNode.positionAbsolute.y + sourceNode.height / 2,
-	};
-	const targetCenter: Point = {
-		x: targetNode.positionAbsolute.x + targetNode.width / 2,
-		y: targetNode.positionAbsolute.y + targetNode.height / 2,
-	};
+	const sourceCenter: Point = sourceNode.center();
+	const targetCenter: Point = targetNode.center();
 
 	const offsetPoint = calculatePerpendicularOffsetPoint(
 		sourceCenter,
@@ -178,48 +124,39 @@ const createQuadraticPath = (
 	};
 };
 
+// Create a self-loop path based on the node and the id in the idList
 export const createSmartSelfLoopPath = (
 	node: Node,
 	edgeId: string,
 	idList: string[],
 	offsetGap = 20,
-	startOffset = 0,
+	startOffset = 30,
 ) => {
-	let radius = startOffset + offsetGap * idList.indexOf(edgeId);
-	return createSelfLoopPath(node, radius);
+    const rect = Rectangle.fromNode(node);
+    if (rect === null) {
+        return {path: "", labelPoint: Point.ZERO}
+    }
+	const radius = startOffset + offsetGap * idList.indexOf(edgeId);
+	return createSelfLoopPath(rect, radius);
 };
 
-const createSelfLoopPath = (node: Node, r: number) => {
-	if (
-		node.width == null ||
-		node.height == null ||
-		node.positionAbsolute == null ||
-		node.positionAbsolute.x == null ||
-		node.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return { path: "", labelPoint: { x: 0, y: 0 } };
-	}
-	const centerX = node.positionAbsolute.x + node.width / 2;
-	const centerY = node.positionAbsolute.y + node.height / 2;
+// Create a self-loop path based on the node and the radius
+const createSelfLoopPath = (nodeRect: Rectangle, r: number) => {
+	const nodeCenter = nodeRect.center();
 
 	// Calculate circle center
-	const circleCenter = { x: centerX, y: centerY + r };
+	const circleCenter = { x: nodeCenter.x, y: nodeCenter.y + r };
 
 	// Calculate label point
-	const labelPoint = { x: centerX, y: centerY + 2 * r };
+	const labelPoint = { x: nodeCenter.x, y: nodeCenter.y + 2 * r };
 
 	// Calculate the intersection points of the node bounds and the circle
-	const intersections = getNodeIntersectionWithCircle(node, circleCenter, r);
+	const intersections = getNodeIntersectionWithCircle(nodeRect, circleCenter, r);
 
 	if (intersections.length < 2) {
 		console.error("Not enough intersection points found");
 		return { path: "", labelPoint: { x: 0, y: 0 } };
 	}
-
-    // Calculate large-arc-flag and sweep-flag for arc
-    const largeArcFlag = 0;
-    const sweepFlag = 1;
 
     // Create the arc path command
     const path = `M ${intersections[0].x},${intersections[0].y} A ${r},${r} 0 1,0 ${intersections[1].x},${intersections[1].y}`;

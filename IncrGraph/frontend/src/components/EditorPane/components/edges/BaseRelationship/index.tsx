@@ -1,7 +1,6 @@
 import { ComponentType, useCallback } from "react";
 import {
 	useStore,
-	getStraightPath,
 	EdgeProps,
 	MarkerType,
 	EdgeLabelRenderer,
@@ -12,7 +11,7 @@ import {
 	createSmartQuadraticPath,
 	createSmartSelfLoopPath,
 } from "../CustomConnectionLine";
-import { Point } from "../../utils/types";
+import { Point } from "@/types/frontend";
 
 interface BaseRelationProps extends EdgeProps {
 	id: string;
@@ -51,7 +50,7 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	if (source === target) {
 		const samePathEdges = useStore((store) =>
 			store.edges
-				.filter((edge) => edge.hidden !== true && source === target)
+				.filter((edge) => edge.hidden !== true && (edge.source === source && edge.target === target) && source === target)
 				.map((edge) => edge.id),
 		);
 		const selfPath = createSmartSelfLoopPath(sourceNode, id, samePathEdges);

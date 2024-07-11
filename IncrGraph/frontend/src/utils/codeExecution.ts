@@ -84,7 +84,7 @@ export const runCode = (
 					{
 						...params,
 						type: "executionRelationship",
-						id: getEdgeId(params),
+						id: getEdgeId(params.source, params.target, eds),
 						data: { label: executionPath.length - 1 },
 					},
 					eds.map((e) => {

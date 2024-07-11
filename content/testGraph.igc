@@ -23,7 +23,7 @@
             "draggable": false
         },
         {
-            "id": "1720366866914",
+            "id": "0",
             "type": "codeFragmentNode",
             "data": {
                 "label": "Node 2",
@@ -43,27 +43,27 @@
             "dragging": false
         },
         {
-            "id": "1720374720502",
+            "id": "1",
             "type": "codeFragmentNode",
             "data": {
                 "label": "Node 3",
                 "code": "c = c * 2\n\nprint(c)"
             },
             "position": {
-                "x": 0,
-                "y": 500
+                "x": -323,
+                "y": 105
             },
             "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
-                "x": 0,
-                "y": 500
+                "x": -323,
+                "y": 105
             },
             "dragging": false
         },
         {
-            "id": "1720551680833",
+            "id": "2",
             "type": "baseNode",
             "data": {
                 "label": "Node 3",
@@ -73,7 +73,7 @@
                 "x": 247.1828299192208,
                 "y": 41.24328865744002
             },
-            "selected": true,
+            "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
@@ -87,10 +87,10 @@
         {
             "source": "start",
             "sourceHandle": null,
-            "target": "1720366866914",
+            "target": "0",
             "targetHandle": null,
             "type": "baseRelationship",
-            "id": "1720551366889-start>1720366866914",
+            "id": "0-start>0",
             "selected": false
         }
     ]

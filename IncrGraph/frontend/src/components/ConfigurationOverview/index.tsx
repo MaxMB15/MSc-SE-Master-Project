@@ -5,6 +5,7 @@ import CustomSelect from "../CustomSelect";
 import "./ConfigurationOverview.css";
 import useStore from "@/store/store";
 import { Edge } from "reactflow";
+import { getEdgeId } from "../EditorPane/components/utils/utils";
 
 const ConfigurationOverview: React.FC = () => {
 	const {
@@ -41,7 +42,7 @@ const ConfigurationOverview: React.FC = () => {
 					const source = session.executionPath[i];
 					const target = session.executionPath[i + 1];
                     executionEdges.push({
-                        id: `${Date.now()}-${source}>${target}`,
+                        id: getEdgeId(source, target, executionEdges),
                         source,
                         target,
                         type: "executionRelationship",

@@ -17,12 +17,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
-import {
-	addEdge,
-	getEdgeId,
-	edgeTypes,
-	nodeTypes,
-} from "./components/utils/utils";
+import { addEdge, getEdgeId, getNodeId } from "./components/utils/utils";
+import { edgeTypes, nodeTypes } from "./components/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
@@ -79,19 +75,18 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 	// Add a new node
 	const handleAddNode = () => {
-		const newNode: Node = {
-			id: `${Date.now()}`,
-			type: "baseNode",
-			data: { label: `Node ${nodes.length}`, code: "" },
-			position: {
-				x: Math.random() * 500 - 250,
-				y: Math.random() * 500 - 250,
-			},
-			selected: true,
-		};
-
 		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
+            const newNode: Node = {
+                id: getNodeId(nodes),
+                type: "baseNode",
+                data: { label: `Node ${nodes.length}`, code: "" },
+                position: {
+                    x: Math.random() * 500 - 250,
+                    y: Math.random() * 500 - 250,
+                },
+                selected: true,
+            };
 			let newNodes = nodes.map((node) => {
 				node.selected = false;
 				return node;
@@ -124,14 +119,14 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		const { source, target } = params;
 
 		// Custom logic to handle the connection
-		if (source && target) {
+		if (source !== null && target !== null) {
 			console.log(`Creating connection from ${source} to ${target}`);
 			setEdges((eds) =>
 				addEdge(
 					{
 						...params,
 						type: "baseRelationship",
-						id: getEdgeId(params),
+						id: getEdgeId(source, target, eds),
 						selected: true,
 					},
 					eds.map((e) => {
@@ -191,7 +186,9 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	return (
 		<div className="editor-pane">
 			<div className="navbar-component">
-				<span className="navbar-component-title take-full-width">Graph Editor</span>
+				<span className="navbar-component-title take-full-width">
+					Graph Editor
+				</span>
 				{isIGCFile && (
 					<>
 						<Button
@@ -237,6 +234,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 							nodes={nodes}
 							edges={edges}
 							onNodesChange={onNodesChange}
+							onEdgesDelete={console.log}
 							onEdgesChange={onEdgesChange}
 							onConnect={onConnect}
 							nodeTypes={nodeTypes}

@@ -1,27 +1,11 @@
 import {
 	Position,
-	MarkerType,
-	NodeTypes,
-	EdgeTypes,
 	isEdge,
 	Edge,
 	Connection,
+    Node,
 } from "reactflow";
-import { Node, Point } from "./types";
-import StartNode from "../nodes/StartNode";
-import BaseNode from "../nodes/BaseNode";
-import CodeFragmentNode from "../nodes/CodeFragmentNode";
-import ClassNode from "../nodes/ClassNode";
-import AbstractClassNode from "../nodes/AbstractClassNode";
-import InterfaceNode from "../nodes/InterfaceNode";
-import LibraryNode from "../nodes/LibraryNode";
-import MethodNode from "../nodes/MethodNode";
-import BaseRelationship from "../edges/BaseRelationship";
-import InheritanceRelationship from "../edges/InheritanceRelationship";
-import OverridesRelationship from "../edges/OverridesRelationship";
-import MethodRelationship from "../edges/MethodRelationship";
-import ExecutionRelationship from "../edges/ExecutionRelationship";
-import DependencyRelationship from "../edges/DependencyRelationship";
+import { Point, Rectangle } from "@/types/frontend";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -171,27 +155,12 @@ const solveQuadratic = (a: number, b: number, c: number): number[] => {
 };
 
 export const getBezierNodeIntersection = (
-	node: Node,
+	node: Rectangle,
 	p0: Point,
 	p1: Point,
 	p2: Point,
 ): Point => {
-	if (
-		node.width == null ||
-		node.height == null ||
-		node.positionAbsolute == null ||
-		node.positionAbsolute.x == null ||
-		node.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return { x: 0, y: 0 };
-	}
-	const { width, height, positionAbsolute } = node;
-	const nodeLeft = positionAbsolute.x;
-	const nodeRight = positionAbsolute.x + width;
-	const nodeTop = positionAbsolute.y;
-	const nodeBottom = positionAbsolute.y + height;
-
+	
 	const intersections: Point[] = [];
 
 	// Check for intersections with the left and right sides
@@ -202,12 +171,12 @@ export const getBezierNodeIntersection = (
 
 		solveQuadratic(a, b, c).forEach((t) => {
 			const pt = bezierPoint(p0, p1, p2, t);
-			if (pt.y >= nodeTop && pt.y <= nodeBottom) intersections.push(pt);
+			if (pt.y >= node.top && pt.y <= node.bottom) intersections.push(pt);
 		});
 	};
 
-	checkSideIntersection(nodeLeft);
-	checkSideIntersection(nodeRight);
+	checkSideIntersection(node.left);
+	checkSideIntersection(node.right);
 
 	// Check for intersections with the top and bottom sides
 	const checkTopBottomIntersection = (nodeY: number) => {
@@ -217,12 +186,12 @@ export const getBezierNodeIntersection = (
 
 		solveQuadratic(a, b, c).forEach((t) => {
 			const pt = bezierPoint(p0, p1, p2, t);
-			if (pt.x >= nodeLeft && pt.x <= nodeRight) intersections.push(pt);
+			if (pt.x >= node.left && pt.x <= node.right) intersections.push(pt);
 		});
 	};
 
-	checkTopBottomIntersection(nodeTop);
-	checkTopBottomIntersection(nodeBottom);
+	checkTopBottomIntersection(node.top);
+	checkTopBottomIntersection(node.bottom);
 
 	if (intersections.length > 0) {
 		return intersections[0]; // Return the first valid intersection
@@ -231,49 +200,38 @@ export const getBezierNodeIntersection = (
 };
 
 export const getNodeIntersectionWithCircle = (
-	node: Node,
+	node: Rectangle,
 	circleCenter: Point,
 	r: number,
 ): Point[] => {
-	if (
-		node.width == null ||
-		node.height == null ||
-		node.positionAbsolute == null ||
-		node.positionAbsolute.x == null ||
-		node.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return [];
-	}
 
-	const { width, height, positionAbsolute } = node;
 	const intersections: Point[] = [];
 
 	// Check each side of the node for intersection
 	const sides = [
 		{
-			x1: positionAbsolute.x,
-			y1: positionAbsolute.y,
-			x2: positionAbsolute.x + width,
-			y2: positionAbsolute.y,
+			x1: node.left,
+			y1: node.top,
+			x2: node.right,
+			y2: node.top,
 		}, // Top
 		{
-			x1: positionAbsolute.x,
-			y1: positionAbsolute.y + height,
-			x2: positionAbsolute.x + width,
-			y2: positionAbsolute.y + height,
+			x1: node.left,
+			y1: node.bottom,
+			x2: node.right,
+			y2: node.bottom,
 		}, // Bottom
 		{
-			x1: positionAbsolute.x,
-			y1: positionAbsolute.y,
-			x2: positionAbsolute.x,
-			y2: positionAbsolute.y + height,
+			x1: node.left,
+			y1: node.top,
+			x2: node.left,
+			y2: node.bottom,
 		}, // Left
 		{
-			x1: positionAbsolute.x + width,
-			y1: positionAbsolute.y,
-			x2: positionAbsolute.x + width,
-			y2: positionAbsolute.y + height,
+			x1: node.right,
+			y1: node.top,
+			x2: node.right,
+			y2: node.bottom,
 		}, // Right
 	];
 
@@ -319,9 +277,27 @@ export const getNodeIntersectionWithCircle = (
 	return intersections.slice(0, 2);
 };
 
-export const getEdgeId = ({ source, target }: Edge | Connection): string =>
-	`${Date.now()}-${source}>${target}`;
+export const getNodeId = (nodes: Node[]): string => {
+    // Create an unused edge id
+    let i = 0
+    let id = `${i}`;
+    while(nodes.some(nodes => nodes.id === id)){
+        i++;
+        id = `${i}`;
+    }
+    return id;
+}
 
+export const getEdgeId = (source: string, target: string, edges: Edge[]): string => {
+    // Create an unused edge id
+    let i = 0;
+    let id = `${i}-${source}>${target}`;
+    while(edges.some(edge => edge.id === id)){
+        i++;
+        id = `${i}-${source}>${target}`;
+    }
+    return id;
+}
 // Custom logic to handle the connection
 export const addEdge = (
 	edgeParams: Edge | Connection,
@@ -337,30 +313,9 @@ export const addEdge = (
 	} else {
 		edge = {
 			...edgeParams,
-			id: getEdgeId(edgeParams),
+			id: getEdgeId(edgeParams.source, edgeParams.target, edges),
 		} as Edge;
 	}
 
 	return edges.concat(edge);
-};
-
-//Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
-export const nodeTypes: NodeTypes = {
-	startNode: StartNode,
-	baseNode: BaseNode,
-	classNode: ClassNode,
-	abstractClassNode: AbstractClassNode,
-	interfaceNode: InterfaceNode,
-	libraryNode: LibraryNode,
-	methodNode: MethodNode,
-	codeFragmentNode: CodeFragmentNode,
-};
-
-export const edgeTypes: EdgeTypes = {
-	baseRelationship: BaseRelationship,
-	inheritanceRelationship: InheritanceRelationship,
-	overridesRelationship: OverridesRelationship,
-	methodRelationship: MethodRelationship,
-	executionRelationship: ExecutionRelationship,
-	dependencyRelationship: DependencyRelationship,
 };
