@@ -77,7 +77,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 		if (sessionName) {
 			setSessions((prevSessions) =>
 				new Map(prevSessions).set(sessionName, {
-					state: {},
+					configuration: {},
 					executionPath: ["start"],
 				}),
 			);
@@ -121,7 +121,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 			</Box>
 			{selectedSessionId ? (
 				<ConfigurationDisplay
-					data={sessions.get(selectedSessionId)?.state}
+					data={sessions.get(selectedSessionId)?.configuration}
 				/>
 			) : (
 				<Typography className="configuration-placeholder">

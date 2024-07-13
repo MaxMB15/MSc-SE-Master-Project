@@ -31,6 +31,9 @@ import CustomConnectionLine, {
 import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
+import { runAllAnalysis } from "@/utils/codeExecution";
+import { CodeAnalysisRequest, CodeAnalysisResponse } from "@/types/common";
+import { useAxiosRequest } from "@/utils/requests";
 
 interface EditorPaneProps {}
 
@@ -57,6 +60,11 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
 
+        // Request for Analyzing code
+	const {
+		sendRequest: analyzeCodeSendRequest,
+	} = useAxiosRequest<CodeAnalysisRequest, CodeAnalysisResponse>();
+    
 	// REFERENCES
 	const reactFlowWrapper = useRef<HTMLDivElement>(null);
 	const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -263,6 +271,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Debug Current Execution"
+                            onClick={() => runAllAnalysis(analyzeCodeSendRequest, nodes, setNodes )}
 						>
 							<BugReport />
 						</button>

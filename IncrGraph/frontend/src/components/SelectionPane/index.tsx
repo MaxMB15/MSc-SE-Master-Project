@@ -104,37 +104,6 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
 			if (selectedItem.type === "Node") {
-				// setEdges((prevEdges) => {
-				//     // Get current session data
-				// 	if (currentSessionId !== null) {
-				// 		const session = sessions.get(currentSessionId);
-				// 		if (session !== undefined) {
-				// 			let vSession = session;
-				// 			let currentExecutionPath: string[] =
-				// 				vSession.executionPath;
-
-				// 			const uepData = updateExecutionPathNode(
-				// 				selectedItem.id,
-				// 				prevEdges,
-				// 				vSession,
-				// 			);
-				// 			prevEdges = uepData.edges;
-				// 			vSession = uepData.session;
-				// 			if (
-				// 				vSession.executionPath !== currentExecutionPath
-				// 			) {
-				// 				// Shallow is okay
-				// 				setSessions((prevSessions) => {
-				// 					return prevSessions.set(
-				// 						currentSessionId,
-				// 						vSession,
-				// 					);
-				// 				});
-				// 			}
-				// 		}
-				// 	}
-				//     return prevEdges;
-				// });
 				// Get current session data
 				if (currentSessionId !== null) {
 					const session = sessions.get(currentSessionId);

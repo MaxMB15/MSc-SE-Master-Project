@@ -59,6 +59,7 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
     useEffect(() => {
         // Example: Write to the terminal
         terminals.current.forEach((terminal, index) => {
+            terminals.current[index]?.clear();
             if (index === 0) {
                 terminals.current[index]?.writeln(
                     codeRunData && codeRunData.stdout ? codeRunData.stdout : "<No output>",
@@ -76,6 +77,9 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 	// }, [activeTab]);
 
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+        // if(fitAddons.current && newValue <2){
+        //     fitAddons.current[newValue]?.fit();
+        // }
 		setActiveTab(newValue);
 	};
 

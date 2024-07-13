@@ -120,18 +120,13 @@ const allSuggestions: AllSuggestions = {
 					'\t"""',
 					"\t${2:Class docstring}",
 					'\t"""',
-					"\tdef __init__(self, ${3:args}):",
-					'\t\t"""',
-					"\t\tInitialize the class.",
-					'\t\t"""',
-					"\t\t${4:pass}",
+                    '\t${3:pass}',
 				],
 			},
 			{
 				"Class (Without Docstrings)": [
 					"class ${1:ClassName}:",
-					"\tdef __init__(self, ${2:args}):",
-					"\t\t${3:pass}",
+					"\t${2:pass}",
 				],
 			},
 			{

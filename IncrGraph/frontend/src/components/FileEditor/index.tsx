@@ -10,6 +10,8 @@ import {
 	SaveFilePathRequest,
 	CodeExecutionRequest,
 	CodeExecutionResponse,
+    CodeAnalysisResponse,
+    CodeAnalysisRequest,
 } from "@/types/common";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
@@ -18,7 +20,7 @@ import { applyFilter, mergeChanges } from "@/utils/json";
 import { useAxiosRequest } from "@/utils/requests";
 import { showSuggestionSnippet } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
-import { runCode } from "@/utils/codeExecution";
+import { runAllAnalysis, runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
@@ -905,7 +907,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								<span className="take-full-width"></span>
 								{isIGCFile &&
 									selectedItem &&
-									selectedItem.type === "Node" && (
+									selectedItem.type === "Node" && selectedItem.item.type !== "documentationNode" && (
 										<button
 											className="icon-button"
 											title="Run Code"
@@ -918,6 +920,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 													currentSessionId,
 													setCurrentSessionId,
 													setSessions,
+                                                    nodes,
+                                                    setNodes,
 													setEdges,
 												)
 											}

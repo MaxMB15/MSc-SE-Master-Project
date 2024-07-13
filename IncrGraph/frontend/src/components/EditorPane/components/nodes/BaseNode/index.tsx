@@ -28,6 +28,7 @@ interface BaseNodeProps extends NodeProps {
 
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const {
+        nodes,
 		setNodes,
 		setEdges,
 		currentSessionId,
@@ -71,6 +72,8 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				currentSessionId,
 				setCurrentSessionId,
 				setSessions,
+                nodes,
+                setNodes,
 				setEdges,
 			);
 		}

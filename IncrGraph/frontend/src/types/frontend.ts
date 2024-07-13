@@ -87,6 +87,6 @@ export interface CodeRunData {
 }
 
 export interface SessionData {
-	state: any;
+	configuration: any;
 	executionPath: string[];
 }

@@ -23,7 +23,17 @@ export interface CodeExecutionRequest {
 export interface CodeExecutionResponse {
     output: string;
     error: string;
-    state: any;
+    configuration: any;
     executionTime: number;
     sessionId: string;
+    metaNodeData?: any;
+}
+
+export interface CodeAnalysisRequest {
+    code: string;
+    language: string;
+}
+export interface CodeAnalysisResponse {
+    dependencies: string;
+    new_definitions: string;
 }
