@@ -8,7 +8,6 @@ import {
 	getIncomingNodes,
 } from "../EditorPane/components/utils/utils";
 import useStore from "@/store/store";
-import { Language } from "@mui/icons-material";
 
 interface MarkdownDisplayProps {
 	node: Node;

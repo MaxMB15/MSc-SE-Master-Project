@@ -12,6 +12,11 @@ interface State {
 	selectedFile: string | null;
 	setSelectedFile: (updater: (prev: string | null) => string | null) => void;
 
+	projectDirectory: string | null;
+	setProjectDirectory: (
+		updater: (prev: string | null) => string | null,
+	) => void;
+
 	fileContent: string | null;
 	setFileContent: (updater: (prev: string | null) => string | null) => void;
 
@@ -95,6 +100,10 @@ const useStore = create<State>((set) => ({
 			};
 		}),
 
+	projectDirectory: null,
+	setProjectDirectory: (updater: (prev: string | null) => string | null) =>
+		set((state) => ({ projectDirectory: updater(state.projectDirectory) })),
+
 	fileContent: null,
 	setFileContent: (updater: (prev: string | null) => string | null) =>
 		set((state) => ({ fileContent: updater(state.fileContent) })),
@@ -133,8 +142,9 @@ const useStore = create<State>((set) => ({
 		set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
 
 	sessions: new Map<string, SessionData>(),
-	setSessions: (updater: (prev: Map<string, SessionData>) => Map<string, SessionData>) =>
-		set((state) => ({ sessions: updater(state.sessions) })),
+	setSessions: (
+		updater: (prev: Map<string, SessionData>) => Map<string, SessionData>,
+	) => set((state) => ({ sessions: updater(state.sessions) })),
 
 	codeRunData: new Map<string, CodeRunData>(),
 	setCodeRunData: (

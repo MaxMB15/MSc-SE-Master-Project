@@ -1,7 +1,3 @@
 **/.DS_Store
-**/node_modules
 content/.sessions/*
-
-
-# venv for python
-IncrGraph/languages/python/*
+content_temp

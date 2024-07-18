@@ -2,33 +2,39 @@
 	"name": "incrgraph",
 	"version": "1.0.0",
 	"scripts": {
-		"install": "npm run install:frontend && npm run install:backend",
+		"install": "npm run install:frontend && npm run install:backend && npm run install:electron",
 		"install:frontend": "cd frontend && npm install",
 		"install:backend": "cd backend && npm install",
-		"build": "npm run build:frontend && npm run build:backend",
+		"install:electron": "cd electron && npm install",
+		"build": "npm run build:frontend && npm run build:backend && npm run build:electron",
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build",
-		"start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+		"build:electron": "cd electron && npm run build",
+		"start": "dotenv -e .env concurrently \"npm run start:frontend\" \"npm run start:backend\" \"wait-on $FRONTEND_URL && cd electron && npm start\"",
 		"start:frontend": "cd frontend && npm run dev",
 		"start:backend": "cd backend && npm run dev",
 		"prod": "npm run build && concurrently \"serve -s frontend/dist\" \"cd backend && npm run start\""
 	},
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/MaxMB15/MSc-SE-Master-Project.git"
-      },
-    "author": "Max Boksem",
-    "license": "GPL-3.0",
-    "description": "Root of IncrGraph",
-    "bugs": {
-        "url": "https://github.com/MaxMB15/MSc-SE-Master-Project/issues"
-      },
-      "homepage": "https://github.com/MaxMB15/MSc-SE-Master-Project#readme",
-    
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MaxMB15/MSc-SE-Master-Project.git"
+	},
+	"author": "Max Boksem",
+	"license": "GPL-3.0",
+	"description": "Root of IncrGraph",
+	"bugs": {
+		"url": "https://github.com/MaxMB15/MSc-SE-Master-Project/issues"
+	},
+	"homepage": "https://github.com/MaxMB15/MSc-SE-Master-Project#readme",
 	"dependencies": {
-		"concurrently": "^6.0.0"
+		"concurrently": "^6.0.0",
+		"dotenv": "^16.0.0",
+		"dotenv-cli": "^7.0.0"
 	},
 	"devDependencies": {
-		"eslint-config-prettier": "^9.1.0"
+		"eslint-config-prettier": "^9.1.0",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^5.5.3",
+		"wait-on": "^7.2.0"
 	}
 }

@@ -10,8 +10,6 @@ import {
 	SaveFilePathRequest,
 	CodeExecutionRequest,
 	CodeExecutionResponse,
-    CodeAnalysisResponse,
-    CodeAnalysisRequest,
 } from "@/types/common";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
@@ -20,7 +18,7 @@ import { applyFilter, mergeChanges } from "@/utils/json";
 import { useAxiosRequest } from "@/utils/requests";
 import { showSuggestionSnippet } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
-import { runAllAnalysis, runCode } from "@/utils/codeExecution";
+import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";

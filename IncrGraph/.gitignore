@@ -1,0 +1,5 @@
+# venv for python
+languages/python/*
+node_modules
+.env
+**/.env

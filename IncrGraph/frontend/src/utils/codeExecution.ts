@@ -26,7 +26,7 @@ import {
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
 
 // Run the code analysis on the node
-const runAnalysis = (
+export const runAnalysis = (
 	runAnalysisSendRequest: (
 		options: UseAxiosRequestOptions<CodeAnalysisRequest>,
 	) => Promise<CodeAnalysisResponse>,
@@ -74,7 +74,7 @@ export const runAllAnalysis = async (
 			node.data.code !== undefined &&
 			node.data.code !== ""
 		) {
-			const requestData = {
+			return runAnalysisSendRequest({
 				method: "POST",
 				data: {
 					code: node.data.code,
@@ -82,14 +82,7 @@ export const runAllAnalysis = async (
 				},
 				route: "/api/code-handler/analyze",
 				useJWT: false,
-			};
-
-			console.log(
-				`Requesting analysis for node ${node.id}:`,
-				requestData,
-			);
-
-			return runAnalysisSendRequest(requestData)
+			})
 				.then((response: CodeAnalysisResponse) => {
 					console.log(
 						`Received analysis for node ${node.id}:`,
@@ -188,7 +181,7 @@ export const runCode = (
 	setSessions: (
 		updater: (prev: Map<string, any>) => Map<string, any>,
 	) => void,
-	nodes: Node[],
+	_: Node[],
 	setNodes: (updater: (prev: Node[]) => Node[]) => void,
 	setEdges: (updater: (prev: Edge[]) => Edge[]) => void,
 ): void => {

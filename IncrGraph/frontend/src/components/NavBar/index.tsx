@@ -12,12 +12,11 @@ import {
 	List,
 	ListItem,
 	ListItemText,
-	Badge,
-    ListItemButton,
+	ListItemButton,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import InfoIcon from "@mui/icons-material/Info";
-import SyncIcon from "@mui/icons-material/Sync";
+import OpenDirectoryButton from "../OpenDirectoryButton";
 
 const Navbar: React.FC = () => {
 	const [anchorElFile, setAnchorElFile] = useState<null | HTMLElement>(null);
@@ -90,12 +89,19 @@ const Navbar: React.FC = () => {
 							New Project
 						</MenuItem>
 						<Divider />
-						<MenuItem onClick={handleMenuClose}>
-							Open Project
+						<MenuItem onClick={handleMenuClose} style={{padding: 0}}>
+							{/* <OpenDirectoryButton onClose={handleMenuClose} style={{padding: "6px 16px"}}>
+								Open Project
+							</OpenDirectoryButton> */}
+                            <OpenDirectoryButton />
 						</MenuItem>
 						<Divider />
-						<MenuItem onClick={handleMenuClose}>Save File Editor</MenuItem>
-						<MenuItem onClick={handleMenuClose}>Save Graph Editor</MenuItem>
+						<MenuItem onClick={handleMenuClose}>
+							Save File Editor
+						</MenuItem>
+						<MenuItem onClick={handleMenuClose}>
+							Save Graph Editor
+						</MenuItem>
 						<MenuItem onClick={handleMenuClose}>Save All</MenuItem>
 					</Menu>
 					<IconButton
@@ -164,7 +170,7 @@ const Navbar: React.FC = () => {
 							</List>
 						</Box>
 					</Drawer>
-					<IconButton
+					{/* <IconButton
 						edge="end"
 						color="inherit"
 						aria-label="connection status"
@@ -179,7 +185,7 @@ const Navbar: React.FC = () => {
 						<Typography variant="button" sx={{ ml: 1 }}>
 							Connection Status
 						</Typography>
-					</IconButton>
+					</IconButton> */}
 					<Drawer
 						anchor="right"
 						open={isConnectionStatusOpen}
@@ -209,10 +215,14 @@ const Navbar: React.FC = () => {
 											secondary="abc123"
 										/>
 									</ListItem>
-                                    <ListItem>
+									<ListItem>
 										<ListItemButton
-											onClick={() => setIsConnected(false)}
-										>Disconnect</ListItemButton>
+											onClick={() =>
+												setIsConnected(false)
+											}
+										>
+											Disconnect
+										</ListItemButton>
 									</ListItem>
 								</>
 							) : (

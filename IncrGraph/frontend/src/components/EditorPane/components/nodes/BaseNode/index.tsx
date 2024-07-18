@@ -28,7 +28,7 @@ interface BaseNodeProps extends NodeProps {
 
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const {
-        nodes,
+		nodes,
 		setNodes,
 		setEdges,
 		currentSessionId,
@@ -72,8 +72,8 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				currentSessionId,
 				setCurrentSessionId,
 				setSessions,
-                nodes,
-                setNodes,
+				nodes,
+				setNodes,
 				setEdges,
 			);
 		}
@@ -140,8 +140,11 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 					type="target"
 					isConnectableStart={false}
 				/>
-				{isConnecting && label}
-				{!isConnecting && data.label}
+				<div style={{textAlign: "center"}}>
+					{isConnecting && label}
+					{!isConnecting && data.label}
+				</div>
+
 				{!isConnecting && <div className="base"></div>}
 			</div>
 			<ContextMenu

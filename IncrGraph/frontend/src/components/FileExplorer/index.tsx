@@ -29,7 +29,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 	// STATE
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [width, setWidth] = useState(300); // Initial width of 300px
-	const [currentDir, setCurrentDir] = useState("File Explorer");
+	const [currentDir, ] = useState("File Explorer");
 
 	const toggleCollapse = () => {
 		setIsCollapsed(!isCollapsed);

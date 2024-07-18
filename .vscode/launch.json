@@ -1,25 +1,52 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-        {
-          "type": "pwa-chrome",
-          "request": "launch",
-          "name": "Launch Chrome against localhost",
-          "url": "http://localhost:5174",
-          "webRoot": "${workspaceFolder}/IncrGraph/frontend/src",
-          "sourceMaps": true,
-          "resolveSourceMapLocations": [
-            "${workspaceFolder}/IncrGraph/frontend/src/**/*.js",
-            "${workspaceFolder}/IncrGraph/frontend/src/**/*.ts",
-            "${workspaceFolder}/IncrGraph/frontend/src/**/*.jsx",
-            "${workspaceFolder}/IncrGraph/frontend/src/**/*.tsx"
-          ],
-          "pathMapping": {
-            "/src": "${workspaceFolder}/IncrGraph/frontend/src",
-            "/@components": "${workspaceFolder}/IncrGraph/frontend/src/components",
-            "/node_modules": "${workspaceFolder}/IncrGraph/frontend/node_modules"
+		{
+			"type": "pwa-chrome",
+			"request": "launch",
+			"name": "Launch Chrome against localhost",
+			"url": "http://localhost:5174",
+			"webRoot": "${workspaceFolder}/IncrGraph/frontend/src",
+			"sourceMaps": true,
+			"resolveSourceMapLocations": [
+				"${workspaceFolder}/IncrGraph/frontend/src/**/*.js",
+				"${workspaceFolder}/IncrGraph/frontend/src/**/*.ts",
+				"${workspaceFolder}/IncrGraph/frontend/src/**/*.jsx",
+				"${workspaceFolder}/IncrGraph/frontend/src/**/*.tsx"
+			],
+			"pathMapping": {
+				"/src": "${workspaceFolder}/IncrGraph/frontend/src",
+				"/@components": "${workspaceFolder}/IncrGraph/frontend/src/components",
+				"/node_modules": "${workspaceFolder}/IncrGraph/frontend/node_modules"
+			},
+			"skipFiles": ["<node_internals>/**", "node_modules/**/*.js"]
+		},
+		{
+            "name": "Debug Main Process",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/electron/src/main.ts",
+            "preLaunchTask": "npm: build:electron",
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"],
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "args": [".", "--remote-debugging-port=9223"],
+            "windows": {
+              "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+            }
           },
-          "skipFiles": ["<node_internals>/**", "node_modules/**/*.js"]
-        }
-      ]
+          {
+            "name": "Debug Renderer Process",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9223,
+            "webRoot": "${workspaceFolder}/frontend/src",
+            "timeout": 30000,
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+              "webpack:///./*": "${webRoot}/*",
+              "webpack:///src/*": "${webRoot}/*"
+            }
+          }
+	]
 }
