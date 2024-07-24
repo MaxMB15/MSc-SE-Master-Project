@@ -1,12 +1,15 @@
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import { logger } from "../utils/logger";
+import { createCustomLogger } from "shared";
 import { spawn, execFile } from "child_process";
 import os from "os";
 import { v4 as uuidv4 } from "uuid";
 
 const router = Router();
+
+// Logger
+const logger = createCustomLogger("backend");
 
 const checkPythonInstallation = (): Promise<string | null> => {
 	const languageDir = path.join(__dirname, "../../../languages");

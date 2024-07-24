@@ -1,16 +1,24 @@
 import React from "react";
 
-const OpenDirectoryButton: React.FC = () => {
+interface OpenDirectoryButtonProps {
+    onClick: (path: string) => void,
+    style: React.CSSProperties,
+    children: React.ReactNode
+}
+
+const OpenDirectoryButton: React.FC<OpenDirectoryButtonProps> = ({onClick, style, children}) => {
+
 	const handleOpenDirectory = async () => {
 		if (window.electron && window.electron.selectDirectory) {
 			const result = await window.electron.selectDirectory();
-			console.log("Selected directory:", result);
+            if (result.length > 0)
+                onClick(result[0]);
 		} else {
 			console.error("Electron API is not available.");
 		}
 	};
 
-	return <button onClick={handleOpenDirectory}>Open Directory</button>;
+	return <div style={style} onClick={handleOpenDirectory}>{children}</div>;
 };
 
 export default OpenDirectoryButton;

@@ -10,7 +10,7 @@ import { STYLES } from "@/styles/constants";
 import useStore from "@/store/store";
 import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
-import { CodeExecutionRequest, CodeExecutionResponse } from "@/types/common";
+import { CodeExecutionRequest, CodeExecutionResponse } from "shared";
 import { useAxiosRequest } from "@/utils/requests";
 import { runCode } from "@/utils/codeExecution";
 

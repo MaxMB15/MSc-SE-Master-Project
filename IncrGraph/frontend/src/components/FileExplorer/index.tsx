@@ -6,7 +6,7 @@ import AddFileIcon from "@mui/icons-material/NoteAdd";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { FileNode } from "../../types/common";
+import { FileNode } from "shared";
 import { useAxiosRequest } from "../../utils/requests";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";

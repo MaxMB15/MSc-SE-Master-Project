@@ -1,10 +1,13 @@
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import { logger } from "../utils/logger";
-import { FileNode } from "../types/common";
+import { createCustomLogger } from "shared";
+import { FileNode } from "shared";
 
 const router = Router();
+
+// Logger
+const logger = createCustomLogger("backend");
 
 const getDirectoryStructure = (dirPath: string): FileNode[] => {
 	const files = fs.readdirSync(dirPath);

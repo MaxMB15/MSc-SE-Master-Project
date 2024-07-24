@@ -2,4 +2,8 @@
 languages/python/*
 node_modules
 .env
+.env.packaged
+.env.production
 **/.env
+logs
+dist

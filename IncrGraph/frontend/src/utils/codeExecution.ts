@@ -3,7 +3,7 @@ import {
 	CodeAnalysisResponse,
 	CodeExecutionRequest,
 	CodeExecutionResponse,
-} from "@/types/common";
+} from "shared";
 import { UseAxiosRequestOptions } from "./requests";
 import { CodeRunData } from "@/types/frontend";
 import { Edge, Node } from "reactflow";

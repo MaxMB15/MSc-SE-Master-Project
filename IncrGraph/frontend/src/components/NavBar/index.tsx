@@ -37,6 +37,9 @@ const Navbar: React.FC = () => {
 		setAnchorElFile(null);
 		setAnchorElEdit(null);
 	};
+    const handleOpenDirectory = () => {
+
+    }
 
 	const toggleProjectInfoDrawer = () => {
 		setIsProjectInfoOpen(!isProjectInfoOpen);
@@ -90,10 +93,10 @@ const Navbar: React.FC = () => {
 						</MenuItem>
 						<Divider />
 						<MenuItem onClick={handleMenuClose} style={{padding: 0}}>
-							{/* <OpenDirectoryButton onClose={handleMenuClose} style={{padding: "6px 16px"}}>
+							<OpenDirectoryButton onClick={handleOpenDirectory} style={{padding: "6px 16px"}}>
 								Open Project
-							</OpenDirectoryButton> */}
-                            <OpenDirectoryButton />
+							</OpenDirectoryButton>
+                            {/* <OpenDirectoryButton /> */}
 						</MenuItem>
 						<Divider />
 						<MenuItem onClick={handleMenuClose}>

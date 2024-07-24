@@ -10,7 +10,7 @@ import {
 	SaveFilePathRequest,
 	CodeExecutionRequest,
 	CodeExecutionResponse,
-} from "@/types/common";
+} from "shared";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";

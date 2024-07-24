@@ -32,7 +32,7 @@ import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
-import { CodeAnalysisRequest, CodeAnalysisResponse } from "@/types/common";
+import { CodeAnalysisRequest, CodeAnalysisResponse } from "shared";
 import { useAxiosRequest } from "@/utils/requests";
 
 interface EditorPaneProps {}

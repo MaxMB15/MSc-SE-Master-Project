@@ -11,7 +11,7 @@
 			"@/*": ["./src/*"],
 			"@components/*": ["./src/components/*"]
 		},
-        "sourceMap": true
+        "sourceMap": true,
 	},
 	"include": ["src", "vite.config.ts", "vite-env.d.ts"]
 }

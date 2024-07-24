@@ -2,18 +2,21 @@
 	"name": "incrgraph",
 	"version": "1.0.0",
 	"scripts": {
-		"install": "npm run install:frontend && npm run install:backend && npm run install:electron",
+		"install": "npm run install:frontend && npm run install:backend && npm run install:electron && npm run install:shared",
 		"install:frontend": "cd frontend && npm install",
 		"install:backend": "cd backend && npm install",
 		"install:electron": "cd electron && npm install",
-		"build": "npm run build:frontend && npm run build:backend && npm run build:electron",
+		"install:shared": "cd shared && npm install",
+		"build": "npm run build:frontend && npm run build:backend && npm run build:electron && npm run build:shared",
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build",
 		"build:electron": "cd electron && npm run build",
-		"start": "dotenv -e .env concurrently \"npm run start:frontend\" \"npm run start:backend\" \"wait-on $FRONTEND_URL && cd electron && npm start\"",
-		"start:frontend": "cd frontend && npm run dev",
-		"start:backend": "cd backend && npm run dev",
-		"prod": "npm run build && concurrently \"serve -s frontend/dist\" \"cd backend && npm run start\""
+		"build:shared": "cd shared && npm run build",
+		"dev": "npm run dev:frontend && npm run dev:backend",
+		"dev:frontend": "cd frontend && npm run dev",
+		"dev:backend": "cd backend && npm run dev",
+		"dist": "cd electron && npm run dist",
+		"start": "cd electron && npm run start"
 	},
 	"repository": {
 		"type": "git",
@@ -29,7 +32,8 @@
 	"dependencies": {
 		"concurrently": "^6.0.0",
 		"dotenv": "^16.0.0",
-		"dotenv-cli": "^7.0.0"
+		"dotenv-cli": "^7.0.0",
+		"dotenv-expand": "^11.0.6"
 	},
 	"devDependencies": {
 		"eslint-config-prettier": "^9.1.0",
