@@ -6,13 +6,14 @@ import AddFileIcon from "@mui/icons-material/NoteAdd";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { FileNode } from "shared";
+import { FileNode, GetDirectoryStructureRequest } from "shared";
 import { useAxiosRequest } from "../../utils/requests";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import "./FileExplorer.css";
 import useStore from "@/store/store";
 import ConfigurationOverview from "../ConfigurationOverview";
+import path from "path-browserify";
 
 interface FileExplorerProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
@@ -20,32 +21,62 @@ interface FileExplorerProps {
 
 const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 	// VARIABLES
-	// Request to get the file tree
 	const { response, error, loading, sendRequest } = useAxiosRequest<
-		null,
+		GetDirectoryStructureRequest,
 		FileNode[]
 	>();
 
+	const { setSelectedFile, projectDirectory } = useStore(); // Variables from data store
+
 	// STATE
 	const [isCollapsed, setIsCollapsed] = useState(false);
-	const [width, setWidth] = useState(300); // Initial width of 300px
-	const [currentDir, ] = useState("File Explorer");
+	const [width, setWidth] = useState(300);
+	const [currentDir, setCurrentDir] = useState<string | null>(null);
 
 	const toggleCollapse = () => {
 		setIsCollapsed(!isCollapsed);
 	};
 
 	const refreshFileTree = () => {
+		if (!projectDirectory) return;
 		sendRequest({
 			method: "GET",
 			route: "/api/file-explorer",
+			data: { path: projectDirectory },
 			useJWT: false,
 		});
 	};
 
 	useEffect(() => {
 		refreshFileTree();
-	}, []);
+		setCurrentDir(() => projectDirectory);
+	}, [projectDirectory]);
+
+	const handleFileSelect = (filePath: string) => {
+		setSelectedFile(() => filePath);
+	};
+
+	const renderTree = (nodes: FileNode[]) => {
+		return nodes.map((node) => {
+			return (
+				<TreeItem
+					key={node.fullPath}
+					itemId={node.fullPath}
+					label={node.name}
+					slots={
+						node.type === "directory"
+							? { icon: FolderIcon }
+							: { icon: InsertDriveFileIcon }
+					}
+					onClick={() =>
+						node.type === "file" && handleFileSelect(node.fullPath)
+					}
+				>
+					{node.children && renderTree(node.children)}
+				</TreeItem>
+			);
+		});
+	};
 
 	return (
 		<div className="file-explorer-container">
@@ -85,8 +116,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 					>
 						{!isCollapsed && (
 							<>
-								<span className="navbar-component-title take-full-width">
-									{currentDir}
+								<span
+									className="navbar-component-title take-full-width"
+									title={currentDir ? currentDir : ""}
+                                    style={{cursor: "default"}}
+								>
+									{currentDir
+										? path.basename(currentDir)
+										: "File Explorer"}
 								</span>
 								<button
 									className="icon-button"
@@ -118,79 +155,40 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 						</button>
 					</div>
 					{!isCollapsed && (
-						<>
-							<FileExplorerContent
-								response={response}
-								error={error}
-								loading={loading}
+						<>  
+                            <div style={{height: "50%", maxHeight: "50%"}}>
+							{loading ? (
+								<div className="loading">
+									<p>Loading...</p>
+								</div>
+							) : error ? (
+								<p>Error: {error}</p>
+							) : response ? (
+								<SimpleTreeView
+									slots={{
+										collapseIcon: FolderIcon,
+										expandIcon: FolderIcon,
+									}}
+									sx={{
+										height: "100%",
+										flexGrow: 1,
+										overflowY: "auto",
+									}}
+								>
+									{renderTree(response)}
+								</SimpleTreeView>
+							) : <div style={{margin: "10px"}}>
+                            No Project Open
+                        </div>}
+                            </div>
+							<ConfigurationOverview
+								openTextDialog={openTextDialog}
 							/>
-							<ConfigurationOverview openTextDialog={openTextDialog}/>
 						</>
 					)}
 				</div>
 			</ResizableBox>
 		</div>
-	);
-};
-
-const FileExplorerContent: React.FC<{
-	response: FileNode[] | null;
-	error: string | null;
-	loading: boolean;
-}> = ({ response, error, loading }) => {
-	// VARIABLES
-	// Store variables
-	const { setSelectedFile } = useStore();
-
-	const handleFileSelect = (filePath: string) => {
-		setSelectedFile(() => filePath);
-	};
-
-	const renderTree = (nodes: FileNode[], currentPath: string = "") => {
-		return nodes.map((node) => {
-			const nodePath = currentPath
-				? `${currentPath}/${node.name}`
-				: node.name;
-			return (
-				<TreeItem
-					key={node.name}
-					itemId={node.name}
-					label={node.name}
-					slots={
-						node.type === "directory"
-							? { icon: FolderIcon }
-							: { icon: InsertDriveFileIcon }
-					}
-					onClick={() =>
-						node.type === "file" && handleFileSelect(nodePath)
-					}
-				>
-					{node.children && renderTree(node.children, nodePath)}
-				</TreeItem>
-			);
-		});
-	};
-
-	if (loading)
-		return (
-			<div className="loading">
-				<p>Loading...</p>
-			</div>
-		);
-	if (error) return <p>Error: {error}</p>;
-	if (!response) return null;
-
-	return (
-		<SimpleTreeView
-			slots={{ collapseIcon: FolderIcon, expandIcon: FolderIcon }}
-			sx={{
-				height: "100%",
-				flexGrow: 1,
-				overflowY: "auto",
-			}}
-		>
-			{renderTree(response)}
-		</SimpleTreeView>
 	);
 };
 

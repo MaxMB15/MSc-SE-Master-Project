@@ -100,9 +100,12 @@ const useStore = create<State>((set) => ({
 			};
 		}),
 
-	projectDirectory: null,
+	projectDirectory: "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/content",
 	setProjectDirectory: (updater: (prev: string | null) => string | null) =>
-		set((state) => ({ projectDirectory: updater(state.projectDirectory) })),
+		set((state) => {
+            state.setSelectedFile(() => null); // Reset the selected file
+			return { projectDirectory: updater(state.projectDirectory) };
+		}),
 
 	fileContent: null,
 	setFileContent: (updater: (prev: string | null) => string | null) =>

@@ -122,8 +122,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		content: string,
 	): { nodes: Node[]; edges: Edge[] } => {
 		console.log("Serializing graph data");
+		console.log("content\n", content);
 		try {
 			const data = JSON.parse(content);
+			console.log("Done parsing, data\n", data);
 			return { nodes: data.nodes, edges: data.edges };
 		} catch (error) {
 			console.error("Error parsing IGC content:", error);
@@ -647,7 +649,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				displayType === EditorDisplayContentType.CODE &&
 				selectedItem !== null
 			) {
-                showRelaventDocumentation(selectedItem.item as Node);
+				showRelaventDocumentation(selectedItem.item as Node);
 				setShowTerminal(true);
 				if (model.getValue() === "" && model.languageId === "python") {
 					showSuggestionSnippet(
@@ -659,8 +661,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				}
 			} else {
 				setShowTerminal(false);
-                showRelaventDocumentation(null);
-
+				showRelaventDocumentation(null);
 			}
 		}
 	};
@@ -905,7 +906,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								<span className="take-full-width"></span>
 								{isIGCFile &&
 									selectedItem &&
-									selectedItem.type === "Node" && selectedItem.item.type !== "documentationNode" && (
+									selectedItem.type === "Node" &&
+									selectedItem.item.type !==
+										"documentationNode" && (
 										<button
 											className="icon-button"
 											title="Run Code"
@@ -918,8 +921,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 													currentSessionId,
 													setCurrentSessionId,
 													setSessions,
-                                                    nodes,
-                                                    setNodes,
+													nodes,
+													setNodes,
 													setEdges,
 												)
 											}
@@ -958,23 +961,23 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							selectedFile !== null &&
 							fileContent !== null &&
 							selectedItem !== null &&
-							selectedItem.type === "Node" && selectedItem.item.type !== "documentationNode" && (
+							selectedItem.type === "Node" &&
+							selectedItem.item.type !== "documentationNode" && (
 								<MarkdownDisplay
 									node={selectedItem.item as Node}
 								/>
 							)}
-						{selectedFile !== null &&
-							fileContent !== null &&
-							readFileError === null && (
-								<Editor
-									height="100%"
-									theme="vs-dark"
-									options={{ readOnly: false }}
-									onMount={handleEditorMount}
-									onChange={handleEditorChange}
-									loading={<div>Loading...</div>}
-								/>
-							)}
+						<div style={{height: "100%"}} hidden={selectedFile === null}>
+							<Editor
+								height="100%"
+								theme="vs-dark"
+								options={{ readOnly: false }}
+								onMount={handleEditorMount}
+								onChange={handleEditorChange}
+								loading={<div>Loading...</div>}
+							/>
+						</div>
+
 						{!selectedFile && (
 							<div style={{ textAlign: "center" }}>
 								Select a file to view its content.

@@ -17,6 +17,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import InfoIcon from "@mui/icons-material/Info";
 import OpenDirectoryButton from "../OpenDirectoryButton";
+import useStore from "@/store/store";
 
 const Navbar: React.FC = () => {
 	const [anchorElFile, setAnchorElFile] = useState<null | HTMLElement>(null);
@@ -24,6 +25,8 @@ const Navbar: React.FC = () => {
 	const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
 	const [isConnectionStatusOpen, setIsConnectionStatusOpen] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
+
+    const { setProjectDirectory } = useStore(); // Variables from data store
 
 	const handleFileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorElFile(event.currentTarget);
@@ -37,8 +40,8 @@ const Navbar: React.FC = () => {
 		setAnchorElFile(null);
 		setAnchorElEdit(null);
 	};
-    const handleOpenDirectory = () => {
-
+    const handleOpenDirectory = (pathSelected: string) => {
+        setProjectDirectory(() => pathSelected);
     }
 
 	const toggleProjectInfoDrawer = () => {

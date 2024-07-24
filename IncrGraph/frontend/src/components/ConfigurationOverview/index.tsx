@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import ConfigurationDisplay from "../ConfigurationDisplay";
 import CustomSelect from "../CustomSelect";
-import "./ConfigurationOverview.css";
+import styles from "./ConfigurationOverview.module.css";
 import useStore from "@/store/store";
 import { getEdgeId } from "../EditorPane/components/utils/utils";
 
 interface ConfigurationOverviewProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
 }
+
 const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 	openTextDialog,
 }) => {
@@ -33,15 +34,12 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 	const handleSessionChange = (value: string) => {
 		setCurrentSessionId(() => value);
 		setEdges((prevEdges) => {
-			// Remove all execution relationship edges
 			let filteredEdges = prevEdges.filter(
 				(edge) => edge.type !== "executionRelationship",
 			);
 
-			// Get session data if it exists
 			const session = sessions.get(value);
 			if (session) {
-				// Add execution relationship edges
 				for (let i = 0; i < session.executionPath.length - 1; i++) {
 					const source = session.executionPath[i];
 					const target = session.executionPath[i + 1];
@@ -91,15 +89,18 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 	};
 
 	return (
-		<Box className="configuration-overview">
-			<Typography variant="h6" className="configuration-overview-title">
+		<Box className={styles.configurationOverview}>
+			<Typography
+				variant="h6"
+				className={styles.configurationOverviewTitle}
+			>
 				Session Configuration
 			</Typography>
-			<Box className="configuration-overview-controls">
+			<Box className={styles.configurationOverviewControls}>
 				<Button
 					variant="contained"
 					onClick={handleStartNewSession}
-					className="configuration-overview-button"
+					className={styles.configurationOverviewButton}
 					// disabled={selectedSessionId === null}
 				>
 					{/* {selectedSessionId === null
@@ -124,7 +125,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 					data={sessions.get(selectedSessionId)?.configuration}
 				/>
 			) : (
-				<Typography className="configuration-placeholder">
+				<Typography className={styles.configurationPlaceholder}>
 					No Configurations
 				</Typography>
 			)}
