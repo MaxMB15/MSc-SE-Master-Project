@@ -24,6 +24,7 @@ interface BaseRelationProps extends EdgeProps {
 		label?: string;
 	};
 	selected?: boolean;
+    labelRadius?: number;
 }
 
 const BaseRelation: ComponentType<BaseRelationProps> = ({
@@ -33,7 +34,9 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	style,
 	data,
 	selected,
+    labelRadius=50,
 }) => {
+    
 	const sourceNode = useStore(
 		useCallback((store) => store.nodeInternals.get(source), [source]),
 	);
@@ -176,7 +179,7 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 								// paddingTop: "4px",
 								border: `2px solid ${color}`,
 								cursor: "pointer",
-								borderRadius: "50%",
+								borderRadius: `${labelRadius}%`,
 								fontSize: "12px",
 								lineHeight: "19px",
 								textAlign: "center",

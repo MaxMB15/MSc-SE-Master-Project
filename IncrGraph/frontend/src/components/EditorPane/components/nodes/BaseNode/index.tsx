@@ -10,8 +10,6 @@ import { STYLES } from "@/styles/constants";
 import useStore from "@/store/store";
 import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
-import { CodeExecutionRequest, CodeExecutionResponse } from "shared";
-import { useAxiosRequest } from "@/utils/requests";
 import { runCode } from "@/utils/codeExecution";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
@@ -23,24 +21,16 @@ interface BaseNodeProps extends NodeProps {
 		label: string;
 		backgroundColor?: string;
 		code?: string;
+        scope?: string;
 	};
 }
 
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 	const {
-		nodes,
+		projectDirectory,
 		setNodes,
 		setEdges,
-		currentSessionId,
-		setCurrentSessionId,
-		setSessions,
-		setCodeRunData,
 	} = useStore();
-	const { sendRequest: runCodeSendRequest } = useAxiosRequest<
-		CodeExecutionRequest,
-		CodeExecutionResponse
-	>();
-
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
 		mouseY: number;
@@ -63,19 +53,8 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 
 	const handleRun = () => {
 		console.log("Run action triggered for node:", id);
-		if (data.code !== undefined) {
-			runCode(
-				runCodeSendRequest,
-				data.code,
-				id,
-				setCodeRunData,
-				currentSessionId,
-				setCurrentSessionId,
-				setSessions,
-				nodes,
-				setNodes,
-				setEdges,
-			);
+		if (data.code !== undefined && projectDirectory !== null) {
+			runCode(data.code, id, data.scope);
 		}
 
 		// Select the node
@@ -140,7 +119,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 					type="target"
 					isConnectableStart={false}
 				/>
-				<div style={{textAlign: "center"}}>
+				<div style={{ textAlign: "center" }}>
 					{isConnecting && label}
 					{!isConnecting && data.label}
 				</div>

@@ -1,9 +1,13 @@
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import { createCustomLogger } from "shared";
+import {
+	CodeAnalysisRequest,
+	CodeAnalysisResponse,
+	CodeExecutionRequest,
+	createCustomLogger,
+} from "shared";
 import { spawn, execFile } from "child_process";
-import os from "os";
 import { v4 as uuidv4 } from "uuid";
 
 const router = Router();
@@ -45,11 +49,18 @@ const checkPythonInstallation = (): Promise<string | null> => {
 };
 
 router.post("/execute", async (req: Request, res: Response) => {
-	const { code, language, sessionId } = req.body;
+	const { code, language, projectPath, sessionId }: CodeExecutionRequest =
+		req.body;
 
 	if (!code) {
-		logger.error("No code provided in the request");
+		logger.error("No code was provided in the request");
 		return res.status(400).send({ error: "No code provided" });
+	}
+	if (!projectPath) {
+		logger.error(
+			"No project path (projectPath) was provided in the request",
+		);
+		return res.status(400).send({ error: "No path provided" });
 	}
 
 	// Currently only python is supported. Change this to support different languages
@@ -65,8 +76,7 @@ router.post("/execute", async (req: Request, res: Response) => {
 	}
 
 	const sessionDir = path.join(
-		__dirname,
-		"../../../../content",
+		projectPath,
 		".sessions",
 		sessionId || uuidv4(),
 	);
@@ -77,144 +87,23 @@ router.post("/execute", async (req: Request, res: Response) => {
 	const stateFilePath = path.join(sessionDir, "state.pkl");
 	const configFilePath = path.join(sessionDir, "configuration.json");
 	const scriptFilePath = path.join(sessionDir, "script.py");
-	const codeFilePath = path.join(sessionDir, "code.py");
-	const metaNodeDataPath = path.join(sessionDir, "metaNodeData.json");
-
-	fs.writeFileSync(codeFilePath, code);
 
 	const completeCode = `
 import dill as IGC_RUN_VARIABLE_DILL
 import json as IGC_RUN_VARIABLE_JSON
 import os as IGC_RUN_VARIABLE_OS
 import types as IGC_RUN_VARIABLE_TYPES
-import ast as IGC_RUN_VARIABLE_AST
-import builtins as IGC_RUN_VARIABLE_BUILTINS
 
 state = {}
 config = {}
 
 # Paths for temporary files
-IGC_RUN_VARIABLE_stateFilePath = "${stateFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"
-IGC_RUN_VARIABLE_configFilePath = "${configFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"
-IGC_RUN_VARIABLE_metaNodeDataPath = "${metaNodeDataPath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"
-IGC_RUN_VARIABLE_codeFilePath = "${codeFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"
-
-# Read the code from the code file
-IGC_RUN_VARIABLE_code = ""
-with open(IGC_RUN_VARIABLE_codeFilePath, "r") as IGC_RUN_VARIABLE_codeFile:
-    IGC_RUN_VARIABLE_code = IGC_RUN_VARIABLE_codeFile.read()
-
-# Analysis function
-def IGC_RUN_VARIABLE_analyze_code(code):
-    # Parse the code into an AST
-    tree = IGC_RUN_VARIABLE_AST.parse(code)
-    
-    # Initialize sets to keep track of the variables, functions, classes, and modules
-    dependencies = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set(),
-        'modules': set()
-    }
-    new_definitions = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set()
-    }
-    both_dependency_and_new_definition = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set()
-    }
-
-    class DependencyVisitor(IGC_RUN_VARIABLE_AST.NodeVisitor):
-        def __init__(self):
-            super().__init__()
-            self.current_scope = [set()]
-
-        def visit_Name(self, node):
-            if isinstance(node.ctx, IGC_RUN_VARIABLE_AST.Load):
-                # Add variable to dependencies if it's being loaded (i.e., used)
-                if node.id not in dir(IGC_RUN_VARIABLE_BUILTINS) and node.id not in new_definitions['variables']:  # Exclude built-in functions and variables
-                    dependencies['variables'].add(node.id)
-            elif isinstance(node.ctx, IGC_RUN_VARIABLE_AST.Store):
-                # Check if the variable is already a dependency, if so, it's both
-                if node.id in dependencies['variables']:
-                    both_dependency_and_new_definition['variables'].add(node.id)
-                # Add variable to new_definitions if it's being stored (i.e., defined)
-                new_definitions['variables'].add(node.id)
-                for scope in reversed(self.current_scope):
-                    if node.id in scope:
-                        break
-                    scope.add(node.id)
-        
-        def visit_FunctionDef(self, node):
-            # Add function name to new_definitions
-            new_definitions['functions'].add(node.name)
-            args = {arg.arg for arg in node.args.args}
-            self.current_scope.append(args)
-            self.generic_visit(node)
-            self.current_scope.pop()
-        
-        def visit_ClassDef(self, node):
-            # Add class name to new_definitions
-            new_definitions['classes'].add(node.name)
-            self.current_scope[-1].add(node.name)
-            self.generic_visit(node)
-        
-        def visit_Import(self, node):
-            for alias in node.names:
-                dependencies['modules'].add(alias.name.split('.')[0])
-        
-        def visit_ImportFrom(self, node):
-            dependencies['modules'].add(node.module.split('.')[0])
-        
-        def visit_Assign(self, node):
-            # Visit assigned values first to capture dependencies
-            self.visit(node.value)
-            for target in node.targets:
-                self.visit(target)
-        
-        def visit_AugAssign(self, node):
-            # Visit augmented assignments
-            self.visit(node.value)
-            self.visit(node.target)
-
-    DependencyVisitor().visit(tree)
-    
-    # Identify classes from dependencies
-    def is_class(name):
-        # Assuming a class starts with a capital letter for this example
-        return name[0].isupper()
-
-    dependencies['classes'].update({var for var in dependencies['variables'] if is_class(var)})
-    dependencies['variables'].difference_update(dependencies['classes'])
-
-    # Remove any variables, functions, and classes defined in the code from the dependencies set
-    dependencies['variables'].difference_update(new_definitions['variables'])
-    dependencies['functions'].difference_update(new_definitions['functions'])
-    dependencies['classes'].difference_update(new_definitions['classes'])
-
-    # Add back variables that are both dependencies and definitions
-    dependencies['variables'].update(both_dependency_and_new_definition['variables'])
-
-    # Convert sets to lists for JSON serialization
-    dependencies = {k: list(v) for k, v in dependencies.items()}
-    new_definitions = {k: list(v) for k, v in new_definitions.items()}
-
-    return {
-        'dependencies': dependencies,
-        'new_definitions': new_definitions
-    }
-
-IGC_RUN_VARIABLE_metaNodeData = IGC_RUN_VARIABLE_analyze_code(IGC_RUN_VARIABLE_code)
-
-# Write the combined results to a JSON file
-with open(IGC_RUN_VARIABLE_metaNodeDataPath, 'w') as IGC_RUN_VARIABLE_metaFile:
-    json_data = IGC_RUN_VARIABLE_JSON.dumps(IGC_RUN_VARIABLE_metaNodeData, default=str)
-    IGC_RUN_VARIABLE_metaFile.write(json_data)
-    IGC_RUN_VARIABLE_metaFile.flush()
-    IGC_RUN_VARIABLE_OS.fsync(IGC_RUN_VARIABLE_metaFile.fileno())
+IGC_RUN_VARIABLE_stateFilePath = "${stateFilePath
+		.replace(/\\/g, "\\\\")
+		.replace(/"/g, '\\"')}"
+IGC_RUN_VARIABLE_configFilePath = "${configFilePath
+		.replace(/\\/g, "\\\\")
+		.replace(/"/g, '\\"')}"
 
 # Save the initial state to compare later
 IGC_RUN_VARIABLE_initial_globals = set(globals().keys())
@@ -271,27 +160,24 @@ with open(IGC_RUN_VARIABLE_configFilePath, "w") as IGC_RUN_VARIABLE_configFile:
 		const endTime = process.hrtime(startTime);
 		const execTime = endTime[0] * 1000 + endTime[1] / 1000000; // Execution time in milliseconds
 
-		let config = {};
-		let metaNodeData = {};
+		// Get analysis data
+		let metaNodeData: CodeAnalysisResponse;
+        try{
+            metaNodeData = await analyzeCode({ code, language });
+        }
+        catch (error) {
+            logger.error("Error analyzing code", { error });
+            res.status(500).send({ error: error });
+            return;
+        }
 
+		// Get configuration data
+		let config = {};
 		try {
 			if (fs.existsSync(configFilePath)) {
 				config = JSON.parse(fs.readFileSync(configFilePath, "utf8"));
 			} else {
 				logger.error("Config file does not exist", { sessionId });
-			}
-
-			if (fs.existsSync(metaNodeDataPath)) {
-				console.log("Reading metaNodeDataPath");
-				const text = fs.readFileSync(metaNodeDataPath, "utf8");
-				console.log(text);
-				console.log("Parsing metaNodeDataPath");
-				metaNodeData = JSON.parse(text);
-				console.log(metaNodeData);
-			} else {
-				logger.error("Combined result file does not exist", {
-					sessionId,
-				});
 			}
 		} catch (e) {
 			logger.error(
@@ -301,6 +187,7 @@ with open(IGC_RUN_VARIABLE_configFilePath, "w") as IGC_RUN_VARIABLE_configFile:
 			console.log(e);
 		}
 
+		// Create the result
 		const result = {
 			output: stdout,
 			error: stderr,
@@ -324,15 +211,76 @@ with open(IGC_RUN_VARIABLE_configFilePath, "w") as IGC_RUN_VARIABLE_configFile:
 		}
 
 		// Clean up temporary script file but keep the state file
-		fs.unlinkSync(codeFilePath);
 		fs.unlinkSync(scriptFilePath);
 
 		return res.send(result);
 	});
 });
+const analyzeCode = async ({
+	code,
+	language,
+}: {
+	code: string;
+	language: string;
+}): Promise<CodeAnalysisResponse> => {
+    if (language !== "python") {
+        console.error("Unsupported language", { language });
+        throw new Error("Unsupported language");
+    }
+
+    const pythonPath = await checkPythonInstallation();
+    if (!pythonPath) {
+        console.error("Python is not installed");
+        throw new Error("Python is not installed");
+    }
+
+    const analysisScriptPath = path.join(
+        __dirname,
+        "../scripts/python",
+        "analyze_code.py"
+    );
+
+    return new Promise((resolve, reject) => {
+        const pythonProcess = spawn(pythonPath, [analysisScriptPath]);
+
+        let stdout = "";
+        let stderr = "";
+
+        pythonProcess.stdout.on("data", (data: Buffer) => {
+            stdout += data.toString();
+        });
+
+        pythonProcess.stderr.on("data", (data: Buffer) => {
+            stderr += data.toString();
+        });
+
+        pythonProcess.on("close", (code: number) => {
+            if (code !== 0) {
+                console.error("Error executing Python code", { error: stderr });
+                reject(new Error(stderr));
+                return;
+            }
+
+            try {
+                const analysisResult = JSON.parse(stdout);
+                resolve(analysisResult);
+            } catch (e) {
+                console.error("Error reading analysis result", { error: e });
+                reject(new Error(`Error reading analysis result: ${e}`));
+            }
+        });
+
+        if (pythonProcess.stdin) {
+            pythonProcess.stdin.write(code);
+            pythonProcess.stdin.end();
+        } else {
+            reject(new Error("Failed to write to Python process stdin"));
+        }
+    });
+};
 
 router.post("/analyze", async (req: Request, res: Response) => {
-	const { code, language } = req.body;
+	const { code, language }: CodeAnalysisRequest = req.body;
 
 	if (!code) {
 		logger.error("No code provided in the request");
@@ -344,179 +292,14 @@ router.post("/analyze", async (req: Request, res: Response) => {
 		return res.status(400).send({ error: "Unsupported language" });
 	}
 
-	const tmpDir = os.tmpdir();
-	const codeFilePath = path.join(tmpDir, "code.py");
-	const analysisFilePath = path.join(tmpDir, "analysis.json");
-
-	fs.writeFileSync(codeFilePath, code);
-
-	const analysisCode = `
-import ast as IGC_RUN_VARIABLE_AST
-import json as IGC_RUN_VARIABLE_JSON
-import builtins as IGC_RUN_VARIABLE_BUILTINS
-import os as IGC_RUN_VARIABLE_OS
-
-# Analysis function
-def IGC_RUN_VARIABLE_analyze_code(code):
-    # Parse the code into an AST
-    tree = IGC_RUN_VARIABLE_AST.parse(code)
-    
-    # Initialize sets to keep track of the variables, functions, classes, and modules
-    dependencies = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set(),
-        'modules': set()
+    try {
+        const result = await analyzeCode({ code, language });
+        res.send(result);
     }
-    new_definitions = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set()
+    catch (error) {
+        logger.error("Error analyzing code", { error });
+        res.status(500).send({ error: error });
     }
-    both_dependency_and_new_definition = {
-        'variables': set(),
-        'functions': set(),
-        'classes': set()
-    }
-
-    class DependencyVisitor(IGC_RUN_VARIABLE_AST.NodeVisitor):
-        def __init__(self):
-            super().__init__()
-            self.current_scope = [set()]
-
-        def visit_Name(self, node):
-            if isinstance(node.ctx, IGC_RUN_VARIABLE_AST.Load):
-                # Add variable to dependencies if it's being loaded (i.e., used)
-                if node.id not in dir(IGC_RUN_VARIABLE_BUILTINS) and node.id not in new_definitions['variables']:  # Exclude built-in functions and variables
-                    dependencies['variables'].add(node.id)
-            elif isinstance(node.ctx, IGC_RUN_VARIABLE_AST.Store):
-                # Check if the variable is already a dependency, if so, it's both
-                if node.id in dependencies['variables']:
-                    both_dependency_and_new_definition['variables'].add(node.id)
-                # Add variable to new_definitions if it's being stored (i.e., defined)
-                new_definitions['variables'].add(node.id)
-                for scope in reversed(self.current_scope):
-                    if node.id in scope:
-                        break
-                    scope.add(node.id)
-        
-        def visit_FunctionDef(self, node):
-            # Add function name to new_definitions
-            new_definitions['functions'].add(node.name)
-            args = {arg.arg for arg in node.args.args}
-            self.current_scope.append(args)
-            self.generic_visit(node)
-            self.current_scope.pop()
-        
-        def visit_ClassDef(self, node):
-            # Add class name to new_definitions
-            new_definitions['classes'].add(node.name)
-            self.current_scope[-1].add(node.name)
-            self.generic_visit(node)
-        
-        def visit_Import(self, node):
-            for alias in node.names:
-                dependencies['modules'].add(alias.name.split('.')[0])
-        
-        def visit_ImportFrom(self, node):
-            dependencies['modules'].add(node.module.split('.')[0])
-        
-        def visit_Assign(self, node):
-            # Visit assigned values first to capture dependencies
-            self.visit(node.value)
-            for target in node.targets:
-                self.visit(target)
-        
-        def visit_AugAssign(self, node):
-            # Visit augmented assignments
-            self.visit(node.value)
-            self.visit(node.target)
-
-    DependencyVisitor().visit(tree)
-    
-    # Identify classes from dependencies
-    def is_class(name):
-        # Assuming a class starts with a capital letter for this example
-        return name[0].isupper()
-
-    dependencies['classes'].update({var for var in dependencies['variables'] if is_class(var)})
-    dependencies['variables'].difference_update(dependencies['classes'])
-
-    # Remove any variables, functions, and classes defined in the code from the dependencies set
-    dependencies['variables'].difference_update(new_definitions['variables'])
-    dependencies['functions'].difference_update(new_definitions['functions'])
-    dependencies['classes'].difference_update(new_definitions['classes'])
-
-    # Add back variables that are both dependencies and definitions
-    dependencies['variables'].update(both_dependency_and_new_definition['variables'])
-
-    # Convert sets to lists for JSON serialization
-    dependencies = {k: list(v) for k, v in dependencies.items()}
-    new_definitions = {k: list(v) for k, v in new_definitions.items()}
-
-    return {
-        'dependencies': dependencies,
-        'new_definitions': new_definitions
-    }
-
-IGC_RUN_VARIABLE_code = ""
-with open("${codeFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}", "r") as IGC_RUN_VARIABLE_codeFile:
-    IGC_RUN_VARIABLE_code = IGC_RUN_VARIABLE_codeFile.read()
-
-IGC_RUN_VARIABLE_metaNodeData = IGC_RUN_VARIABLE_analyze_code(IGC_RUN_VARIABLE_code)
-
-with open("${analysisFilePath.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}", 'w') as IGC_RUN_VARIABLE_analysisFile:
-    json_data = IGC_RUN_VARIABLE_JSON.dumps(IGC_RUN_VARIABLE_metaNodeData, default=str)
-    IGC_RUN_VARIABLE_analysisFile.write(json_data)
-    IGC_RUN_VARIABLE_analysisFile.flush()
-    IGC_RUN_VARIABLE_OS.fsync(IGC_RUN_VARIABLE_analysisFile.fileno())
-`;
-
-	const analysisScriptPath = path.join(tmpDir, "analysis_script.py");
-	fs.writeFileSync(analysisScriptPath, analysisCode);
-
-	const pythonPath = await checkPythonInstallation();
-	if (!pythonPath) {
-		logger.error("Python is not installed");
-		return res.status(500).send({ error: "Python is not installed" });
-	}
-
-	const pythonProcess = spawn(pythonPath, [analysisScriptPath]);
-
-	let stdout = "";
-	let stderr = "";
-
-	pythonProcess.stdout.on("data", (data) => {
-		stdout += data.toString();
-	});
-
-	pythonProcess.stderr.on("data", (data) => {
-		stderr += data.toString();
-        console.log(stderr);
-	});
-
-	pythonProcess.on("close", async () => {
-		if (stderr) {
-			logger.error("Error executing Python code", {
-				error: stderr,
-			});
-			return res.status(500).send({ error: stderr });
-		}
-
-		let analysisResult = {};
-		try {
-			if (fs.existsSync(analysisFilePath)) {
-				analysisResult = JSON.parse(fs.readFileSync(analysisFilePath, "utf8"));
-			} else {
-				logger.error("Analysis file does not exist");
-			}
-		} catch (e) {
-			logger.error("Error reading analysis result", { error: e });
-			return res.status(500).send({ error: e });
-		}
-
-		return res.send(analysisResult);
-	});
 });
 
 export default router;

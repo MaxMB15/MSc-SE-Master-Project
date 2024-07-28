@@ -21,6 +21,22 @@
 			},
 			"skipFiles": ["<node_internals>/**", "node_modules/**/*.js"]
 		},
+        {
+            "name": "Analyze Code: Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/IncrGraph/backend/src/scripts/python/analyze_code.test.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "run test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/IncrGraph/languages/python/test.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
 		{
             "name": "Debug Main Process",
             "type": "node",

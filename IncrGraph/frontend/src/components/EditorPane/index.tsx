@@ -60,7 +60,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
 
-        // Request for Analyzing code
+    // Request for Analyzing code
 	const {
 		sendRequest: analyzeCodeSendRequest,
 	} = useAxiosRequest<CodeAnalysisRequest, CodeAnalysisResponse>();
@@ -271,7 +271,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Debug Current Execution"
-                            onClick={() => runAllAnalysis(analyzeCodeSendRequest, nodes, setNodes )}
+                            onClick={() => runAllAnalysis()}
 						>
 							<BugReport />
 						</button>

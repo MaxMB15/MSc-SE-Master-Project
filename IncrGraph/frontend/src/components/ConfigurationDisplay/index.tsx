@@ -11,6 +11,7 @@ const ConfigurationDisplay: React.FC<{ data: any }> = ({ data }) => {
 				color: "white",
 				padding: "16px",
 				boxSizing: "border-box", // Ensure padding does not exceed the container
+                width: "100%",
 			}}
 		>
 			{data ? (

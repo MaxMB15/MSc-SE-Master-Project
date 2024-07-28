@@ -6,11 +6,7 @@ import { ResizableBox } from "react-resizable";
 import { Editor, Monaco } from "@monaco-editor/react";
 import "react-resizable/css/styles.css";
 import "./FileEditor.css";
-import {
-	SaveFilePathRequest,
-	CodeExecutionRequest,
-	CodeExecutionResponse,
-} from "shared";
+import { SaveFilePathRequest } from "shared";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
 import { Node, Edge } from "reactflow";
@@ -60,12 +56,6 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Request for saving file content
 	const { error: saveFileError, sendRequest: saveFileSendRequest } =
 		useAxiosRequest<SaveFilePathRequest, null>();
-	// Request for running code
-	const {
-		// error: codeRunError,
-		// loading: codeRunLoading,
-		sendRequest: runCodeSendRequest,
-	} = useAxiosRequest<CodeExecutionRequest, CodeExecutionResponse>();
 
 	// References to monaco editor
 	const editorRef = useRef<any>(null);
@@ -78,6 +68,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const {
 		selectedFile,
 		fileContent,
+		projectDirectory,
 		setFileContent,
 		localContentBuffer,
 		setLocalContentBuffer,
@@ -906,6 +897,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								<span className="take-full-width"></span>
 								{isIGCFile &&
 									selectedItem &&
+									projectDirectory !== null &&
 									selectedItem.type === "Node" &&
 									selectedItem.item.type !==
 										"documentationNode" && (
@@ -914,16 +906,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 											title="Run Code"
 											onClick={() =>
 												runCode(
-													runCodeSendRequest,
 													selectedItem.item.data.code,
 													selectedItem.id,
-													setCodeRunData,
-													currentSessionId,
-													setCurrentSessionId,
-													setSessions,
-													nodes,
-													setNodes,
-													setEdges,
+                                                    selectedItem.item.data.scope,
 												)
 											}
 											disabled={
@@ -967,7 +952,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									node={selectedItem.item as Node}
 								/>
 							)}
-						<div style={{height: "100%"}} hidden={selectedFile === null}>
+						<div
+							style={{ height: "100%" }}
+							hidden={selectedFile === null}
+						>
 							<Editor
 								height="100%"
 								theme="vs-dark"

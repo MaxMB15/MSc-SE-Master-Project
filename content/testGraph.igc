@@ -17,8 +17,8 @@
             "style": {
                 "cursor": "grab"
             },
-            "width": 20,
-            "height": 20,
+            "width": 23,
+            "height": 23,
             "selected": false,
             "draggable": false
         },
@@ -27,7 +27,22 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Vars",
-                "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)"
+                "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "b",
+                        "c",
+                        "a"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
             },
             "position": {
                 "x": -348.15624781133954,
@@ -47,7 +62,22 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Multiply C",
-                "code": "c = c * 2\n\nprint(c)"
+                "code": "c = c * 2\n\nprint(c)",
+                "dependencies": {
+                    "variables": [
+                        "c"
+                    ],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "c"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
             },
             "position": {
                 "x": -356,
@@ -67,7 +97,20 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Set X",
-                "code": "x = 6"
+                "code": "x = 6",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "x"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
             },
             "position": {
                 "x": -356.8171700807792,
@@ -153,7 +196,20 @@
             "type": "classNode",
             "data": {
                 "label": "Animal",
-                "code": "class Animal:\n    \"\"\"\n    Animal Class\n    \"\"\"\n    \n"
+                "code": "class Animal:\n    \"\"\"\n    Animal Class\n    \"\"\"\n    \n",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Animal"
+                    ]
+                }
             },
             "position": {
                 "x": -81.73685886652117,
@@ -191,7 +247,22 @@
             "type": "methodNode",
             "data": {
                 "label": "getName()",
-                "code": "def getName(self):\n    return self.name"
+                "code": "def getName(self):\n    return self.name",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "getName"
+                    ],
+                    "classes": []
+                },
+                "class": "Animal",
+                "scope": "Animal"
             },
             "position": {
                 "x": -201.25280742171918,
@@ -233,7 +304,22 @@
             "type": "methodNode",
             "data": {
                 "label": "__init__",
-                "code": "def __init__(self, name):\n    \"\"\"\n    Constructor method.\n    \"\"\"\n    self.name = name"
+                "code": "def __init__(self, name):\n    \"\"\"\n    Constructor method.\n    \"\"\"\n    self.name = name",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "__init__"
+                    ],
+                    "classes": []
+                },
+                "class": "Animal",
+                "scope": "Animal"
             },
             "position": {
                 "x": 1.434213675790204,
@@ -275,7 +361,25 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Call getName",
-                "code": "animal = new Animal(\"Bob\")\nprint(animal.getName())"
+                "code": "animal = Animal(\"Bob\")\nprint(animal.getName())",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [
+                        "Animal.__init__",
+                        "Animal.getName"
+                    ],
+                    "classes": [
+                        "Animal"
+                    ],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "animal[Animal]"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
             },
             "position": {
                 "x": -106.58948655183428,
@@ -426,7 +530,17 @@
             "id": "0-4>6",
             "data": {
                 "label": 4
-            }
+            },
+            "selected": false
+        },
+        {
+            "source": "2",
+            "sourceHandle": null,
+            "target": "0",
+            "targetHandle": null,
+            "type": "methodRelationship",
+            "id": "0-2>0",
+            "selected": false
         }
     ]
 }

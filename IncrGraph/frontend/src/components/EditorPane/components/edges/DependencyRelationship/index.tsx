@@ -16,6 +16,7 @@ const DependencyRelationship: ComponentType<DependencyRelationshipProps> = (
 				...props.data,
 				backgroundColor: STYLES.dependencyRelationshipColor,
 			}}
+            labelRadius={5}
 		/>
 	);
 };

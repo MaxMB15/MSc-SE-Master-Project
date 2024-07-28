@@ -104,8 +104,8 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 					// disabled={selectedSessionId === null}
 				>
 					{/* {selectedSessionId === null
-						? "New Session Active"
-						: "Start New Session"} */}
+                            ? "New Session Active"
+                            : "Start New Session"} */}
 					Start New Session
 				</Button>
 				<CustomSelect

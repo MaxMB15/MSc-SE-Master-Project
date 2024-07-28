@@ -290,13 +290,13 @@ export const getNodeId = (nodes: Node[]): string => {
 }
 
 // Create a new Edge id
-export const getEdgeId = (source: string, target: string, edges: Edge[]): string => {
+export const getEdgeId = (source: string, target: string, edges: Edge[], prefix=""): string => {
     // Create an unused edge id
     let i = 0;
-    let id = `${i}-${source}>${target}`;
+    let id = `${prefix}${i}-${source}>${target}`;
     while(edges.some(edge => edge.id === id)){
         i++;
-        id = `${i}-${source}>${target}`;
+        id = `${prefix}${i}-${source}>${target}`;
     }
     return id;
 }

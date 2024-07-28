@@ -11,6 +11,9 @@ import {
 	addEdge,
 	getEdgeId,
 } from "@/components/EditorPane/components/utils/utils";
+import { callAnalyze, callExecute } from "@/requests";
+import useStore from "@/store/store";
+import { createDependencyGraph } from "@/components/EditorPane/components/utils/edgeCreation";
 
 // const getNodeMetaData = (node: Node) => {
 //     if(node.type === "classNode"){
@@ -26,32 +29,30 @@ import {
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
 
 // Run the code analysis on the node
-export const runAnalysis = (
-	runAnalysisSendRequest: (
-		options: UseAxiosRequestOptions<CodeAnalysisRequest>,
-	) => Promise<CodeAnalysisResponse>,
-	node: Node,
-	setNodes: (updater: (prev: Node[]) => Node[]) => void,
-) => {
+export const runAnalysis = (node: Node) => {
+	const { setNodes } = useStore.getState();
+
 	if (
 		node.type !== "documentationNode" &&
 		node.data !== undefined &&
 		node.data.code !== undefined &&
 		node.data.code !== ""
 	) {
-		runAnalysisSendRequest({
-			method: "POST",
-			data: {
-				code: node.data.code,
-				language: "python",
-			},
-			route: "/api/code-handler/analyze",
-			useJWT: false,
-		}).then((response: CodeAnalysisResponse) => {
+		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
 			setNodes((prevNodes) => {
 				return prevNodes.map((n) => {
 					if (node.id === n.id) {
-						n.data = { ...n.data, response };
+						if (
+							n.data !== undefined &&
+							n.data.scope !== undefined
+						) {
+							n.data = {
+								...n.data,
+								...setScope(response, n.data.scope),
+							};
+						} else {
+							n.data = { ...n.data, ...response };
+						}
 					}
 					return n;
 				});
@@ -60,59 +61,43 @@ export const runAnalysis = (
 	}
 };
 
-export const runAllAnalysis = async (
-	runAnalysisSendRequest: (
-		options: UseAxiosRequestOptions<CodeAnalysisRequest>,
-	) => Promise<CodeAnalysisResponse>,
-	nodes: Node[],
-	setNodes: (updater: (prev: Node[]) => Node[]) => void,
-) => {
-	const analysisPromises = nodes.map((node) => {
+export const runAllAnalysis = async () => {
+	const { nodes, setNodes } = useStore.getState();
+
+	// Get all analysis data for all nodes
+	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
+	for (let node of nodes) {
 		if (
 			node.type !== "documentationNode" &&
+			node.type !== "startNode" &&
 			node.data !== undefined &&
 			node.data.code !== undefined &&
 			node.data.code !== ""
 		) {
-			return runAnalysisSendRequest({
-				method: "POST",
-				data: {
-					code: node.data.code,
-					language: "python",
-				},
-				route: "/api/code-handler/analyze",
-				useJWT: false,
-			})
-				.then((response: CodeAnalysisResponse) => {
-					console.log(
-						`Received analysis for node ${node.id}:`,
-						response,
-					);
-					return { nodeId: node.id, response };
-				})
-				.catch((error) => {
-					console.error(`Error analyzing node ${node.id}:`, error);
-					return null;
-				});
+			try {
+				const result = await callAnalyze(node.data.code);
+				nodeAnalysisData[node.id] = result;
+			} catch (error) {
+				console.error(`Error analyzing node ${node.id}:`, error);
+			}
 		} else {
 			console.log(
 				`Skipping node ${node.id} (no code or documentation node).`,
 			);
-			return Promise.resolve(null);
 		}
-	});
-
-	const analysisResults = await Promise.all(analysisPromises);
-
-	console.log("All analysis results:", analysisResults);
+	}
 
 	setNodes((prevNodes) => {
 		return prevNodes.map((node) => {
-			const analysisResult = analysisResults.find(
-				(result) => result && result.nodeId === node.id,
-			);
-			if (analysisResult) {
-				node.data = { ...node.data, response: analysisResult.response };
+			if (node.id in nodeAnalysisData) {
+				if (node.data !== undefined && node.data.scope !== undefined) {
+					node.data = {
+						...node.data,
+						...setScope(nodeAnalysisData[node.id], node.data.scope),
+					};
+				} else {
+					node.data = { ...node.data, ...nodeAnalysisData[node.id] };
+				}
 				console.log(`Node ${node.id} updated with analysis result.`);
 			} else {
 				console.log(`No analysis result for node ${node.id}.`);
@@ -120,17 +105,114 @@ export const runAllAnalysis = async (
 			return node;
 		});
 	});
+	createDependencyGraph();
 };
 
-export const applyCodeAnalysis = (
-	nodeid: string,
-	setNodes: (updater: (prev: Node[]) => Node[]) => void,
-	metaNodeData: any,
+// Convert python code to space first instead of tabs
+const replaceTabsWithSpaces = (input: string, indent: number = 0): string => {
+	const additionalIndent = " ".repeat(4 * indent);
+
+	return input
+		.split("\n")
+		.map((line) => {
+			const match = line.match(/^\s*/);
+			if (match) {
+				const whitespace = match[0];
+				const replacedWhitespace = whitespace.replace(/\t/g, "    ");
+				return (
+					additionalIndent + line.replace(/^\s*/, replacedWhitespace)
+				);
+			}
+			return additionalIndent + line;
+		})
+		.join("\n");
+};
+
+// Inject code into scope
+const injectCode = (code: string, cls: string): string => {
+	return `def add_code_to_class(cls):
+    # START CODE INJECTION
+${replaceTabsWithSpaces(code, 1)}
+    # END CODE INJECTION
+    for key, value in locals().items():
+        if key != 'cls':
+            setattr(cls, key, value)
+    
+# Add the new code to the class
+add_code_to_class(${cls})
+    
+# Clear the add_code_to_class function
+del add_code_to_class`;
+};
+
+// Convert newly defined variables in accordance to the scope
+const setScope = (
+	metaNodeData: CodeAnalysisResponse,
+	scope: string,
+): CodeAnalysisResponse => {
+	if (metaNodeData.new_definitions !== undefined) {
+		// Go through every new definition and set the scope
+		Object.keys(metaNodeData.new_definitions).forEach((key) => {
+			const typedKey = key as keyof typeof metaNodeData.new_definitions;
+			metaNodeData.new_definitions[typedKey] =
+				metaNodeData.new_definitions[typedKey].map(
+					(definition: string) => {
+						return `${scope}.${definition}`;
+					},
+				);
+		});
+	}
+	return metaNodeData;
+};
+// Meta Analyis
+const metaAnalysis =  (
+	nodeId: string,
+	metaNodeData: CodeAnalysisResponse,
 ) => {
+    
+}
+
+
+// Apply the code analysis to the node
+const applyCodeAnalysis = (
+	nodeId: string,
+	metaNodeData: CodeAnalysisResponse,
+) => {
+	const { setNodes } = useStore.getState();
+
 	setNodes((prevNodes) => {
 		return prevNodes.map((node) => {
-			if (node.id === nodeid) {
-				if (node.type === "classNode" && node.data !== undefined) {
+			if (node.id === nodeId) {
+				if (node.type === "baseRelationship") {
+					if (
+						metaNodeData.new_definitions !== undefined &&
+						metaNodeData.new_definitions.classes.length > 0
+					) {
+						node.type = "classNode";
+						node.data["class"] =
+							metaNodeData.new_definitions.classes[0];
+						node.data["label"] =
+							metaNodeData.new_definitions.classes[0];
+					}
+                    else {
+                        if (
+                            metaNodeData.new_definitions !== undefined
+                        ) {
+                            if(metaNodeData.new_definitions.functions.length > 0){
+                                node.data["label"] =
+                                    metaNodeData.new_definitions.functions[0];
+                            }
+                            else if(metaNodeData.new_definitions.variables.length > 0){
+                                node.data["label"] =
+                                    metaNodeData.new_definitions.variables[0];
+                            }
+                        }
+                        node.type = "codeFragmentNode";
+                    }
+				} else if (
+					node.type === "classNode" &&
+					node.data !== undefined
+				) {
 					if (
 						metaNodeData &&
 						metaNodeData.new_definitions &&
@@ -158,94 +240,91 @@ export const applyCodeAnalysis = (
 							metaNodeData.new_definitions.functions[0];
 					}
 				}
-				node.data = { ...node.data, metaNodeData };
+				if (node.data !== undefined && node.data.scope !== undefined) {
+					metaNodeData = setScope(metaNodeData, node.data.scope);
+				}
+				node.data = { ...node.data, ...metaNodeData };
 			}
 			return node;
 		});
 	});
 };
 
-export const runCode = (
-	runCodeSendRequest: (
-		options: UseAxiosRequestOptions<CodeExecutionRequest>,
-	) => Promise<CodeExecutionResponse>,
-	code: string,
-	nodeId: string,
-	setRunCodeData: (
-		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
-	) => void,
-	currentSessionId: string | null,
-	setCurrentSessionId: (
-		updater: (prev: string | null) => string | null,
-	) => void,
-	setSessions: (
-		updater: (prev: Map<string, any>) => Map<string, any>,
-	) => void,
-	_: Node[],
-	setNodes: (updater: (prev: Node[]) => Node[]) => void,
-	setEdges: (updater: (prev: Edge[]) => Edge[]) => void,
-): void => {
-	runCodeSendRequest({
-		method: "POST",
-		data: {
-			code,
-			language: "python",
-			sessionId: currentSessionId !== null ? currentSessionId : undefined,
-		},
-		route: "/api/code-handler/execute",
-		useJWT: false,
-	}).then((response: CodeExecutionResponse) => {
-		setRunCodeData((prevData) =>
-			prevData.set(nodeId, {
-				stdout: response.output,
-				stderr: response.error,
-				configuration: response.configuration,
-				metrics: {
-					executionTime: response.executionTime,
-					sessionId: response.sessionId,
-				},
-			}),
-		);
-		applyCodeAnalysis(nodeId, setNodes, response.metaNodeData);
-		setSessions((prevSessions) => {
-			const prevSession:
-				| { configuration: any; executionPath: string[] }
-				| undefined = prevSessions.get(response.sessionId);
-			let executionPath: string[] | undefined =
-				prevSession?.executionPath;
-			// Add the node to the execution path
-			if (executionPath === undefined) {
-				executionPath = ["start", nodeId];
-			} else {
-				executionPath.push(nodeId);
-			}
-			// Create a new edge for the execution path
-			setEdges((eds) => {
-				const params = {
-					source: executionPath[executionPath.length - 2],
-					target: nodeId,
-					sourceHandle: null,
-					targetHandle: null,
-				};
-				return addEdge(
-					{
-						...params,
-						type: "executionRelationship",
-						id: getEdgeId(params.source, params.target, eds),
-						data: { label: executionPath.length - 1 },
-					},
-					eds.map((e) => {
-						e.selected = false;
-						return e;
-					}),
-				);
-			});
+export const runCode = (code: string, nodeId: string, scope?: string): void => {
+	// Data store variables
+	const {
+		projectDirectory,
+		setEdges,
+		currentSessionId,
+		setCurrentSessionId,
+		setSessions,
+		setCodeRunData,
+	} = useStore.getState();
 
-			return prevSessions.set(response.sessionId, {
-				configuration: response.configuration,
-				executionPath: executionPath,
+	// Make sure projectDirectory is set
+	if (projectDirectory === null) {
+		console.error("Project directory not set.");
+		return;
+	}
+
+	if (scope !== undefined) {
+		code = injectCode(code, scope);
+	}
+
+	callExecute(code, "python", projectDirectory, currentSessionId).then(
+		(response: CodeExecutionResponse) => {
+			setCodeRunData((prevData) =>
+				prevData.set(nodeId, {
+					stdout: response.output,
+					stderr: response.error,
+					configuration: response.configuration,
+					metrics: {
+						executionTime: response.executionTime,
+						sessionId: response.sessionId,
+					},
+				}),
+			);
+			applyCodeAnalysis(nodeId, response.metaNodeData);
+			setSessions((prevSessions) => {
+				const prevSession:
+					| { configuration: any; executionPath: string[] }
+					| undefined = prevSessions.get(response.sessionId);
+				let executionPath: string[] | undefined =
+					prevSession?.executionPath;
+				// Add the node to the execution path
+				if (executionPath === undefined) {
+					executionPath = ["start", nodeId];
+				} else {
+					executionPath.push(nodeId);
+				}
+				// Create a new edge for the execution path
+				setEdges((eds) => {
+					const params = {
+						source: executionPath[executionPath.length - 2],
+						target: nodeId,
+						sourceHandle: null,
+						targetHandle: null,
+					};
+					return addEdge(
+						{
+							...params,
+							type: "executionRelationship",
+							id: getEdgeId(params.source, params.target, eds),
+							data: { label: executionPath.length - 1 },
+						},
+						eds.map((e) => {
+							e.selected = false;
+							return e;
+						}),
+					);
+				});
+
+				return prevSessions.set(response.sessionId, {
+					configuration: response.configuration,
+					executionPath: executionPath,
+				});
 			});
-		});
-		setCurrentSessionId(() => response.sessionId);
-	});
+			setCurrentSessionId(() => response.sessionId);
+		},
+	);
 };

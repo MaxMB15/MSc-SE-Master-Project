@@ -8,6 +8,7 @@ import {
 	updateExecutionPathEdge,
 } from "../EditorPane/components/utils/utils";
 import _ from "lodash";
+import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
 
 interface SelectionPaneProps {}
 
@@ -24,10 +25,12 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		sessions,
 		setSessions,
 	} = useStore();
+    const triggerEdgeTypeUpdate = useTriggerEdgeTypeUpdate();
 
 	// STATE
 	const [name, setName] = useState<string>("");
 	const [selectedOption, setSelectedOption] = useState<string>("");
+
 
 	useEffect(() => {
 		if (selectedItems.length > 0) {
@@ -76,6 +79,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 						return edge;
 					}),
 				);
+                triggerEdgeTypeUpdate(selectedItem.id);
 			}
 		}
 	};

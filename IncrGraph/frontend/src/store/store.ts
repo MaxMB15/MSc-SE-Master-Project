@@ -8,7 +8,10 @@ interface FileHistory {
 	prevSavedContent: string;
 }
 
+type Callback = () => void;
+
 interface State {
+	// VARIABLES
 	selectedFile: string | null;
 	setSelectedFile: (updater: (prev: string | null) => string | null) => void;
 
@@ -58,9 +61,15 @@ interface State {
 	setCodeRunData: (
 		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
 	) => void;
+
+	// HOOKS
+	listenersEdgeTypeUpdate: Map<string, Set<Callback>>;
+	triggerEdgeTypeUpdate: (id: string) => void;
+	subscribeEdgeTypeUpdate: (id: string, callback: Callback) => () => void;
 }
 
 const useStore = create<State>((set) => ({
+	// VARIABLES
 	selectedFile: null,
 	setSelectedFile: (updater: (prev: string | null) => string | null) =>
 		set((state) => {
@@ -100,10 +109,11 @@ const useStore = create<State>((set) => ({
 			};
 		}),
 
-	projectDirectory: "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/content",
+	projectDirectory:
+		"/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/content",
 	setProjectDirectory: (updater: (prev: string | null) => string | null) =>
 		set((state) => {
-            state.setSelectedFile(() => null); // Reset the selected file
+			state.setSelectedFile(() => null); // Reset the selected file
 			return { projectDirectory: updater(state.projectDirectory) };
 		}),
 
@@ -153,6 +163,39 @@ const useStore = create<State>((set) => ({
 	setCodeRunData: (
 		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
 	) => set((state) => ({ codeRunData: updater(state.codeRunData) })),
+
+	// HOOKS
+	listenersEdgeTypeUpdate: new Map(),
+	triggerEdgeTypeUpdate: (id: string) =>
+		set((state) => {
+			const listeners = state.listenersEdgeTypeUpdate.get(id);
+			if (listeners) {
+				listeners.forEach((listener) => listener());
+			}
+            return state;
+		}),
+	subscribeEdgeTypeUpdate: (id: string, callback: Callback) => {
+		set((state) => {
+			if (!state.listenersEdgeTypeUpdate.has(id)) {
+				state.listenersEdgeTypeUpdate.set(id, new Set());
+			}
+			state.listenersEdgeTypeUpdate.get(id)!.add(callback);
+            return state;
+		});
+
+		return () => {
+			set((state) => {
+				const listeners = state.listenersEdgeTypeUpdate.get(id);
+				if (listeners) {
+					listeners.delete(callback);
+					if (listeners.size === 0) {
+						state.listenersEdgeTypeUpdate.delete(id);
+					}
+				}
+                return state;
+			});
+		};
+	},
 }));
 
 export default useStore;

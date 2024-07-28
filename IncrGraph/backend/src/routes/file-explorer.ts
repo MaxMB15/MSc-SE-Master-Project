@@ -18,6 +18,7 @@ const getDirectoryStructure = (dirPath: string): FileNode[] => {
 
 		return {
 			name: file,
+            fullPath: filePath,
 			type: isDirectory ? "directory" : "file",
 			children: isDirectory ? getDirectoryStructure(filePath) : [],
 		};
@@ -26,10 +27,11 @@ const getDirectoryStructure = (dirPath: string): FileNode[] => {
 
 router.get("/", (req: Request, res: Response) => {
 	try {
-		const requestedPath =
-			(req.query.path as string) ||
-			path.resolve(__dirname, "../../../../content");
-		console.log(requestedPath);
+		const requestedPath = req.query.path as string;
+		if (!requestedPath) {
+			res.status(400).send("Path parameter is required");
+			return;
+		}
 
 		if (
 			!fs.existsSync(requestedPath) ||

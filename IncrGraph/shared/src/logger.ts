@@ -1,18 +1,12 @@
 import { createLogger, format, log, transports } from "winston";
+import {getConfigPath} from "./utils"
 import * as path from "path";
 import * as fs from "fs";
-import * as os from "os";
 
 // Function to create a logger with a custom project name
 export const createCustomLogger = (projectName: string) => {
 	// Determine the log directory
-	let logDirectory;
-	if (process.env.LOG_PATH) {
-		logDirectory = path.join(process.env.LOG_PATH, "logs", projectName);
-	} else {
-		const homeDir = os.homedir();
-		logDirectory = path.join(homeDir, ".IGC_LOGS", projectName);
-	}
+	const logDirectory = path.join(getConfigPath(), "logs", projectName);
 
 	// Ensure the log directory exists
 	console.log("logDirectory", logDirectory);
