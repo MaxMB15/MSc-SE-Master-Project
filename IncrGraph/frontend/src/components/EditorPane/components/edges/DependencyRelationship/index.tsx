@@ -1,7 +1,7 @@
 import { ComponentType } from "react";
 import { STYLES } from "@/styles/constants";
 
-import BaseRelation from "../BaseRelationship";
+import BaseRelationship from "../BaseRelationship";
 import { EdgeProps } from "reactflow";
 
 interface DependencyRelationshipProps extends EdgeProps {}
@@ -10,7 +10,7 @@ const DependencyRelationship: ComponentType<DependencyRelationshipProps> = (
 	props,
 ) => {
 	return (
-		<BaseRelation
+		<BaseRelationship
 			{...props}
 			data={{
 				...props.data,

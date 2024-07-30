@@ -1,12 +1,8 @@
 import {
-	CodeAnalysisRequest,
 	CodeAnalysisResponse,
-	CodeExecutionRequest,
 	CodeExecutionResponse,
 } from "shared";
-import { UseAxiosRequestOptions } from "./requests";
-import { CodeRunData } from "@/types/frontend";
-import { Edge, Node } from "reactflow";
+import { Node, Edge } from "reactflow";
 import {
 	addEdge,
 	getEdgeId,
@@ -14,16 +10,7 @@ import {
 import { callAnalyze, callExecute } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/components/EditorPane/components/utils/edgeCreation";
-
-// const getNodeMetaData = (node: Node) => {
-//     if(node.type === "classNode"){
-//        return {"class": node.data?.class ? node.data.class : ""}
-//     }
-//     else if(node.type === "methodNode"){
-//         return {"method": node.data?.method ? node.data.method : ""}
-//     }
-//     return {}
-// }
+import { nodeHasCode } from "@/components/EditorPane/components/utils/types";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -33,10 +20,7 @@ export const runAnalysis = (node: Node) => {
 	const { setNodes } = useStore.getState();
 
 	if (
-		node.type !== "documentationNode" &&
-		node.data !== undefined &&
-		node.data.code !== undefined &&
-		node.data.code !== ""
+		nodeHasCode(node)
 	) {
 		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
 			setNodes((prevNodes) => {
@@ -48,11 +32,19 @@ export const runAnalysis = (node: Node) => {
 						) {
 							n.data = {
 								...n.data,
-								...setScope(response, n.data.scope),
+								...response,
 							};
 						} else {
 							n.data = { ...n.data, ...response };
 						}
+                        if (n.data.new_definitions !== undefined) {
+                            return metaAnalysis(n, {
+                                new_definitions: n.data
+                                    .new_definitions as CodeAnalysisResponse["new_definitions"],
+                                dependencies: n.data
+                                    .dependencies as CodeAnalysisResponse["dependencies"],
+                            });
+                        }
 					}
 					return n;
 				});
@@ -68,11 +60,7 @@ export const runAllAnalysis = async () => {
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
 	for (let node of nodes) {
 		if (
-			node.type !== "documentationNode" &&
-			node.type !== "startNode" &&
-			node.data !== undefined &&
-			node.data.code !== undefined &&
-			node.data.code !== ""
+			nodeHasCode(node)
 		) {
 			try {
 				const result = await callAnalyze(node.data.code);
@@ -93,7 +81,7 @@ export const runAllAnalysis = async () => {
 				if (node.data !== undefined && node.data.scope !== undefined) {
 					node.data = {
 						...node.data,
-						...setScope(nodeAnalysisData[node.id], node.data.scope),
+						...nodeAnalysisData[node.id],
 					};
 				} else {
 					node.data = { ...node.data, ...nodeAnalysisData[node.id] };
@@ -102,11 +90,37 @@ export const runAllAnalysis = async () => {
 			} else {
 				console.log(`No analysis result for node ${node.id}.`);
 			}
+			if (node.data.new_definitions !== undefined) {
+				return metaAnalysis(node, {
+					new_definitions: node.data
+						.new_definitions as CodeAnalysisResponse["new_definitions"],
+					dependencies: node.data
+						.dependencies as CodeAnalysisResponse["dependencies"],
+				});
+			}
 			return node;
 		});
 	});
 	createDependencyGraph();
 };
+
+// Detects override relationships and inheritance relationships
+const detectRelationships = (node: Node): Edge[] => {
+    const relationships: Edge[] = [];
+    relationships.push(...detectOverrideRelationships(node));
+    relationships.push(...detectInheritanceRelationships(node));
+    return relationships;
+}
+const detectOverrideRelationships = (node: Node): Edge[] => {
+    /** Override Relationships are detected by if the following path exists:
+     * Method Node -> (Method relationship) -> Class Node -> (Inheritance relationship) -> Class Node <- (Method relationship) <- Method Node (with the same name)
+     */
+    
+}
+const detectInheritanceRelationships = (node: Node): Edge[] => {
+    // Inheritance relationships are detected by the class node having a class dependency
+
+}  
 
 // Convert python code to space first instead of tabs
 const replaceTabsWithSpaces = (input: string, indent: number = 0): string => {
@@ -161,17 +175,68 @@ const setScope = (
 					},
 				);
 		});
+        // Add the scope to the dependencies
+        if(metaNodeData.dependencies.classes.includes(scope) === false){
+            metaNodeData.dependencies.classes.push(scope);
+        }
 	}
+    
 	return metaNodeData;
 };
-// Meta Analyis
-const metaAnalysis =  (
-	nodeId: string,
-	metaNodeData: CodeAnalysisResponse,
-) => {
-    
-}
+// Meta Analysis
+const metaAnalysis = (node: Node, metaNodeData: CodeAnalysisResponse) => {
+	if (!nodeHasCode(node)) {
+        return node;
+	}
 
+	if (node.type === "baseNode") {
+		if (
+			metaNodeData.new_definitions !== undefined &&
+			metaNodeData.new_definitions.classes.length > 0
+		) {
+			node.type = "classNode";
+			node.data["class"] = metaNodeData.new_definitions.classes[0];
+			node.data["label"] = metaNodeData.new_definitions.classes[0];
+		} else {
+			if (metaNodeData.new_definitions !== undefined) {
+				if (metaNodeData.new_definitions.functions.length > 0) {
+					node.data["label"] =
+						metaNodeData.new_definitions.functions[0];
+				} else if (metaNodeData.new_definitions.variables.length > 0) {
+					node.data["label"] =
+						metaNodeData.new_definitions.variables[0];
+				}
+			}
+			node.type = "codeFragmentNode";
+		}
+	} else if (node.type === "classNode" && node.data !== undefined) {
+		if (
+			metaNodeData &&
+			metaNodeData.new_definitions &&
+			metaNodeData.new_definitions.classes &&
+			metaNodeData.new_definitions.classes.length > 0
+		) {
+			node.data["class"] = metaNodeData.new_definitions.classes[0];
+			node.data["label"] = metaNodeData.new_definitions.classes[0];
+		}
+	} else if (node.type === "methodNode" && node.data !== undefined) {
+		if (
+			metaNodeData &&
+			metaNodeData.new_definitions &&
+			metaNodeData.new_definitions.functions &&
+			metaNodeData.new_definitions.functions.length > 0
+		) {
+			node.data["method"] = metaNodeData.new_definitions.functions[0];
+			node.data["label"] = metaNodeData.new_definitions.functions[0];
+		}
+	}
+	if (node.data !== undefined && node.data.scope !== undefined) {
+		metaNodeData = setScope(metaNodeData, node.data.scope);
+	}
+	node.data = { ...node.data, ...metaNodeData };
+
+	return node;
+};
 
 // Apply the code analysis to the node
 const applyCodeAnalysis = (
@@ -183,67 +248,7 @@ const applyCodeAnalysis = (
 	setNodes((prevNodes) => {
 		return prevNodes.map((node) => {
 			if (node.id === nodeId) {
-				if (node.type === "baseRelationship") {
-					if (
-						metaNodeData.new_definitions !== undefined &&
-						metaNodeData.new_definitions.classes.length > 0
-					) {
-						node.type = "classNode";
-						node.data["class"] =
-							metaNodeData.new_definitions.classes[0];
-						node.data["label"] =
-							metaNodeData.new_definitions.classes[0];
-					}
-                    else {
-                        if (
-                            metaNodeData.new_definitions !== undefined
-                        ) {
-                            if(metaNodeData.new_definitions.functions.length > 0){
-                                node.data["label"] =
-                                    metaNodeData.new_definitions.functions[0];
-                            }
-                            else if(metaNodeData.new_definitions.variables.length > 0){
-                                node.data["label"] =
-                                    metaNodeData.new_definitions.variables[0];
-                            }
-                        }
-                        node.type = "codeFragmentNode";
-                    }
-				} else if (
-					node.type === "classNode" &&
-					node.data !== undefined
-				) {
-					if (
-						metaNodeData &&
-						metaNodeData.new_definitions &&
-						metaNodeData.new_definitions.classes &&
-						metaNodeData.new_definitions.classes.length > 0
-					) {
-						node.data["class"] =
-							metaNodeData.new_definitions.classes[0];
-						node.data["label"] =
-							metaNodeData.new_definitions.classes[0];
-					}
-				} else if (
-					node.type === "methodNode" &&
-					node.data !== undefined
-				) {
-					if (
-						metaNodeData &&
-						metaNodeData.new_definitions &&
-						metaNodeData.new_definitions.functions &&
-						metaNodeData.new_definitions.functions.length > 0
-					) {
-						node.data["method"] =
-							metaNodeData.new_definitions.functions[0];
-						node.data["label"] =
-							metaNodeData.new_definitions.functions[0];
-					}
-				}
-				if (node.data !== undefined && node.data.scope !== undefined) {
-					metaNodeData = setScope(metaNodeData, node.data.scope);
-				}
-				node.data = { ...node.data, ...metaNodeData };
+				return metaAnalysis(node, metaNodeData);
 			}
 			return node;
 		});

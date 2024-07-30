@@ -1,7 +1,7 @@
 import { ComponentType, useCallback, useEffect } from "react";
 import { STYLES } from "@/styles/constants";
 
-import BaseRelation from "../BaseRelationship";
+import BaseRelationship from "../BaseRelationship";
 import { EdgeProps, useStore as reactflowStore } from "reactflow";
 import useStore from "@/store/store";
 import { callAnalyze } from "@/requests";
@@ -47,7 +47,7 @@ const MethodRelationship: ComponentType<MethodRelationshipProps> = (
     }, []);
 
 	return (
-		<BaseRelation
+		<BaseRelationship
 			{...props}
 			data={{
 				...props.data,

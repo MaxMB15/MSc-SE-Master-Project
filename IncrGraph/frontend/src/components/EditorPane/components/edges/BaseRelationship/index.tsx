@@ -13,7 +13,7 @@ import {
 } from "../CustomConnectionLine";
 import { Point } from "@/types/frontend";
 
-interface BaseRelationProps extends EdgeProps {
+interface BaseRelationshipProps extends EdgeProps {
 	id: string;
 	source: string;
 	target: string;
@@ -27,7 +27,7 @@ interface BaseRelationProps extends EdgeProps {
     labelRadius?: number;
 }
 
-const BaseRelation: ComponentType<BaseRelationProps> = ({
+const BaseRelationship: ComponentType<BaseRelationshipProps> = ({
 	id,
 	source,
 	target,
@@ -195,7 +195,7 @@ const BaseRelation: ComponentType<BaseRelationProps> = ({
 	);
 };
 
-export default BaseRelation;
+export default BaseRelationship;
 
 export const defaultEdgeOptions = {
 	// style: { strokeWidth: STYLES.edgeWidth, stroke: STYLES.defaultEdgeColor },

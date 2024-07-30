@@ -1,4 +1,4 @@
-import { NodeTypes, EdgeTypes } from "reactflow";
+import { Node, NodeTypes, EdgeTypes } from "reactflow";
 
 import BaseRelationship from "../edges/BaseRelationship";
 import DependencyRelationship from "../edges/DependencyRelationship";
@@ -40,3 +40,13 @@ export const edgeTypes: EdgeTypes = {
 	dependencyRelationship: DependencyRelationship,
     documentationRelationship: DocumentationRelationship,
 };
+
+const codeContainingNodes = ["baseNode", "classNode", "abstractClassNode", "interfaceNode", "libraryNode", "methodNode", "codeFragmentNode"];
+
+export const isCodeContainingNode = (node: Node) => {
+    return node.type !== undefined && codeContainingNodes.includes(node.type);
+}
+
+export const nodeHasCode = (node: Node) => {
+    return isCodeContainingNode(node) && node.data !== undefined && node.data.code !== undefined && node.data.code !== "";
+}

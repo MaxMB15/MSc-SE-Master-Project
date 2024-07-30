@@ -1,6 +1,7 @@
 import useStore from "@/store/store";
 import { getEdgeId } from "./utils";
 import { Edge } from "reactflow";
+import { isCodeContainingNode } from "./types";
 
 interface DependencyEdge {
     source: string;
@@ -20,12 +21,11 @@ export const createDependencyGraph = () => {
 
     // Go through every node and get the dependencies and new_definitions
     for(let node of nodes) {
-        if(node.type === "documentationNode") {
+        if(!isCodeContainingNode(node)) {
             continue;
         }
         if (node.data !== undefined) {
             if (node.data.dependencies !== undefined) {
-                console.log(Object.keys(node.data.dependencies));
                 for(const type of Object.keys(node.data.dependencies)) {
                     for(const dependency of node.data.dependencies[type]) {
                         if(dependencyMap[dependency] === undefined) {
