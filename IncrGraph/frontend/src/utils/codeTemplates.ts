@@ -60,7 +60,7 @@ export const getSuggestions = (
 		const suggestions = allSuggestions[language as keyof AllSuggestions];
 
 		if (nodeType !== null && nodeType in suggestions) {
-			return (suggestions as any)[nodeType].flatMap((node: Node) =>
+			return (suggestions as any)[nodeType].flatMap((node: IGCNode) =>
 				Object.entries(node).map(([label, insertText]) =>
 					makeSuggestion(label, insertText, monaco, range),
 				),
@@ -69,8 +69,8 @@ export const getSuggestions = (
 
 		// Return all suggestions if nodeType is null
 		return Object.values(suggestions).flatMap(
-			(nodes: NodeTypeSuggestion[]) =>
-				nodes.flatMap((node: NodeTypeSuggestion) =>
+			(nodes: IGCNodeTypeSuggestion[]) =>
+				nodes.flatMap((node: IGCNodeTypeSuggestion) =>
 					Object.entries(node).map(([label, insertText]) =>
 						makeSuggestion(label, insertText, monaco, range),
 					),
@@ -104,7 +104,7 @@ interface NodeTypeSuggestion {
 }
 
 interface LanguageSuggestions {
-	[nodeType: string]: NodeTypeSuggestion[];
+	[nodeType: string]: IGCNodeTypeSuggestion[];
 }
 
 interface AllSuggestions {

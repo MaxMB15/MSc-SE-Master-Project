@@ -11,7 +11,7 @@ def analyze_code(code):
         "classes": set(),
         "modules": set(),
     }
-    new_definitions = {"variables": set(), "functions": set(), "classes": set()}
+    definitions = {"variables": set(), "functions": set(), "classes": set()}
     variable_types = {}
     newly_defined_type_variables = {}
 
@@ -27,9 +27,9 @@ def analyze_code(code):
                 if (
                     node.id not in self.builtins
                     and node.id not in self.current_scope[-1]
-                    and node.id not in new_definitions["variables"]
-                    and node.id not in new_definitions["functions"]
-                    and node.id not in new_definitions["classes"]
+                    and node.id not in definitions["variables"]
+                    and node.id not in definitions["functions"]
+                    and node.id not in definitions["classes"]
                     and not self.child_of_call(node)
                 ):
                     dependencies["variables"].add(f"{node.id}")
@@ -38,7 +38,7 @@ def analyze_code(code):
                 if node.id in variable_types:
                     newly_defined_type_variables[node.id] = variable_types[node.id]
                 else:
-                    new_definitions["variables"].add(f"{node.id}")
+                    definitions["variables"].add(f"{node.id}")
                 self.current_scope[-1].add(node.id)
 
         def child_of_call(self, node):
@@ -49,14 +49,14 @@ def analyze_code(code):
 
         def visit_FunctionDef(self, node):
             func_name = f"{self.current_class}.{node.name}" if self.current_class else node.name
-            new_definitions["functions"].add(func_name)
+            definitions["functions"].add(func_name)
             self.current_scope.append({arg.arg for arg in node.args.args})
             self.generic_visit(node)
             self.current_scope.pop()
 
         def visit_ClassDef(self, node):
             self.current_class = node.name
-            new_definitions["classes"].add(node.name)
+            definitions["classes"].add(node.name)
             self.current_scope.append(set())
             self.generic_visit(node)
             self.current_scope.pop()
@@ -65,12 +65,12 @@ def analyze_code(code):
         def visit_Import(self, node):
             for alias in node.names:
                 dependencies["modules"].add(alias.name.split(".")[0])
-                new_definitions["variables"].add(alias.asname or alias.name.split(".")[0])
+                definitions["variables"].add(alias.asname or alias.name.split(".")[0])
 
         def visit_ImportFrom(self, node):
             dependencies["modules"].add(node.module.split(".")[0])
             for alias in node.names:
-                new_definitions["variables"].add(alias.asname or alias.name)
+                definitions["variables"].add(alias.asname or alias.name)
 
         def visit_Assign(self, node):
             if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
@@ -99,7 +99,7 @@ def analyze_code(code):
                 if (
                     node.func.id not in self.builtins
                     and node.func.id not in self.current_scope[-1]
-                    and (node.func.id not in new_definitions["functions"] and node.func.id not in new_definitions["classes"])
+                    and (node.func.id not in definitions["functions"] and node.func.id not in definitions["classes"])
                 ):
                     if node.func.id[0].isupper():
                         dependencies["classes"].add(node.func.id)
@@ -115,10 +115,10 @@ def analyze_code(code):
                 ):
                     var_type = variable_types.get(node.func.value.id)
                     if var_type:
-                        if f"{var_type}.{node.func.attr}" not in new_definitions["functions"]:
+                        if f"{var_type}.{node.func.attr}" not in definitions["functions"]:
                             dependencies["functions"].add(f"{var_type}.{node.func.attr}")
                     else:
-                        if f"<{node.func.value.id}>.{node.func.attr}" not in new_definitions["functions"]:
+                        if f"<{node.func.value.id}>.{node.func.attr}" not in definitions["functions"]:
                             dependencies["variables"].add(f"{node.func.value.id}")
                             dependencies["functions"].add(f"<{node.func.value.id}>.{node.func.attr}")
             self.generic_visit(node)
@@ -149,12 +149,12 @@ def analyze_code(code):
         def visit_Delete(self, node):
             for target in node.targets:
                 if isinstance(target, ast.Name):
-                    if target.id in new_definitions["variables"]:
-                        new_definitions["variables"].remove(f"{target.id}")
-                    elif target.id in new_definitions["functions"]:
-                        new_definitions["functions"].remove(f"{target.id}")
-                    elif target.id in new_definitions["classes"]:
-                        new_definitions["classes"].remove(f"{target.id}")
+                    if target.id in definitions["variables"]:
+                        definitions["variables"].remove(f"{target.id}")
+                    elif target.id in definitions["functions"]:
+                        definitions["functions"].remove(f"{target.id}")
+                    elif target.id in definitions["classes"]:
+                        definitions["classes"].remove(f"{target.id}")
                     if target.id in newly_defined_type_variables:
                         newly_defined_type_variables.pop(target.id)
                     if target.id in variable_types:
@@ -169,12 +169,12 @@ def analyze_code(code):
     DependencyVisitor().visit(tree)
 
     for var, var_type in newly_defined_type_variables.items():
-        new_definitions["variables"].add(f"{var}[{var_type}]")
+        definitions["variables"].add(f"{var}[{var_type}]")
 
     dependencies = {k: list(v) for k, v in dependencies.items()}
-    new_definitions = {k: list(v) for k, v in new_definitions.items()}
+    definitions = {k: list(v) for k, v in definitions.items()}
 
-    return {"dependencies": dependencies, "new_definitions": new_definitions}
+    return {"dependencies": dependencies, "definitions": definitions}
 
 if __name__ == "__main__":
     import sys

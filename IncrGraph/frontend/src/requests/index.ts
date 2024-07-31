@@ -2,14 +2,14 @@
 import { sendAxiosRequest, UseAxiosRequestOptions } from "@/utils/requests";
 import { CodeAnalysisRequest, CodeAnalysisResponse, CodeExecutionRequest, CodeExecutionResponse } from "shared";
 
-export const callAnalyze = (code: string) => {
+export const callAnalyze = (request: CodeAnalysisRequest) => {
     console.log("runAnalysis");
     const options: UseAxiosRequestOptions<CodeAnalysisRequest> = {
         method: "POST",
         route: "/api/code-handler/analyze",
         data: {
-            code: code,
-            language: "python",
+            code: request.code,
+            language: request.language,
         },
         useJWT: false,
     };

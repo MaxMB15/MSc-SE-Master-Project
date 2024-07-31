@@ -1,6 +1,8 @@
 import { Node, Edge } from "reactflow";
 import { CodeRunData, Item, SessionData } from "@/types/frontend";
 import { create } from "zustand";
+import { IGCNode } from "@/graphComponents/nodes/IGCNode";
+import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
@@ -41,11 +43,11 @@ interface State {
 	selectedItem: Item | null;
 	setSelectedItem: (updater: (prev: Item | null) => Item | null) => void;
 
-	nodes: Node[];
-	setNodes: (updater: (prev: Node[]) => Node[]) => void;
+	nodes: IGCNode[];
+	setNodes: (updater: (prev: IGCNode[]) => IGCNode[]) => void;
 
-	edges: Edge[];
-	setEdges: (updater: (prev: Edge[]) => Edge[]) => void;
+	edges: IGCEdge[];
+	setEdges: (updater: (prev: IGCEdge[]) => IGCEdge[]) => void;
 
 	currentSessionId: string | null;
 	setCurrentSessionId: (
@@ -143,11 +145,11 @@ const useStore = create<State>((set) => ({
 		set((state) => ({ selectedItem: updater(state.selectedItem) })),
 
 	nodes: [],
-	setNodes: (updater: (prev: Node[]) => Node[]) =>
+	setNodes: (updater: (prev: IGCNode[]) => IGCNode[]) =>
 		set((state) => ({ nodes: updater(state.nodes) })),
 
 	edges: [],
-	setEdges: (updater: (prev: Edge[]) => Edge[]) =>
+	setEdges: (updater: (prev: IGCEdge[]) => IGCEdge[]) =>
 		set((state) => ({ edges: updater(state.edges) })),
 
 	currentSessionId: null,

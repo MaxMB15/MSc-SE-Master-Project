@@ -34,7 +34,7 @@
                     "classes": [],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [
                         "b",
                         "a",
@@ -71,7 +71,7 @@
                     "classes": [],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [
                         "c"
                     ],
@@ -104,7 +104,7 @@
                     "classes": [],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [
                         "x"
                     ],
@@ -203,7 +203,7 @@
                     "classes": [],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [],
                     "functions": [],
                     "classes": [
@@ -257,7 +257,7 @@
                     ],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [],
                     "functions": [
                         "Animal.Animal.getName"
@@ -317,7 +317,7 @@
                     ],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [],
                     "functions": [
                         "Animal.Animal.__init__"
@@ -380,7 +380,7 @@
                     ],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [
                         "animal[Animal]"
                     ],
@@ -437,7 +437,7 @@
                     "classes": [],
                     "modules": []
                 },
-                "new_definitions": {
+                "definitions": {
                     "variables": [],
                     "functions": [],
                     "classes": [

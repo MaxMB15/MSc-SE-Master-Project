@@ -7,16 +7,16 @@ interface ContextMenuProps {
 	anchorEl: null | HTMLElement;
 	handleClose: () => void;
 	position: { mouseX: number; mouseY: number } | null;
-	onRun: () => void;
 	onDelete: () => void;
+	onRun?: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
 	anchorEl,
 	handleClose,
 	position,
-	onRun,
 	onDelete,
+	onRun,
 }) => {
 	return (
 		<Menu
@@ -29,12 +29,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			open={Boolean(anchorEl)}
 			onClose={handleClose}
 		>
-			<MenuItem onClick={onRun}>
-				<ListItemIcon>
-					<PlayArrowIcon style={{ color: "green" }} />
-				</ListItemIcon>
-				<Typography variant="inherit">Run</Typography>
-			</MenuItem>
+			{onRun !== undefined && (
+				<MenuItem onClick={onRun}>
+					<ListItemIcon>
+						<PlayArrowIcon style={{ color: "green" }} />
+					</ListItemIcon>
+					<Typography variant="inherit">Run</Typography>
+				</MenuItem>
+			)}
 			<MenuItem onClick={onDelete}>
 				<ListItemIcon>
 					<DeleteIcon style={{ color: "red" }} />

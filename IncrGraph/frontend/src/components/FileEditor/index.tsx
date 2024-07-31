@@ -111,7 +111,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Serialize the file content into graph data
 	const serializeGraphData = (
 		content: string,
-	): { nodes: Node[]; edges: Edge[] } => {
+	): { nodes: IGCNode[]; edges: IGCEdge[] } => {
 		console.log("Serializing graph data");
 		console.log("content\n", content);
 		try {
@@ -124,7 +124,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 	};
 	// Deserialize the graph data into a string
-	const deserializeGraphData = (nodes: Node[], edges: Edge[]): string => {
+	const deserializeGraphData = (nodes: IGCNode[], edges: IGCEdge[]): string => {
 		let data = { nodes: nodes, edges: edges };
 		return JSON.stringify(data, null, 4); // Pretty print the JSON
 	};
@@ -658,7 +658,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	};
 
 	// Show only connected documentation nodes
-	const showRelaventDocumentation = (node: Node | null): void => {
+	const showRelaventDocumentation = (node: IGCNode | null): void => {
 		if (node === null) {
 			setNodes((prevNodes) =>
 				prevNodes.map((n) => {

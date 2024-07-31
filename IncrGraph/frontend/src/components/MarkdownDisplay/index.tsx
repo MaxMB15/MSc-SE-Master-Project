@@ -10,7 +10,7 @@ import {
 import useStore from "@/store/store";
 
 interface MarkdownDisplayProps {
-	node: Node;
+	node: IGCNode;
 }
 
 const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
@@ -21,9 +21,9 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 		setOrCreateDocumentationNode(node, nodes, edges);
 	};
 	const getCodeDocumentation = (
-		node: Node,
-		nodes: Node[],
-		edges: Edge[],
+		node: IGCNode,
+		nodes: IGCNode[],
+		edges: IGCEdge[],
 	): string | null => {
 		const incomingDocumentationNodes = getIncomingNodes(
 			node.id,
@@ -38,9 +38,9 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 	};
 
 	const setOrCreateDocumentationNode = (
-		node: Node,
-		nodes: Node[],
-		edges: Edge[],
+		node: IGCNode,
+		nodes: IGCNode[],
+		edges: IGCEdge[],
 	): void => {
 		const incomingDocumentationNodes = getIncomingNodes(
 			node.id,

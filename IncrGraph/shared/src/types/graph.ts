@@ -22,10 +22,10 @@
 // // Interface for a basic node
 // export interface Node {
 // 	id: string;
-// 	type: NodeType;
+// 	type: IGCNodeType;
 // 	label: string;
-// 	children?: Node[];
-// 	versions: NodeVersion[];
+// 	children?: IGCNode[];
+// 	versions: IGCNodeVersion[];
 // 	currentVersion: string; // Id of the currently selected version
 // }
 
@@ -88,8 +88,8 @@
 
 // // Interface for the graph structure
 // export interface Graph {
-// 	nodes: Node[];
-// 	edges: Edge[];
+// 	nodes: IGCNode[];
+// 	edges: IGCEdge[];
 // }
 
 // // EXAMPLE GRAPH

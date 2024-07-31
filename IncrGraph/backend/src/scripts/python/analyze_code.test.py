@@ -4,8 +4,8 @@ from analyze_code import analyze_code
 def sort_analysis_result(result):
     for key in result['dependencies']:
         result['dependencies'][key].sort()
-    for key in result['new_definitions']:
-        result['new_definitions'][key].sort()
+    for key in result['definitions']:
+        result['definitions'][key].sort()
     return result
 
 class TestAnalyzeCode(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -34,7 +34,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         try:
             result = analyze_code(code)
@@ -52,7 +52,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -66,7 +66,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x", "y", "z"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x", "y", "z"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -80,7 +80,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x", "y"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x", "y"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -94,7 +94,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["foo"], "classes": []},
+            "definitions": {"variables": [], "functions": ["foo"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -108,7 +108,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["foo"], "classes": []},
+            "definitions": {"variables": [], "functions": ["foo"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -122,7 +122,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": ["MyClass"]},
+            "definitions": {"variables": [], "functions": [], "classes": ["MyClass"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -136,7 +136,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["MyClass.method"], "classes": ["MyClass"]},
+            "definitions": {"variables": [], "functions": ["MyClass.method"], "classes": ["MyClass"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -150,7 +150,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["MyClass.method"], "classes": ["MyClass"]},
+            "definitions": {"variables": [], "functions": ["MyClass.method"], "classes": ["MyClass"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -164,7 +164,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -179,7 +179,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -193,7 +193,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -207,7 +207,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["result[foo]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["result[foo]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -221,7 +221,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -235,7 +235,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -249,7 +249,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -263,7 +263,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -277,7 +277,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal", "Dog"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Dog]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Dog]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -291,7 +291,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal", "Dog"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Dog]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Dog]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -305,7 +305,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[<x>]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[<x>]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -319,7 +319,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": ["os"],
             },
-            "new_definitions": {"variables": ["os"], "functions": [], "classes": []},
+            "definitions": {"variables": ["os"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -333,7 +333,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": ["os"],
             },
-            "new_definitions": {"variables": ["special_os"], "functions": [], "classes": []},
+            "definitions": {"variables": ["special_os"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -347,7 +347,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": ["urllib"],
             },
-            "new_definitions": {"variables": ["request"], "functions": [], "classes": []},
+            "definitions": {"variables": ["request"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -361,7 +361,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": ["urllib"],
             },
-            "new_definitions": {"variables": ["req"], "functions": [], "classes": []},
+            "definitions": {"variables": ["req"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -376,7 +376,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -390,7 +390,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["foo"], "classes": []},
+            "definitions": {"variables": [], "functions": ["foo"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -404,7 +404,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": ["Animal.__init__"], "classes": ["Animal"]},
+            "definitions": {"variables": ["animal[Animal]"], "functions": ["Animal.__init__"], "classes": ["Animal"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -418,7 +418,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": ["Animal"]},
+            "definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": ["Animal"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -433,7 +433,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -447,7 +447,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -461,7 +461,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["x"], "functions": [], "classes": []},
+            "definitions": {"variables": ["x"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -475,7 +475,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["foo"], "classes": []},
+            "definitions": {"variables": [], "functions": ["foo"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -489,7 +489,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": ["Animal.__init__"], "classes": ["Animal"]},
+            "definitions": {"variables": ["animal[Animal]"], "functions": ["Animal.__init__"], "classes": ["Animal"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -504,7 +504,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -518,7 +518,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": ["Animal"],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
+            "definitions": {"variables": ["animal[Animal]"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -532,7 +532,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -546,7 +546,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -560,7 +560,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -574,7 +574,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["i"], "functions": [], "classes": []},
+            "definitions": {"variables": ["i"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -589,7 +589,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["i", "j"], "functions": [], "classes": []},
+            "definitions": {"variables": ["i", "j"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -604,7 +604,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["obj[MyClass]"], "functions": ["MyClass.method"], "classes": ["MyClass"]},
+            "definitions": {"variables": ["obj[MyClass]"], "functions": ["MyClass.method"], "classes": ["MyClass"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -619,7 +619,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["add_code_to_class"], "classes": []},
+            "definitions": {"variables": [], "functions": ["add_code_to_class"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -634,7 +634,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["i"], "functions": [], "classes": []},
+            "definitions": {"variables": ["i"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -649,7 +649,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["i"], "functions": [], "classes": []},
+            "definitions": {"variables": ["i"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -664,7 +664,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["i"], "functions": [], "classes": []},
+            "definitions": {"variables": ["i"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -679,7 +679,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -694,7 +694,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -709,7 +709,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["a[A]"], "functions": [], "classes": ["A"]},
+            "definitions": {"variables": ["a[A]"], "functions": [], "classes": ["A"]},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -724,7 +724,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["lst"], "functions": [], "classes": []},
+            "definitions": {"variables": ["lst"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -739,7 +739,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": ["foo"], "classes": []},
+            "definitions": {"variables": [], "functions": ["foo"], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -754,7 +754,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -769,7 +769,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": [], "functions": [], "classes": []},
+            "definitions": {"variables": [], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)
@@ -784,7 +784,7 @@ class TestAnalyzeCode(unittest.TestCase):
                 "classes": [],
                 "modules": [],
             },
-            "new_definitions": {"variables": ["lst"], "functions": [], "classes": []},
+            "definitions": {"variables": ["lst"], "functions": [], "classes": []},
         }
         result = analyze_code(code)
         self.assertEqual(sort_analysis_result(result), expected_output)

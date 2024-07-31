@@ -18,6 +18,7 @@ export default defineConfig({
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
 			"@components": path.resolve(__dirname, "./src/components"),
+			"@graph-components": path.resolve(__dirname, "./src/graphComponents"),
 		},
 	},
 });

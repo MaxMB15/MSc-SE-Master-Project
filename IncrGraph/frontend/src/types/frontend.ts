@@ -1,8 +1,10 @@
+import { IGCNode } from "@/graphComponents/nodes/IGCNode";
+import { ReactNode } from "react";
 import { Node, Edge } from "reactflow";
 
 export interface Item {
 	type: "Node" | "Edge";
-	item: Node | Edge;
+	item: IGCNode | Edge;
 	id: string;
 	name: string;
 }
@@ -34,7 +36,7 @@ export class Rectangle {
 		this.height = height;
 	}
 
-	static fromNode(node: Node): Rectangle | null {
+	static fromNode(node: IGCNode): Rectangle | null {
 		if (
 			node.positionAbsolute == null ||
 			node.positionAbsolute.x == null ||
@@ -89,4 +91,18 @@ export interface CodeRunData {
 export interface SessionData {
 	configuration: any;
 	executionPath: string[];
+}
+
+export interface UseEditor {
+    code: string
+}
+export interface EditorDisplayNode {
+    beforeEditor?: ReactNode;
+    useEditor?: UseEditor;
+    afterEditor?: ReactNode;
+}
+
+export interface LabelProps {
+    label: string;
+    labelRadius: number;
 }

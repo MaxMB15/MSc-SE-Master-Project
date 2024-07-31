@@ -9,7 +9,9 @@
 		"types": ["node"],
 		"paths": {
 			"@/*": ["./src/*"],
-			"@components/*": ["./src/components/*"]
+			"@components/*": ["./src/components/*"],
+            "@graph-components/*": ["./src/graphComponents/*"],
+
 		},
         "sourceMap": true,
 	},

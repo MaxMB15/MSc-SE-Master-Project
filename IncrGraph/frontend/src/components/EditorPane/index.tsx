@@ -24,7 +24,7 @@ import {
 	updateExecutionPath,
 	updateExecutionPathEdge,
 } from "./components/utils/utils";
-import { edgeTypes, nodeTypes } from "./components/utils/types";
+import { edgeTypes, nodeTypes } from "/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "./components/edges/CustomConnectionLine";
@@ -72,7 +72,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	}, [fileContent]);
 
 	// Node Functions
-	const onNodesChange = (changes: NodeChange[]) => {
+	const onNodesChange = (changes: IGCNodeChange[]) => {
         // Get current session data
         if (currentSessionId !== null) {
             const session = sessions.get(currentSessionId);
@@ -99,7 +99,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// If a node is changed, check to see if there are any selection changes
 	useEffect(() => {
 		// Look at which nodes are selected
-		const newSelectedNodes: Node[] = nodes.filter((node) => node.selected);
+		const newSelectedNodes: IGCNode[] = nodes.filter((node) => node.selected);
 
 		setSelectedNodes(newSelectedNodes);
 	}, [nodes]);
@@ -108,7 +108,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const handleAddNode = () => {
 		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
-			const newNode: Node = {
+			const newNode: IGCNode = {
 				id: getNodeId(nodes),
 				type: "baseNode",
 				data: { label: `Node ${nodes.length}`, code: "" },
@@ -134,7 +134,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 
 	// Edge Functions
-	const onEdgesChange = (changes: EdgeChange[]) => {
+	const onEdgesChange = (changes: IGCEdgeChange[]) => {
 		setEdges((eds) => {
 			// Get current session data
 			if (currentSessionId !== null) {
@@ -167,12 +167,12 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 	// If an edge is changed, check to see if there are any selection changes
 	useEffect(() => {
-		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
+		let newSelectedEdges: IGCEdge[] = edges.filter((edge) => edge.selected);
 		setSelectedEdges(newSelectedEdges);
 	}, [edges]);
 
 	// If a new edge is created
-	const onConnect = (params: Edge | Connection) => {
+	const onConnect = (params: IGCEdge | Connection) => {
 		const { source, target } = params;
 
 		// Custom logic to handle the connection
@@ -236,7 +236,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedItems(() => items);
 	}, [selectedNodes, selectedEdges]);
 
-	const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
+	const onNodeDoubleClick = (event: React.MouseEvent, node: IGCNode) => {
 		console.log("Node double clicked", node);
 		console.log("Event", event);
 	};
