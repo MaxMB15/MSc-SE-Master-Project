@@ -6,9 +6,6 @@ import ReactFlow, {
 	Background,
 	Controls,
 	MiniMap,
-	applyEdgeChanges,
-	applyNodeChanges,
-	Edge,
 	Node,
 	Connection,
 	NodeChange,
@@ -18,20 +15,21 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
 import {
-	addEdge,
-	getEdgeId,
 	getNodeId,
-	updateExecutionPath,
 	updateExecutionPathEdge,
-} from "./components/utils/utils";
-import { edgeTypes, nodeTypes } from "/utils/types";
+} from "@/graphComponents/utils/utils";
+import { edgeTypes, nodeTypes } from "@/graphComponents/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
-} from "./components/edges/CustomConnectionLine";
+} from "@/graphComponents/utils/CustomConnectionLine";
 import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
-import { runAllAnalysis } from "@/utils/codeExecution";
+import { IGCCodeNode, IGCNode } from "@/graphComponents/nodes/IGCNode";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
+import BaseRelationship from "@/graphComponents/relationships/BaseRelationship";
+import BaseNode from "@/graphComponents/nodes/BaseNode";
+import ExecutionRelationship from "@/graphComponents/relationships/ExecutionRelationship";
 
 interface EditorPaneProps {}
 
@@ -54,9 +52,9 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// STATE
 	const [showGraph, setShowGraph] = useState(false); // If the graph should show up or not
 
-	const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+	const [selectedNodes, setSelectedNodes] = useState<IGCNode[]>([]);
 
-	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
+	const [selectedEdges, setSelectedEdges] = useState<IGCRelationship[]>([]);
 
 	// REFERENCES
 	const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -72,34 +70,40 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	}, [fileContent]);
 
 	// Node Functions
-	const onNodesChange = (changes: IGCNodeChange[]) => {
-        // Get current session data
-        if (currentSessionId !== null) {
-            const session = sessions.get(currentSessionId);
-            if (session !== undefined) {
-                let vSession = session;
-                let currentExecutionPath: string[] = vSession.executionPath;
-                // Go through each change and update eds accordingly
-                for (let change of changes) {
-                    if (change.type === "remove") {
-                        vSession.executionPath = vSession.executionPath.filter(node => node !== change.id);
-                    }
-                }
-                if (vSession.executionPath !== currentExecutionPath) {
-                    // Shallow is okay
-                    setSessions((prevSessions) => {
-                        return prevSessions.set(currentSessionId, vSession);
-                    });
-                    setEdges((prevEdges) => updateExecutionPath(prevEdges, vSession));
-                }
-            }
-        }
-		setNodes((nds) => applyNodeChanges(changes, nds));
+	const onNodesChange = (changes: NodeChange[]) => {
+		// Get current session data
+		if (currentSessionId !== null) {
+			const session = sessions.get(currentSessionId);
+			if (session !== undefined) {
+				let vSession = session;
+				let currentExecutionPath: string[] = vSession.executionPath;
+				// Go through each change and update eds accordingly
+				for (let change of changes) {
+					if (change.type === "remove") {
+						vSession.executionPath = vSession.executionPath.filter(
+							(node) => node !== change.id,
+						);
+					}
+				}
+				if (vSession.executionPath !== currentExecutionPath) {
+					// Shallow is okay
+					setSessions((prevSessions) => {
+						return prevSessions.set(currentSessionId, vSession);
+					});
+					setEdges((prevEdges) =>
+                        ExecutionRelationship.updateExecutionPath(prevEdges, vSession),
+					);
+				}
+			}
+		}
+		setNodes((nds) => IGCNode.applyNodeChanges(changes, nds));
 	};
 	// If a node is changed, check to see if there are any selection changes
 	useEffect(() => {
 		// Look at which nodes are selected
-		const newSelectedNodes: IGCNode[] = nodes.filter((node) => node.selected);
+		const newSelectedNodes: IGCNode[] = nodes.filter(
+			(node) => node.selected,
+		);
 
 		setSelectedNodes(newSelectedNodes);
 	}, [nodes]);
@@ -108,16 +112,15 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const handleAddNode = () => {
 		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
-			const newNode: IGCNode = {
-				id: getNodeId(nodes),
-				type: "baseNode",
-				data: { label: `Node ${nodes.length}`, code: "" },
-				position: {
-					x: Math.random() * 500 - 250,
-					y: Math.random() * 500 - 250,
+			const newNode: IGCNode = new BaseNode(
+				{
+					id: getNodeId(nodes),
+					xPos: Math.random() * 500 - 250,
+					yPos: Math.random() * 500 - 250,
+					selected: true,
 				},
-				selected: true,
-			};
+				"",
+			);
 			let newNodes = nodes.map((node) => {
 				node.selected = false;
 				return node;
@@ -134,7 +137,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 
 	// Edge Functions
-	const onEdgesChange = (changes: IGCEdgeChange[]) => {
+	const onEdgesChange = (changes: EdgeChange[]) => {
 		setEdges((eds) => {
 			// Get current session data
 			if (currentSessionId !== null) {
@@ -162,36 +165,37 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 					}
 				}
 			}
-			return applyEdgeChanges(changes, eds);
+			return IGCRelationship.applyRelationshipChanges(changes, eds);
 		});
 	};
 	// If an edge is changed, check to see if there are any selection changes
 	useEffect(() => {
-		let newSelectedEdges: IGCEdge[] = edges.filter((edge) => edge.selected);
+		let newSelectedEdges: IGCRelationship[] = edges.filter((edge) => edge.selected);
 		setSelectedEdges(newSelectedEdges);
 	}, [edges]);
 
 	// If a new edge is created
-	const onConnect = (params: IGCEdge | Connection) => {
+	const onConnect = (params: IGCRelationship | Connection) => {
 		const { source, target } = params;
 
 		// Custom logic to handle the connection
 		if (source !== null && target !== null) {
 			console.log(`Creating connection from ${source} to ${target}`);
-			setEdges((eds) =>
-				addEdge(
-					{
-						...params,
-						type: "BaseRelationship",
-						id: getEdgeId(source, target, eds),
+			setEdges((eds) => {
+				const id = IGCRelationship.generateId(source, target, eds);
+				return IGCRelationship.addEdge(
+					new BaseRelationship({
+						id: id,
+						source: source,
+						target: target,
 						selected: true,
-					},
+					}),
 					eds.map((e) => {
 						e.selected = false;
 						return e;
 					}),
-				),
-			);
+				);
+			});
 			setNodes((nodes) => {
 				let newNodes = nodes.map((node) => {
 					node.selected = false;
@@ -236,7 +240,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedItems(() => items);
 	}, [selectedNodes, selectedEdges]);
 
-	const onNodeDoubleClick = (event: React.MouseEvent, node: IGCNode) => {
+	const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
 		console.log("Node double clicked", node);
 		console.log("Event", event);
 	};
@@ -264,7 +268,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Debug Current Execution"
-                            onClick={() => runAllAnalysis()}
+							onClick={() => IGCCodeNode.runAllAnalysis()}
 						>
 							<BugReport />
 						</button>

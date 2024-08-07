@@ -2,13 +2,10 @@ import React, { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import "./SelectionPane.css";
 import useStore from "@/store/store";
-import { applyEdgeChanges } from "reactflow";
-import {
-	updateExecutionPath,
-	updateExecutionPathEdge,
-} from "../EditorPane/components/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
+import ExecutionRelationship from "@/graphComponents/relationships/ExecutionRelationship";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 
 interface SelectionPaneProps {}
 
@@ -52,17 +49,15 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		return null;
 	}
 
+    // I THINK THIS NEEDS EDITING
 	const handleOptionChange = (value: string) => {
 		setSelectedOption(value);
 		if (selectedItem) {
 			if (selectedItem.type === "Node") {
 				setNodes((prevNodes) =>
 					prevNodes.map((node) => {
-						if (node.id === selectedItem.id) {
-							return {
-								...node,
-								type: value,
-							};
+                        if (node.id === selectedItem.id) {
+                            node.type = value;
 						}
 						return node;
 					}),
@@ -71,10 +66,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 				setEdges((prevEdges) =>
 					prevEdges.map((edge) => {
 						if (edge.id === selectedItem.id) {
-							return {
-								...edge,
-								type: value,
-							};
+                            edge.type = value;
 						}
 						return edge;
 					}),
@@ -90,13 +82,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 			setNodes((prevNodes) =>
 				prevNodes.map((node) => {
 					if (node.id === selectedItem.id) {
-						return {
-							...node,
-							data: {
-								...node.data,
-								label: event.target.value,
-							},
-						};
+                        node.data.label = event.target.value;
 					}
 					return node;
 				}),
@@ -126,7 +112,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 
 							for (let edge of edgesConnectedToNode.reverse()) {
 								let edgeId = edge.id;
-								let changes = updateExecutionPathEdge(
+								let changes = ExecutionRelationship.removeExecutionRelation(
 									edgeId,
 									prevEdges,
 									vSession,
@@ -146,7 +132,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 								});
 							}
 
-							return updateExecutionPath(prevEdges, vSession);
+							return ExecutionRelationship.updateExecutionPath(prevEdges, vSession);
 						});
 					}
 				}
@@ -164,7 +150,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 								vSession.executionPath,
 							);
 
-							const uepData = updateExecutionPathEdge(
+							const uepData = ExecutionRelationship.removeExecutionRelation(
 								selectedItem.id,
 								prevEdges,
 								vSession,
@@ -184,7 +170,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 							}
 						}
 					}
-					return applyEdgeChanges(
+					return IGCRelationship.applyRelationshipChanges(
 						[{ type: "remove", id: selectedItem.id }],
 						prevEdges,
 					);

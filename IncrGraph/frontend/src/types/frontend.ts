@@ -1,10 +1,11 @@
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 import { IGCNode } from "@/graphComponents/nodes/IGCNode";
 import { ReactNode } from "react";
-import { Node, Edge } from "reactflow";
+import { CodeAnalysisRequest, CodeAnalysisResponse, Definitions, Dependencies } from "shared";
 
 export interface Item {
 	type: "Node" | "Edge";
-	item: IGCNode | Edge;
+	item: IGCNode | IGCRelationship;
 	id: string;
 	name: string;
 }
@@ -36,23 +37,12 @@ export class Rectangle {
 		this.height = height;
 	}
 
-	static fromNode(node: IGCNode): Rectangle | null {
-		if (
-			node.positionAbsolute == null ||
-			node.positionAbsolute.x == null ||
-			node.positionAbsolute.y == null ||
-			node.width == null ||
-			node.height == null
-		) {
-			return null;
-		}
-		return new Rectangle(
-			node.positionAbsolute.x,
-			node.positionAbsolute.y,
-			node.width,
-			node.height,
-		);
-	}
+    get position(): Point {
+        return new Point(this.x, this.y);
+    }
+    get size(): Point {
+        return new Point(this.width, this.height);
+    }
 
 	get left(): number {
 		return this.x;
@@ -94,7 +84,8 @@ export interface SessionData {
 }
 
 export interface UseEditor {
-    code: string
+    code: string;
+    language: string;
 }
 export interface EditorDisplayNode {
     beforeEditor?: ReactNode;
@@ -105,4 +96,51 @@ export interface EditorDisplayNode {
 export interface LabelProps {
     label: string;
     labelRadius: number;
+}
+
+export class Analysis {
+    definitions: Definitions;
+    dependencies: Dependencies;
+    updateFunction: (request: CodeAnalysisRequest) => Promise<CodeAnalysisResponse>;
+
+    constructor(updateFunction: (request: CodeAnalysisRequest) => Promise<CodeAnalysisResponse>) {
+        this.definitions = {variables: [], functions: [], classes: []};
+        this.dependencies = {variables: [], functions: [], classes: [], modules: []};
+        this.updateFunction = updateFunction;
+    }
+
+    public update(request: CodeAnalysisRequest): Promise<CodeAnalysisResponse> {
+        if (this.updateFunction !== undefined) {
+            return this.updateFunction(request).then((newAnalysis) => {
+                this.definitions = newAnalysis.definitions;
+                this.dependencies = newAnalysis.dependencies;
+                return newAnalysis;
+            });
+        }
+        return Promise.reject("Update function not set");
+    }
+
+    // Convert newly defined variables in accordance to the scope
+    public static setScope (
+        metaNodeData: CodeAnalysisResponse,
+        scope: string,
+    ): CodeAnalysisResponse {
+        if (metaNodeData.definitions !== undefined) {
+            // Go through every new definition and set the scope
+            Object.keys(metaNodeData.definitions).forEach((key) => {
+                const typedKey = key as keyof typeof metaNodeData.definitions;
+                metaNodeData.definitions[typedKey] = metaNodeData.definitions[
+                    typedKey
+                ].map((definition: string) => {
+                    return `${scope}.${definition}`;
+                });
+            });
+            // Add the scope to the dependencies
+            if (metaNodeData.dependencies.classes.includes(scope) === false) {
+                metaNodeData.dependencies.classes.push(scope);
+            }
+        }
+
+        return metaNodeData;
+    };
 }

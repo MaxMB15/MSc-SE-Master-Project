@@ -7,7 +7,7 @@
 		"install:backend": "cd backend && npm install",
 		"install:electron": "cd electron && npm install",
 		"install:shared": "cd shared && npm install",
-		"build": "npm run build:shared %% npm run build:frontend && npm run build:backend && npm run build:electron",
+		"build": "npm run build:shared && npm run build:frontend && npm run build:backend && npm run build:electron",
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build",
 		"build:electron": "cd electron && npm run build",

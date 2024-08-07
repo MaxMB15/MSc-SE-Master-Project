@@ -4,7 +4,7 @@ import ConfigurationDisplay from "../ConfigurationDisplay";
 import CustomSelect from "../CustomSelect";
 import styles from "./ConfigurationOverview.module.css";
 import useStore from "@/store/store";
-import { getEdgeId } from "../EditorPane/components/utils/utils";
+import ExecutionRelationship from "@/graphComponents/relationships/ExecutionRelationship";
 
 interface ConfigurationOverviewProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
@@ -34,25 +34,11 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 	const handleSessionChange = (value: string) => {
 		setCurrentSessionId(() => value);
 		setEdges((prevEdges) => {
-			let filteredEdges = prevEdges.filter(
-				(edge) => edge.type !== "executionRelationship",
-			);
-
-			const session = sessions.get(value);
-			if (session) {
-				for (let i = 0; i < session.executionPath.length - 1; i++) {
-					const source = session.executionPath[i];
-					const target = session.executionPath[i + 1];
-					filteredEdges.push({
-						id: getEdgeId(source, target, filteredEdges),
-						source,
-						target,
-						type: "executionRelationship",
-						data: { label: `${i + 1}` },
-					});
-				}
-			}
-			return filteredEdges;
+            const session = sessions.get(value);
+            if(session !== undefined){
+                return ExecutionRelationship.updateExecutionPath(prevEdges, session);
+            }
+            return prevEdges;
 		});
 	};
 

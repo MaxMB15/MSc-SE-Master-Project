@@ -31,63 +31,26 @@ export interface CodeExecutionResponse {
 	configuration: any;
 	executionTime: number;
 	sessionId: string;
-	metaNodeData?: Analysis;
+	metaNodeData?: CodeAnalysisResponse;
 }
 
 export interface CodeAnalysisRequest {
 	code: string;
 	language: string;
 }
-export class Dependencies {
+export interface Dependencies {
     variables: string[];
     functions: string[];
     classes: string[];
     modules: string[];
-
-    constructor(variables: string[], functions: string[], classes: string[], modules: string[]) {
-        this.variables = variables;
-        this.functions = functions;
-        this.classes = classes;
-        this.modules = modules;
-    }
-
-    static EMPTY: Dependencies = new Dependencies([], [], [], []);
-
 }
-export class Definitions {
+export interface Definitions {
     variables: string[];
     functions: string[];
     classes: string[];
-
-    constructor(variables: string[], functions: string[], classes: string[]) {
-        this.variables = variables;
-        this.functions = functions;
-        this.classes = classes;
-    }
-
-    static EMPTY: Definitions = new Definitions([], [], []);
 }
-export class Analysis {
+
+export interface CodeAnalysisResponse {
     definitions: Definitions;
     dependencies: Dependencies;
-    updateFunction?: (request: CodeAnalysisRequest) => Promise<CodeAnalysisResponse>;
-
-    constructor(definitions?: Definitions, dependencies?: Dependencies, updateFunction?: (request: CodeAnalysisRequest) => Promise<CodeAnalysisResponse>) {
-        this.definitions = definitions || Definitions.EMPTY;
-        this.dependencies = dependencies || Dependencies.EMPTY;
-        this.updateFunction = updateFunction;
-    }
-
-    public update(request: CodeAnalysisRequest): void {
-        if (this.updateFunction !== undefined) {
-            this.updateFunction(request).then((newAnalysis) => {
-                this.definitions = newAnalysis.definitions;
-                this.dependencies = newAnalysis.dependencies;
-            });
-        }
-    }
-
-    static EMPTY: Analysis = new Analysis(Definitions.EMPTY, Dependencies.EMPTY);
-}
-
-export type CodeAnalysisResponse = Analysis;
+};

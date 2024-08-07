@@ -1,11 +1,9 @@
-import { Node, NodeTypes, EdgeTypes } from "reactflow";
-
-import BaseRelationship from "../edges/BaseRelationship";
-import DependencyRelationship from "../edges/DependencyRelationship";
-import ExecutionRelationship from "../edges/ExecutionRelationship";
-import InheritanceRelationship from "../edges/InheritanceRelationship";
-import MethodRelationship from "../edges/MethodRelationship";
-import OverridesRelationship from "../edges/OverridesRelationship";
+import BaseRelationship from "../relationships/BaseRelationship";
+import DependencyRelationship from "../relationships/DependencyRelationship";
+import ExecutionRelationship from "../relationships/ExecutionRelationship";
+import InheritanceRelationship from "../relationships/InheritanceRelationship";
+import MethodRelationship from "../relationships/MethodRelationship";
+import OverridesRelationship from "../relationships/OverridesRelationship";
 import AbstractClassNode from "../nodes/AbstractClassNode";
 
 import BaseNode from "../nodes/BaseNode";
@@ -16,29 +14,30 @@ import LibraryNode from "../nodes/LibraryNode";
 import MethodNode from "../nodes/MethodNode";
 import StartNode from "../nodes/StartNode";
 import DocumentationNode from "../nodes/DocumentationNode";
-import DocumentationRelationship from "../edges/DocumentationRelationship";
+import DocumentationRelationship from "../relationships/DocumentationRelationship";
+import { EdgeTypes, NodeTypes } from "reactflow";
 
-//Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
-export const nodeTypes: IGCNodeTypes = {
-	startNode: StartNode,
-	baseNode: BaseNode,
-	classNode: ClassNode,
-	abstractClassNode: AbstractClassNode,
-	interfaceNode: InterfaceNode,
-	libraryNode: LibraryNode,
-	methodNode: MethodNode,
-	codeFragmentNode: CodeFragmentNode,
-    documentationNode: DocumentationNode,
+export const nodeTypes: NodeTypes = {
+    [StartNode.KEY]: StartNode,
+    [BaseNode.KEY]: BaseNode,
+    [ClassNode.KEY]: ClassNode,
+    [AbstractClassNode.KEY]: AbstractClassNode,
+    [InterfaceNode.KEY]: InterfaceNode,
+    [LibraryNode.KEY]: LibraryNode,
+    [MethodNode.KEY]: MethodNode,
+    [CodeFragmentNode.KEY]: CodeFragmentNode,
+    [DocumentationNode.KEY]: DocumentationNode,
 };
 
-export const edgeTypes: IGCEdgeTypes = {
-	baseRelationship: BaseRelationship,
-	inheritanceRelationship: InheritanceRelationship,
-	overridesRelationship: OverridesRelationship,
-	methodRelationship: MethodRelationship,
-	executionRelationship: ExecutionRelationship,
-	dependencyRelationship: DependencyRelationship,
-    documentationRelationship: DocumentationRelationship,
+
+export const edgeTypes: EdgeTypes = {
+	[BaseRelationship.KEY]: BaseRelationship,
+    [InheritanceRelationship.KEY]: InheritanceRelationship,
+    [OverridesRelationship.KEY]: OverridesRelationship,
+    [MethodRelationship.KEY]: MethodRelationship,
+    [ExecutionRelationship.KEY]: ExecutionRelationship,
+    [DependencyRelationship.KEY]: DependencyRelationship,
+    [DocumentationRelationship.KEY]: DocumentationRelationship,
 };
 
 // const codeContainingNodes = ["baseNode", "classNode", "abstractClassNode", "interfaceNode", "libraryNode", "methodNode", "codeFragmentNode"];

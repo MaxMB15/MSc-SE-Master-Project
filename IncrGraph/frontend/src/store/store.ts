@@ -1,8 +1,7 @@
-import { Node, Edge } from "reactflow";
 import { CodeRunData, Item, SessionData } from "@/types/frontend";
 import { create } from "zustand";
 import { IGCNode } from "@/graphComponents/nodes/IGCNode";
-import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
@@ -46,8 +45,8 @@ interface State {
 	nodes: IGCNode[];
 	setNodes: (updater: (prev: IGCNode[]) => IGCNode[]) => void;
 
-	edges: IGCEdge[];
-	setEdges: (updater: (prev: IGCEdge[]) => IGCEdge[]) => void;
+	edges: IGCRelationship[];
+	setEdges: (updater: (prev: IGCRelationship[]) => IGCRelationship[]) => void;
 
 	currentSessionId: string | null;
 	setCurrentSessionId: (
@@ -149,7 +148,7 @@ const useStore = create<State>((set) => ({
 		set((state) => ({ nodes: updater(state.nodes) })),
 
 	edges: [],
-	setEdges: (updater: (prev: IGCEdge[]) => IGCEdge[]) =>
+	setEdges: (updater: (prev: IGCRelationship[]) => IGCRelationship[]) =>
 		set((state) => ({ edges: updater(state.edges) })),
 
 	currentSessionId: null,

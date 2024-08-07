@@ -1,17 +1,14 @@
 import "./BaseNode.css";
 import { STYLES } from "@/styles/constants";
 import { IGCCodeNode, IGCCodeNodeProps } from "../IGCNode";
-import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 
-interface BaseNodeProps extends IGCCodeNodeProps {}
+interface BaseNodeProps {}
 
-export class BaseNode extends IGCCodeNode implements BaseNodeProps {
+export default class BaseNode extends IGCCodeNode {
 
-    constructor(props: BaseNodeProps) {
-        super({
-            ...props,
-            backgroundColor: STYLES.defaultNodeColor,
-        });
+    constructor(props: IGCCodeNodeProps<BaseNodeProps>, code: string) {
+        super(props, BaseNode.KEY, STYLES.defaultNodeColor, code);
     }
 
     // Implement abstract methods
@@ -20,7 +17,11 @@ export class BaseNode extends IGCCodeNode implements BaseNodeProps {
         return "";
     }
 
-    public createRelationships(edges: IGCEdge[]): IGCEdge[] {
+    public metaAnalysis(): void {
+        return;
+    }
+
+    public createRelationships(edges: IGCRelationship[]): IGCRelationship[] {
         // Implementation of createRelationships
         return edges;
     }

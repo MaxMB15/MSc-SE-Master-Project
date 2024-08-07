@@ -1,12 +1,12 @@
 import { ConnectionLineComponent, getStraightPath } from "reactflow";
 import { STYLES } from "@/styles/constants";
-import { Node } from "reactflow";
 import { Point, Rectangle } from "@/types/frontend";
 import {
 	calculatePerpendicularOffsetPoint,
 	getBezierNodeIntersection,
 	getNodeIntersectionWithCircle,
 } from "./utils";
+import { IGCNode } from "../nodes/IGCNode";
 
 export const getSimpleStraightPath = (
 	sourceX: number,
@@ -51,8 +51,8 @@ export const createSmartQuadraticPath = (
 	idList: string[],
 	offsetGap = 50,
 ) => {
-    const sNode = Rectangle.fromNode(sourceNode);
-    const tNode = Rectangle.fromNode(targetNode);
+    const sNode = sourceNode.getBounds();
+    const tNode = targetNode.getBounds();
 
     if (sNode === null || tNode === null) {
         return {path: "", labelPoint: Point.ZERO}
@@ -132,7 +132,7 @@ export const createSmartSelfLoopPath = (
 	offsetGap = 20,
 	startOffset = 30,
 ) => {
-    const rect = Rectangle.fromNode(node);
+    const rect = node.getBounds();
     if (rect === null) {
         return {path: "", labelPoint: Point.ZERO}
     }

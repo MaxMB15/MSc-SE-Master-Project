@@ -1,17 +1,14 @@
 import "./CodeFragmentNode.css";
 import { STYLES } from "@/styles/constants";
 import { IGCCodeNode, IGCCodeNodeProps } from "../IGCNode";
-import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 
-interface CodeFragmentNodeProps extends IGCCodeNodeProps {}
+interface CodeFragmentNodeProps {}
 
-export class CodeFragmentNode extends IGCCodeNode implements CodeFragmentNodeProps {
+export default class CodeFragmentNode extends IGCCodeNode {
 
-    constructor(props: CodeFragmentNodeProps) {
-        super({
-            ...props,
-            backgroundColor: STYLES.codeFragmentNodeColor,
-        });
+    constructor(props: IGCCodeNodeProps<CodeFragmentNodeProps>, code: string) {
+        super(props, CodeFragmentNode.KEY, STYLES.codeFragmentNodeColor, code);
     }
 
     // Implement abstract methods
@@ -20,11 +17,14 @@ export class CodeFragmentNode extends IGCCodeNode implements CodeFragmentNodePro
         return "";
     }
 
-    public createRelationships(edges: IGCEdge[]): IGCEdge[] {
+    public metaAnalysis(): void {
+        return;
+    }
+
+    public createRelationships(edges: IGCRelationship[]): IGCRelationship[] {
         // Implementation of createRelationships
         return edges;
     }
 
     public static KEY = "CodeFragmentNode";
-
 }

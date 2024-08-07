@@ -2,19 +2,22 @@ import React from "react";
 import "./StartNode.css";
 import { Handle, Position } from "reactflow";
 import { changeSelection } from "@/graphComponents/utils/utils";
-import { IGCNode } from "../IGCNode";
-import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
+import { IGCNode, IGCNodeProps } from "../IGCNode";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 import { EditorDisplayNode } from "@/types/frontend";
 
 
-class StartNode extends IGCNode {
+export default class StartNode extends IGCNode {
+    constructor(partialNodeProps: IGCNodeProps) {
+        super(partialNodeProps, StartNode.KEY, "#ffffff");
+    }
     public editorDisplay(): EditorDisplayNode {
         return {}
     }
     public deserialize(): string {
         throw new Error("Method not implemented.");
     }
-    public createRelationships(edges: IGCEdge[]): IGCEdge[] {
+    public createRelationships(edges: IGCRelationship[]): IGCRelationship[] {
         // Does not do anything
         return edges;
     }
@@ -41,6 +44,6 @@ class StartNode extends IGCNode {
 			</div>
 		</div>);
     }
-}
 
-export default StartNode;
+    public static KEY = "StartNode";
+}

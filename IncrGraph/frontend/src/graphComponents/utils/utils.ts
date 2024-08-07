@@ -1,52 +1,32 @@
-import {
-	Position,
-	isEdge,
-	Connection,
-    Node,
-} from "reactflow";
+import { Position} from "reactflow";
 import { Point, Rectangle, SessionData } from "@/types/frontend";
 import useStore from "@/store/store";
 import { IGCNode } from "../nodes/IGCNode";
-import { IGCEdge } from "../edges/IGCEdge";
+import IGCRelationship from "../relationships/IGCRelationship";
+import ExecutionRelationship from "../relationships/ExecutionRelationship";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
-const getNodeIntersection = (intersectionNode: IGCNode, targetNode: IGCNode) => {
+const getNodeIntersection = (
+	intersectionNode: IGCNode,
+	targetNode: IGCNode,
+) => {
 	// https://math.stackexchange.com/questions/1724792/an-algorithm-for-finding-the-intersection-point-between-a-center-of-vision-and-a
-	if (
-		intersectionNode.width == null ||
-		intersectionNode.height == null ||
-		intersectionNode.positionAbsolute == null ||
-		intersectionNode.positionAbsolute.x == null ||
-		intersectionNode.positionAbsolute.y == null
-	) {
-		console.error("Intersection Node is missing width, height, x or y");
-		return { x: 0, y: 0 };
-	}
-	if (
-		targetNode.width == null ||
-		targetNode.height == null ||
-		targetNode.positionAbsolute == null ||
-		targetNode.positionAbsolute.x == null ||
-		targetNode.positionAbsolute.y == null
-	) {
-		console.error("Target Node is missing width, height, x or y");
-		return { x: 0, y: 0 };
-	}
+
 	const {
 		width: intersectionNodeWidth,
 		height: intersectionNodeHeight,
-		positionAbsolute: intersectionNodePosition,
-	} = intersectionNode;
-	const targetPosition = targetNode.positionAbsolute;
+		position: intersectionNodePosition,
+	} = intersectionNode.getBounds();
+	const targetPosition = targetNode.getBounds().position;
 
 	const w = intersectionNodeWidth / 2;
 	const h = intersectionNodeHeight / 2;
 
 	const x2 = intersectionNodePosition.x + w;
 	const y2 = intersectionNodePosition.y + h;
-	const x1 = targetPosition.x + targetNode.width / 2;
-	const y1 = targetPosition.y + targetNode.height / 2;
+	const x1 = targetPosition.x + targetNode.getBounds().width / 2;
+	const y1 = targetPosition.y + targetNode.getBounds().height / 2;
 
 	const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h);
 	const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h);
@@ -61,26 +41,20 @@ const getNodeIntersection = (intersectionNode: IGCNode, targetNode: IGCNode) => 
 
 // returns the position (top,right,bottom or right) passed node compared to the intersection point
 const getEdgePosition = (node: IGCNode, intersectionPoint: Point) => {
-	const n = { ...node.positionAbsolute, ...node };
-	if (n.width == null || n.height == null || n.x == null || n.y == null) {
-		console.error("Node is missing width, height, x or y");
-		return Position.Top;
-	}
-
-	const nx = Math.round(n.x);
-	const ny = Math.round(n.y);
+	const nx = Math.round(node.position.x);
+	const ny = Math.round(node.position.y);
 	const px = Math.round(intersectionPoint.x);
 	const py = Math.round(intersectionPoint.y);
 	if (px <= nx + 1) {
 		return Position.Left;
 	}
-	if (px >= nx + n.width - 1) {
+	if (px >= nx + node.getBounds().width - 1) {
 		return Position.Right;
 	}
 	if (py <= ny + 1) {
 		return Position.Top;
 	}
-	if (py >= n.y + n.height - 1) {
+	if (py >= node.position.y + node.getBounds().height - 1) {
 		return Position.Bottom;
 	}
 
@@ -162,7 +136,6 @@ export const getBezierNodeIntersection = (
 	p1: Point,
 	p2: Point,
 ): Point => {
-	
 	const intersections: Point[] = [];
 
 	// Check for intersections with the left and right sides
@@ -206,7 +179,6 @@ export const getNodeIntersectionWithCircle = (
 	circleCenter: Point,
 	r: number,
 ): Point[] => {
-
 	const intersections: Point[] = [];
 
 	// Check each side of the node for intersection
@@ -281,146 +253,79 @@ export const getNodeIntersectionWithCircle = (
 
 // Create a new Node id
 export const getNodeId = (nodes: IGCNode[]): string => {
-    // Create an unused edge id
-    let i = 0
-    let id = `${i}`;
-    while(nodes.some(nodes => nodes.id === id)){
-        i++;
-        id = `${i}`;
-    }
-    return id;
-}
-
-// Create a new Edge id
-export const getEdgeId = (source: string, target: string, edges: IGCEdge[], prefix=""): string => {
-    // Create an unused edge id
-    let i = 0;
-    let id = `${prefix}${i}-${source}>${target}`;
-    while(edges.some(edge => edge.id === id)){
-        i++;
-        id = `${prefix}${i}-${source}>${target}`;
-    }
-    return id;
-}
-// Custom logic to handle the connection
-export const addEdge = (
-	edgeParams: IGCEdge | Connection,
-	edges: IGCEdge[],
-): IGCEdge[] => {
-	if (!edgeParams.source || !edgeParams.target) {
-		return edges;
+	// Create an unused edge id
+	let i = 0;
+	let id = `${i}`;
+	while (nodes.some((nodes) => nodes.id === id)) {
+		i++;
+		id = `${i}`;
 	}
-
-	let edge: IGCEdge;
-	if (isEdge(edgeParams)) {
-		edge = { ...edgeParams };
-	} else {
-		edge = {
-			...edgeParams,
-			id: getEdgeId(edgeParams.source, edgeParams.target, edges),
-		} as Edge;
-	}
-
-	return edges.concat(edge);
+	return id;
 };
 
 // Logic for whenever an edge gets removed
-export const updateExecutionPathEdge = (id: string, edges: IGCEdge[], session: SessionData): {edges: IGCEdge[], session: SessionData } => {
+export const updateExecutionPathEdge = (
+	id: string,
+	edges: IGCRelationship[],
+	session: SessionData,
+): { edges: IGCRelationship[]; session: SessionData } => {
+	// Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
+	// If an execution relationship is removed, update the session data
 
-    // Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
-    // If an execution relationship is removed, update the session data
-    const edgeObject = edges.find(edge => edge.id === id);
-    if(edgeObject?.type !== "executionRelationship" || edgeObject.data === undefined || edgeObject.data.label === undefined) {
-        return {edges, session};
-    }
-    edgeObject.data.will_delete = true;
-    const label: string = edgeObject.data.label;
-    session.executionPath.splice(parseInt(label), 1);
+    const deleteQueue: string[] = [];
+	const edgeObject = edges.find((edge) => edge.id === id);
+	if (
+		!(edgeObject instanceof ExecutionRelationship) ||
+		edgeObject.data === undefined ||
+		edgeObject.data.labelObj?.label === undefined
+	) {
+		return { edges, session };
+	}
+    deleteQueue.push(edgeObject.id);
+	const label: string = edgeObject.data.labelObj.label;
+	session.executionPath.splice(parseInt(label), 1);
 
-    // Remove all execution relationship edges
-    let filteredEdges = edges.filter(
-        (edge) => edge.type !== "executionRelationship" || edge.data.will_delete === true,
-    );
+	// Remove all execution relationship edges
+	let filteredEdges = edges.filter(
+		(edge) =>
+			edge instanceof ExecutionRelationship ||
+            deleteQueue.includes(edge.id),
+	);
 
-    // Add execution relationship edges
-    for (let i = 0; i < session.executionPath.length - 1; i++) {
-        const source = session.executionPath[i];
-        const target = session.executionPath[i + 1];
-        filteredEdges.push({
-            id: getEdgeId(source, target, filteredEdges),
-            source,
-            target,
-            type: "executionRelationship",
-            data: { label: `${i+1}` },
-        });
-    }
-    
-    return {edges: filteredEdges, session};
+	// Add execution relationship edges
+	for (let i = 0; i < session.executionPath.length - 1; i++) {
+		const source = session.executionPath[i];
+		const target = session.executionPath[i + 1];
+        const id = IGCRelationship.generateId(source, target, filteredEdges);
+		filteredEdges.push(
+			new ExecutionRelationship(
+                {
+                    id,
+				    source,
+				    target
+                },
+				`${i + 1}`,
+			),
+		);
+	}
 
-}
-
-// Refresh the execution path edges
-export const updateExecutionPath = (edges: IGCEdge[], session: SessionData): IGCEdge[] => {
-    // Remove all execution relationship edges
-    let filteredEdges = edges.filter(
-        (edge) => edge.type !== "executionRelationship",
-    );
-
-    // Add execution relationship edges
-    for (let i = 0; i < session.executionPath.length - 1; i++) {
-        const source = session.executionPath[i];
-        const target = session.executionPath[i + 1];
-        filteredEdges.push({
-            id: getEdgeId(source, target, filteredEdges),
-            source,
-            target,
-            type: "executionRelationship",
-            data: { label: `${i+1}` },
-        });
-    }
-    
-    return filteredEdges;
-
-}
+	return { edges: filteredEdges, session };
+};
 
 // Change Selection
-export const changeSelection = (selectItems: (Node | Edge)[]) => {
-    const {setNodes, setEdges} = useStore.getState()
+export const changeSelection = (selectItems: (IGCNode | IGCRelationship)[]) => {
+	const { setNodes, setEdges } = useStore.getState();
 
-    setNodes((prevNodes) => {
-        return prevNodes.map((node) => {
-            node.selected = selectItems.some((item) => item.id === node.id);
-            return node;
-        });
-    });
-    setEdges((prevEdges) => {
-        return prevEdges.map((edge) => {
-            edge.selected = selectItems.some((item) => item.id === edge.id);
-            return edge;
-        });
-    });
-}
-
-// Get all incoming edges to a node
-export const getIncomingEdges = (nodeId: string, edges: IGCEdge[]): IGCEdge[] => {
-    return edges.filter(edge => edge.target === nodeId);
-}
-
-// Get all outgoing edges to a node
-export const getOutgoingEdges = (nodeId: string, edges: IGCEdge[]): IGCEdge[] => {
-    return edges.filter(edge => edge.source === nodeId);
-}
-
-// Get all nodes that are directed at a specific node
-export const getIncomingNodes = (nodeId: string, nodes: IGCNode[], edges: IGCEdge[], nodeTypeFilter: string[]=[]): IGCNode[] => {
-    const incomingEdges = getIncomingEdges(nodeId, edges);
-    const incomingNodeIds = incomingEdges.map(edge => edge.source);
-    return nodes.filter(node => incomingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
-}
-
-// Get all nodes that are out of a specific node
-export const getOutgoingNodes = (nodeId: string, nodes: IGCNode[], edges: IGCEdge[], nodeTypeFilter: string[]=[]): IGCNode[] => {
-    const outgoingEdges = getOutgoingEdges(nodeId, edges);
-    const outgoingNodeIds = outgoingEdges.map(edge => edge.target);
-    return nodes.filter(node => outgoingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
-}
+	setNodes((prevNodes) => {
+		return prevNodes.map((node) => {
+			node.selected = selectItems.some((item) => item.id === node.id);
+			return node;
+		});
+	});
+	setEdges((prevEdges) => {
+		return prevEdges.map((edge) => {
+			edge.selected = selectItems.some((item) => item.id === edge.id);
+			return edge;
+		});
+	});
+};

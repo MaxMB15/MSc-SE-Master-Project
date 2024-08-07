@@ -1,10 +1,31 @@
 import { STYLES } from "@/styles/constants";
 import { LabelProps, Point } from "@/types/frontend";
-import { useCallback } from "react";
-import { EdgeLabelRenderer, useStore } from "reactflow";
+import { EdgeLabelRenderer, EdgeProps } from "reactflow";
 import { createSmartQuadraticPath, createSmartSelfLoopPath } from "../utils/CustomConnectionLine";
+import useStore from "@/store/store";
 
-interface IGCEdgeDisplayProps {
+interface IGCRelationshipDisplayProps extends EdgeProps {
+    id: string;
+    source: string;
+    target: string;
+    color: string;
+    labelObj?: LabelProps;
+}
+
+export const IGCRelationshipDisplay: React.FC<IGCRelationshipDisplayProps> = (props: IGCRelationshipDisplayProps) => {
+    return (
+        <IGCRelationshipDisplayComponent
+            id={props.id}
+            source={props.source}
+            target={props.target}
+            color={props.color}
+            labelObj={props.labelObj}
+            selected={props.selected || false}
+        />
+    );
+}
+
+interface IGCRelationshipDisplayComponentProps {
     id: string;
     source: string;
     target: string;
@@ -13,7 +34,7 @@ interface IGCEdgeDisplayProps {
     labelObj?: LabelProps;
 }
 
-const IGCEdgeDisplay: React.FC<IGCEdgeDisplayProps> = ({
+const IGCRelationshipDisplayComponent: React.FC<IGCRelationshipDisplayComponentProps> = ({
     id,
     source,
     target,
@@ -21,13 +42,10 @@ const IGCEdgeDisplay: React.FC<IGCEdgeDisplayProps> = ({
     selected,
     labelObj,
 }) => {
+    const { nodes, edges } = useStore();
 
-    const sourceNode = useStore(
-		useCallback((store) => store.nodeInternals.get(source), [source]),
-	);
-	const targetNode = useStore(
-		useCallback((store) => store.nodeInternals.get(target), [target]),
-	);
+    const sourceNode = nodes.find((node) => node.id === source);
+	const targetNode = nodes.find((node) => node.id === target);
 
 	if (!sourceNode || !targetNode) {
 		return null;
@@ -36,11 +54,8 @@ const IGCEdgeDisplay: React.FC<IGCEdgeDisplayProps> = ({
 	let edgePath: string;
 	let labelPoint: Point;
 	if (source === target) {
-		const samePathEdges = useStore((store) =>
-			store.edges
-				.filter((edge) => edge.hidden !== true && (edge.source === source && edge.target === target) && source === target)
-				.map((edge) => edge.id),
-		);
+		const samePathEdges = edges.filter((edge) => edge.toRFEdge().hidden !== true && (edge.source === source && edge.target === target) && source === target)
+				.map((edge) => edge.id);
 		const selfPath = createSmartSelfLoopPath(sourceNode, id, samePathEdges);
         edgePath = selfPath.path;
 		labelPoint = selfPath.labelPoint;
@@ -49,7 +64,7 @@ const IGCEdgeDisplay: React.FC<IGCEdgeDisplayProps> = ({
 			store.edges
 				.filter(
 					(edge) =>
-						edge.hidden !== true &&
+						edge.toRFEdge().hidden !== true &&
 						((edge.source === source && edge.target === target) ||
 							(edge.source === target && edge.target === source)),
 				)
@@ -172,4 +187,4 @@ const IGCEdgeDisplay: React.FC<IGCEdgeDisplayProps> = ({
 	);
 };
 
-export default IGCEdgeDisplay
+export default IGCRelationshipDisplay

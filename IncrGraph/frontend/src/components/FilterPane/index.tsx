@@ -59,7 +59,7 @@ const FilterPane: React.FC = () => {
 					relationshipType ===
 					edge.type
 				) {
-					edge.hidden = !visible;
+					edge.toRFEdge().hidden = !visible;
 				}
 				return edge;
 			});

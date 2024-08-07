@@ -1,3 +1,10 @@
+import AbstractClassNode from "@/graphComponents/nodes/AbstractClassNode";
+import ClassNode from "@/graphComponents/nodes/ClassNode";
+import CodeFragmentNode from "@/graphComponents/nodes/CodeFragmentNode";
+import { IGCNode } from "@/graphComponents/nodes/IGCNode";
+import InterfaceNode from "@/graphComponents/nodes/InterfaceNode";
+import LibraryNode from "@/graphComponents/nodes/LibraryNode";
+import MethodNode from "@/graphComponents/nodes/MethodNode";
 import { Monaco } from "@monaco-editor/react";
 import * as monacoEditor from "monaco-editor";
 
@@ -69,8 +76,8 @@ export const getSuggestions = (
 
 		// Return all suggestions if nodeType is null
 		return Object.values(suggestions).flatMap(
-			(nodes: IGCNodeTypeSuggestion[]) =>
-				nodes.flatMap((node: IGCNodeTypeSuggestion) =>
+			(nodes: NodeTypeSuggestion[]) =>
+				nodes.flatMap((node: NodeTypeSuggestion) =>
 					Object.entries(node).map(([label, insertText]) =>
 						makeSuggestion(label, insertText, monaco, range),
 					),
@@ -104,7 +111,7 @@ interface NodeTypeSuggestion {
 }
 
 interface LanguageSuggestions {
-	[nodeType: string]: IGCNodeTypeSuggestion[];
+	[nodeType: string]: NodeTypeSuggestion[];
 }
 
 interface AllSuggestions {
@@ -113,7 +120,7 @@ interface AllSuggestions {
 
 const allSuggestions: AllSuggestions = {
 	python: {
-		classNode: [
+		[ClassNode.KEY]: [
 			{
 				Class: [
 					"class ${1:ClassName}:",
@@ -147,7 +154,7 @@ const allSuggestions: AllSuggestions = {
 				],
 			},
 		],
-		abstractClassNode: [
+		[AbstractClassNode.KEY]: [
 			{
 				"Abstract Class": [
 					"class ${1:ClassName}(ABC):",
@@ -162,7 +169,7 @@ const allSuggestions: AllSuggestions = {
 				],
 			},
 		],
-		interfaceNode: [
+		[InterfaceNode.KEY]: [
 			{
 				Interface: [
 					"class ${1:InterfaceName}(ABC):",
@@ -177,7 +184,7 @@ const allSuggestions: AllSuggestions = {
 				],
 			},
 		],
-		libraryNode: [
+		[LibraryNode.KEY]: [
 			{
 				"Import Library": ["import ${1:library_name}"],
 			},
@@ -187,7 +194,7 @@ const allSuggestions: AllSuggestions = {
 				],
 			},
 		],
-		methodNode: [
+		[MethodNode.KEY]: [
 			{
 				"Static Method": [
 					"@staticmethod",
@@ -289,6 +296,6 @@ const allSuggestions: AllSuggestions = {
 				],
 			},
 		],
-		codeFragmentNode: [],
+		[CodeFragmentNode.KEY]: [],
 	},
 };

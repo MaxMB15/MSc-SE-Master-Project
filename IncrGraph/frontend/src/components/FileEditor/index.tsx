@@ -9,16 +9,17 @@ import "./FileEditor.css";
 import { SaveFilePathRequest } from "shared";
 import SelectionPane from "../SelectionPane";
 import useStore from "@/store/store";
-import { Node, Edge } from "reactflow";
 import { applyFilter, mergeChanges } from "@/utils/json";
 import { useAxiosRequest } from "@/utils/requests";
 import { showSuggestionSnippet } from "@/utils/codeTemplates";
 import filterRulesIGC from "@/utils/filterRulesIGC.json";
-import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
-import { getIncomingNodes } from "../EditorPane/components/utils/utils";
+import { IGCCodeNode, IGCNode } from "@/graphComponents/nodes/IGCNode";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
+import DocumentationNode from "@/graphComponents/nodes/DocumentationNode";
+import { UseEditor } from "@/types/frontend";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -81,10 +82,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		edges,
 		setEdges,
 		currentSessionId,
-		setCurrentSessionId,
-		setSessions,
 		codeRunData,
-		setCodeRunData,
 	} = useStore();
 
 	// STATE
@@ -111,7 +109,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Serialize the file content into graph data
 	const serializeGraphData = (
 		content: string,
-	): { nodes: IGCNode[]; edges: IGCEdge[] } => {
+	): { nodes: IGCNode[]; edges: IGCRelationship[] } => {
 		console.log("Serializing graph data");
 		console.log("content\n", content);
 		try {
@@ -124,7 +122,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 	};
 	// Deserialize the graph data into a string
-	const deserializeGraphData = (nodes: IGCNode[], edges: IGCEdge[]): string => {
+	const deserializeGraphData = (nodes: IGCNode[], edges: IGCRelationship[]): string => {
 		let data = { nodes: nodes, edges: edges };
 		return JSON.stringify(data, null, 4); // Pretty print the JSON
 	};
@@ -168,21 +166,24 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		// Go through every node to see if it is in the models map
 		setModels((prev) => {
 			for (const node of nodes) {
-				const codeKey = generateCodeKey(selectedFile, node.id);
-				if (prev.has(codeKey)) {
-					const model = prev.get(codeKey);
-					model.pushEditOperations(
-						[],
-						[
-							{
-								range: model.getFullModelRange(),
-								text: node.data.code,
-							},
-						],
-						() => null,
-					);
-					prev.set(codeKey, model);
-				}
+                const editorData = node.editorDisplay().useEditor?.code;
+                if(editorData !== undefined) {
+                    const codeKey = generateCodeKey(selectedFile, node.id);
+                    if (prev.has(codeKey)) {
+                        const model = prev.get(codeKey);
+                        model.pushEditOperations(
+                            [],
+                            [
+                                {
+                                    range: model.getFullModelRange(),
+                                    text: editorData,
+                                },
+                            ],
+                            () => null,
+                        );
+                        prev.set(codeKey, model);
+                    }
+                }
 			}
 			return new Map(prev);
 		});
@@ -343,7 +344,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		setNodes((prevNodes) =>
 			prevNodes.map((node) => {
 				if (node.id === selectedItem?.id) {
-					node.data.code = codeIGCContent;
+					node.editorChange(codeIGCContent);
 				}
 				return node;
 			}),
@@ -425,8 +426,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	};
 	// Get the code of the selected item
 	const codeVersion = (): string => {
-		return selectedItem?.type === "Node"
-			? selectedItem.item.data.code
+        const editorData: string | undefined = selectedItem?.type === "Node" ? (selectedItem.item as IGCNode).editorDisplay().useEditor?.code : undefined;
+        if(editorData === undefined) {
+            throw new Error("THIS SHOULD NOT HAPPEN, SELECTED ITEM IS NOT VALID OR NOT A NODE!");
+        }
+		return editorData
+			? editorData
 			: "THIS SHOULD NOT HAPPEN, SELECTED ITEM IS NOT VALID OR NOT A NODE!";
 	};
 	const getDisplayType = (): EditorDisplayContentType => {
@@ -640,7 +645,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				displayType === EditorDisplayContentType.CODE &&
 				selectedItem !== null
 			) {
-				showRelaventDocumentation(selectedItem.item as Node);
+				showRelaventDocumentation(selectedItem.item as IGCNode);
 				setShowTerminal(true);
 				if (model.getValue() === "" && model.languageId === "python") {
 					showSuggestionSnippet(
@@ -662,8 +667,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (node === null) {
 			setNodes((prevNodes) =>
 				prevNodes.map((n) => {
-					if (n.type === "documentationNode") {
-						n.hidden = true;
+					if (n instanceof DocumentationNode) {
+						n.toRFNode().hidden = false;
 					}
 					return n;
 				}),
@@ -675,12 +680,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			if (node.type === "documentationNode") {
 				nodesToShow.push(node.id);
 			} else {
-				const incomingDocumentationNodes = getIncomingNodes(
-					node.id,
-					nodes,
-					edges,
-					["documentationNode"],
-				);
+				const incomingDocumentationNodes = node.getIncomingNodes((n) => n instanceof DocumentationNode) as DocumentationNode[];
+
 				if (incomingDocumentationNodes.length !== 0) {
 					nodesToShow.push(incomingDocumentationNodes[0].id);
 				}
@@ -688,9 +689,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 
 			return prevNodes.map((n) => {
 				if (nodesToShow.includes(n.id)) {
-					n.hidden = false;
-				} else if (n.type === "documentationNode") {
-					n.hidden = true;
+					n.toRFNode().hidden = false;
+				} else if (n instanceof DocumentationNode) {
+					n.toRFNode().hidden = true;
 				}
 				return n;
 			});
@@ -704,16 +705,18 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			selectedFile !== null &&
 			localContentBuffer !== null &&
 			selectedItem !== null &&
-			selectedItem.type === "Node"
+			selectedItem.type === "Node" &&
+            selectedItem.item instanceof IGCNode &&
+            selectedItem.item.editorDisplay().useEditor !== undefined
+
 		) {
 			const codeKey = generateCodeKey(selectedFile, selectedItem.id);
+            const editorData: UseEditor = (selectedItem.item.editorDisplay().useEditor as UseEditor); // Not sure why I have to cast since it is in the if statement
 			if (!models.has(codeKey)) {
 				createModel(
 					codeKey,
-					selectedItem.item.data.code,
-					selectedItem.item.data.language
-						? selectedItem.item.data.language
-						: "python",
+					editorData.code,
+					editorData.language
 				);
 			}
 			// Show any documentation if it exists
@@ -899,20 +902,15 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									selectedItem &&
 									projectDirectory !== null &&
 									selectedItem.type === "Node" &&
-									selectedItem.item.type !==
-										"documentationNode" && (
+									selectedItem.item instanceof IGCCodeNode && (
 										<button
 											className="icon-button"
 											title="Run Code"
-											onClick={() =>
-												runCode(
-													selectedItem.item.data.code,
-													selectedItem.id,
-                                                    selectedItem.item.data.scope,
-												)
+											onClick={
+												(selectedItem.item as IGCCodeNode).runCode
 											}
 											disabled={
-												selectedItem.item.data.code ===
+												(selectedItem.item as IGCCodeNode).code ===
 													"" ||
 												currentSessionId === null
 											}
@@ -949,7 +947,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							selectedItem.type === "Node" &&
 							selectedItem.item.type !== "documentationNode" && (
 								<MarkdownDisplay
-									node={selectedItem.item as Node}
+									node={selectedItem.item as IGCNode}
 								/>
 							)}
 						<div

@@ -89,7 +89,7 @@
 // // Interface for the graph structure
 // export interface Graph {
 // 	nodes: IGCNode[];
-// 	edges: IGCEdge[];
+// 	edges: IGCRelationship[];
 // }
 
 // // EXAMPLE GRAPH

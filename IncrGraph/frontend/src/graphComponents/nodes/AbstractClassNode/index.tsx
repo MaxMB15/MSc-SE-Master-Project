@@ -1,17 +1,14 @@
 import "./AbstractClassNode.css";
 import { STYLES } from "@/styles/constants";
 import { IGCCodeNode, IGCCodeNodeProps } from "../IGCNode";
-import { IGCEdge } from "@/graphComponents/edges/IGCEdge";
+import IGCRelationship from "@/graphComponents/relationships/IGCRelationship";
 
-interface AbstractClassNodeProps extends IGCCodeNodeProps {}
+interface AbstractClassNodeProps {}
 
-export class AbstractClassNode extends IGCCodeNode implements AbstractClassNodeProps {
+export default class AbstractClassNode extends IGCCodeNode {
 
-    constructor(props: AbstractClassNodeProps) {
-        super({
-            ...props,
-            backgroundColor: STYLES.abstractClassNodeColor,
-        });
+    constructor(props: IGCCodeNodeProps<AbstractClassNodeProps>, code: string) {
+        super(props, AbstractClassNode.KEY, STYLES.abstractClassNodeColor, code);
     }
 
     // Implement abstract methods
@@ -20,8 +17,17 @@ export class AbstractClassNode extends IGCCodeNode implements AbstractClassNodeP
         return "";
     }
 
-    public createRelationships(edges: IGCEdge[]): IGCEdge[] {
+    public metaAnalysis(): void {
+        if (this.getDefinitions().classes.length > 0) {
+            this.data.label = this.getDefinitions().classes[0];
+        }
+    }
+
+    public createRelationships(edges: IGCRelationship[]): IGCRelationship[] {
         // Implementation of createRelationships
         return edges;
     }
+
+    public static KEY = "AbstractClassNode";
 }
+
