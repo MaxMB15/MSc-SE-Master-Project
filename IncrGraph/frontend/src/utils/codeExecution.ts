@@ -1,16 +1,17 @@
-import {
-	CodeAnalysisResponse,
-	CodeExecutionResponse,
-} from "shared";
+import { CodeAnalysisResponse, CodeExecutionResponse } from "shared";
 import { Node, Edge } from "reactflow";
 import {
 	addEdge,
 	getEdgeId,
+	getIncomingNodes,
+	getOutgoingNodes,
 } from "@/components/EditorPane/components/utils/utils";
 import { callAnalyze, callExecute } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/components/EditorPane/components/utils/edgeCreation";
 import { nodeHasCode } from "@/components/EditorPane/components/utils/types";
+import { method } from "lodash";
+import MethodRelationship from "@/components/EditorPane/components/edges/MethodRelationship";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -19,9 +20,7 @@ import { nodeHasCode } from "@/components/EditorPane/components/utils/types";
 export const runAnalysis = (node: Node) => {
 	const { setNodes } = useStore.getState();
 
-	if (
-		nodeHasCode(node)
-	) {
+	if (nodeHasCode(node)) {
 		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
 			setNodes((prevNodes) => {
 				return prevNodes.map((n) => {
@@ -37,14 +36,14 @@ export const runAnalysis = (node: Node) => {
 						} else {
 							n.data = { ...n.data, ...response };
 						}
-                        if (n.data.new_definitions !== undefined) {
-                            return metaAnalysis(n, {
-                                new_definitions: n.data
-                                    .new_definitions as CodeAnalysisResponse["new_definitions"],
-                                dependencies: n.data
-                                    .dependencies as CodeAnalysisResponse["dependencies"],
-                            });
-                        }
+						if (n.data.new_definitions !== undefined) {
+							return metaAnalysis(n, {
+								new_definitions: n.data
+									.new_definitions as CodeAnalysisResponse["new_definitions"],
+								dependencies: n.data
+									.dependencies as CodeAnalysisResponse["dependencies"],
+							});
+						}
 					}
 					return n;
 				});
@@ -59,9 +58,7 @@ export const runAllAnalysis = async () => {
 	// Get all analysis data for all nodes
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
 	for (let node of nodes) {
-		if (
-			nodeHasCode(node)
-		) {
+		if (nodeHasCode(node)) {
 			try {
 				const result = await callAnalyze(node.data.code);
 				nodeAnalysisData[node.id] = result;
@@ -104,23 +101,6 @@ export const runAllAnalysis = async () => {
 	createDependencyGraph();
 };
 
-// Detects override relationships and inheritance relationships
-const detectRelationships = (node: Node): Edge[] => {
-    const relationships: Edge[] = [];
-    relationships.push(...detectOverrideRelationships(node));
-    relationships.push(...detectInheritanceRelationships(node));
-    return relationships;
-}
-const detectOverrideRelationships = (node: Node): Edge[] => {
-    /** Override Relationships are detected by if the following path exists:
-     * Method Node -> (Method relationship) -> Class Node -> (Inheritance relationship) -> Class Node <- (Method relationship) <- Method Node (with the same name)
-     */
-    
-}
-const detectInheritanceRelationships = (node: Node): Edge[] => {
-    // Inheritance relationships are detected by the class node having a class dependency
-
-}  
 
 // Convert python code to space first instead of tabs
 const replaceTabsWithSpaces = (input: string, indent: number = 0): string => {
@@ -175,18 +155,18 @@ const setScope = (
 					},
 				);
 		});
-        // Add the scope to the dependencies
-        if(metaNodeData.dependencies.classes.includes(scope) === false){
-            metaNodeData.dependencies.classes.push(scope);
-        }
+		// Add the scope to the dependencies
+		if (metaNodeData.dependencies.classes.includes(scope) === false) {
+			metaNodeData.dependencies.classes.push(scope);
+		}
 	}
-    
+
 	return metaNodeData;
 };
 // Meta Analysis
 const metaAnalysis = (node: Node, metaNodeData: CodeAnalysisResponse) => {
 	if (!nodeHasCode(node)) {
-        return node;
+		return node;
 	}
 
 	if (node.type === "baseNode") {

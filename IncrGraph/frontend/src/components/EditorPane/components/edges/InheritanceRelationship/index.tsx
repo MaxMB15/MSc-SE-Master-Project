@@ -16,6 +16,7 @@ const InheritanceRelationship: ComponentType<InheritanceRelationshipProps> = (
 				...props.data,
 				backgroundColor: STYLES.inheritanceRelationshipColor,
 			}}
+            labelRadius={10}
 		/>
 	);
 };

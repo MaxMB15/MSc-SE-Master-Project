@@ -16,6 +16,7 @@ const OverridesRelationship: ComponentType<OverridesRelationshipProps> = (
 				...props.data,
 				backgroundColor: STYLES.overridesRelationshipColor,
 			}}
+            labelRadius={10}
 		/>
 	);
 };

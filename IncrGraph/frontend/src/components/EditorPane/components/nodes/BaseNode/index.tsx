@@ -11,7 +11,7 @@ import useStore from "@/store/store";
 import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
 import { runCode } from "@/utils/codeExecution";
-import { CodeAnalysisResponse } from "shared";
+import { Definitions, Dependencies } from "shared";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
@@ -23,8 +23,8 @@ interface BaseNodeProps extends NodeProps {
 		backgroundColor?: string;
 		code?: string;
         scope?: string;
-        dependencies?: CodeAnalysisResponse["dependencies"];
-        new_definitions?: CodeAnalysisResponse["new_definitions"];
+        dependencies?: Dependencies;
+        new_definitions?: Definitions;
 
 	};
 }

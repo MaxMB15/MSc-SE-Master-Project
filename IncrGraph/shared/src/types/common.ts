@@ -22,6 +22,7 @@ export interface SaveFilePathRequest {
 export interface CodeExecutionRequest {
 	code: string;
 	language: string;
+    projectPath: string;
 	sessionId?: string;
 }
 export interface CodeExecutionResponse {
@@ -37,7 +38,19 @@ export interface CodeAnalysisRequest {
 	code: string;
 	language: string;
 }
+
+export interface Dependencies {
+    variables: string[];
+    functions: string[];
+    classes: string[];
+    modules: string[];
+}
+export interface Definitions {
+    variables: string[];
+    functions: string[];
+    classes: string[];
+}
 export interface CodeAnalysisResponse {
-	dependencies: string;
-	new_definitions: string;
+	dependencies: Dependencies;
+	new_definitions: Definitions;
 }

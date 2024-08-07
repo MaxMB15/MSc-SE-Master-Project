@@ -679,7 +679,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					node.id,
 					nodes,
 					edges,
-					["documentationNode"],
+					(node) => node.type === "documentationNode",
 				);
 				if (incomingDocumentationNodes.length !== 0) {
 					nodesToShow.push(incomingDocumentationNodes[0].id);

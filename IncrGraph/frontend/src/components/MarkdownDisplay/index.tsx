@@ -29,7 +29,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 			node.id,
 			nodes,
 			edges,
-			["documentationNode"],
+            (node) => node.type === "documentationNode",
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			return null;
@@ -46,7 +46,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 			node.id,
 			nodes,
 			edges,
-			["documentationNode"],
+            (node) => node.type === "documentationNode",
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			// Need to create the documentation node

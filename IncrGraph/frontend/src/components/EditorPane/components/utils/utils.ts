@@ -1,10 +1,4 @@
-import {
-	Position,
-	isEdge,
-	Edge,
-	Connection,
-    Node,
-} from "reactflow";
+import { Position, isEdge, Edge, Connection, Node } from "reactflow";
 import { Point, Rectangle, SessionData } from "@/types/frontend";
 
 // this helper function returns the intersection point
@@ -160,7 +154,6 @@ export const getBezierNodeIntersection = (
 	p1: Point,
 	p2: Point,
 ): Point => {
-	
 	const intersections: Point[] = [];
 
 	// Check for intersections with the left and right sides
@@ -204,7 +197,6 @@ export const getNodeIntersectionWithCircle = (
 	circleCenter: Point,
 	r: number,
 ): Point[] => {
-
 	const intersections: Point[] = [];
 
 	// Check each side of the node for intersection
@@ -279,27 +271,32 @@ export const getNodeIntersectionWithCircle = (
 
 // Create a new Node id
 export const getNodeId = (nodes: Node[]): string => {
-    // Create an unused edge id
-    let i = 0
-    let id = `${i}`;
-    while(nodes.some(nodes => nodes.id === id)){
-        i++;
-        id = `${i}`;
-    }
-    return id;
-}
+	// Create an unused edge id
+	let i = 0;
+	let id = `${i}`;
+	while (nodes.some((nodes) => nodes.id === id)) {
+		i++;
+		id = `${i}`;
+	}
+	return id;
+};
 
 // Create a new Edge id
-export const getEdgeId = (source: string, target: string, edges: Edge[], prefix=""): string => {
-    // Create an unused edge id
-    let i = 0;
-    let id = `${prefix}${i}-${source}>${target}`;
-    while(edges.some(edge => edge.id === id)){
-        i++;
-        id = `${prefix}${i}-${source}>${target}`;
-    }
-    return id;
-}
+export const getEdgeId = (
+	source: string,
+	target: string,
+	edges: Edge[],
+	prefix = "",
+): string => {
+	// Create an unused edge id
+	let i = 0;
+	let id = `${prefix}${i}-${source}>${target}`;
+	while (edges.some((edge) => edge.id === id)) {
+		i++;
+		id = `${prefix}${i}-${source}>${target}`;
+	}
+	return id;
+};
 // Custom logic to handle the connection
 export const addEdge = (
 	edgeParams: Edge | Connection,
@@ -323,84 +320,116 @@ export const addEdge = (
 };
 
 // Logic for whenever an edge gets removed
-export const updateExecutionPathEdge = (id: string, edges: Edge[], session: SessionData): {edges: Edge[], session: SessionData } => {
+export const updateExecutionPathEdge = (
+	id: string,
+	edges: Edge[],
+	session: SessionData,
+): { edges: Edge[]; session: SessionData } => {
+	// Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
+	// If an execution relationship is removed, update the session data
+	const edgeObject = edges.find((edge) => edge.id === id);
+	if (
+		edgeObject?.type !== "executionRelationship" ||
+		edgeObject.data === undefined ||
+		edgeObject.data.label === undefined
+	) {
+		return { edges, session };
+	}
+	edgeObject.data.will_delete = true;
+	const label: string = edgeObject.data.label;
+	session.executionPath.splice(parseInt(label), 1);
 
-    // Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
-    // If an execution relationship is removed, update the session data
-    const edgeObject = edges.find(edge => edge.id === id);
-    if(edgeObject?.type !== "executionRelationship" || edgeObject.data === undefined || edgeObject.data.label === undefined) {
-        return {edges, session};
-    }
-    edgeObject.data.will_delete = true;
-    const label: string = edgeObject.data.label;
-    session.executionPath.splice(parseInt(label), 1);
+	// Remove all execution relationship edges
+	let filteredEdges = edges.filter(
+		(edge) =>
+			edge.type !== "executionRelationship" ||
+			edge.data.will_delete === true,
+	);
 
-    // Remove all execution relationship edges
-    let filteredEdges = edges.filter(
-        (edge) => edge.type !== "executionRelationship" || edge.data.will_delete === true,
-    );
+	// Add execution relationship edges
+	for (let i = 0; i < session.executionPath.length - 1; i++) {
+		const source = session.executionPath[i];
+		const target = session.executionPath[i + 1];
+		filteredEdges.push({
+			id: getEdgeId(source, target, filteredEdges),
+			source,
+			target,
+			type: "executionRelationship",
+			data: { label: `${i + 1}` },
+		});
+	}
 
-    // Add execution relationship edges
-    for (let i = 0; i < session.executionPath.length - 1; i++) {
-        const source = session.executionPath[i];
-        const target = session.executionPath[i + 1];
-        filteredEdges.push({
-            id: getEdgeId(source, target, filteredEdges),
-            source,
-            target,
-            type: "executionRelationship",
-            data: { label: `${i+1}` },
-        });
-    }
-    
-    return {edges: filteredEdges, session};
-
-}
+	return { edges: filteredEdges, session };
+};
 
 // Refresh the execution path edges
-export const updateExecutionPath = (edges: Edge[], session: SessionData): Edge[] => {
-    // Remove all execution relationship edges
-    let filteredEdges = edges.filter(
-        (edge) => edge.type !== "executionRelationship",
-    );
+export const updateExecutionPath = (
+	edges: Edge[],
+	session: SessionData,
+): Edge[] => {
+	// Remove all execution relationship edges
+	let filteredEdges = edges.filter(
+		(edge) => edge.type !== "executionRelationship",
+	);
 
-    // Add execution relationship edges
-    for (let i = 0; i < session.executionPath.length - 1; i++) {
-        const source = session.executionPath[i];
-        const target = session.executionPath[i + 1];
-        filteredEdges.push({
-            id: getEdgeId(source, target, filteredEdges),
-            source,
-            target,
-            type: "executionRelationship",
-            data: { label: `${i+1}` },
-        });
-    }
-    
-    return filteredEdges;
+	// Add execution relationship edges
+	for (let i = 0; i < session.executionPath.length - 1; i++) {
+		const source = session.executionPath[i];
+		const target = session.executionPath[i + 1];
+		filteredEdges.push({
+			id: getEdgeId(source, target, filteredEdges),
+			source,
+			target,
+			type: "executionRelationship",
+			data: { label: `${i + 1}` },
+		});
+	}
 
-}
+	return filteredEdges;
+};
 
 // Get all incoming edges to a node
 export const getIncomingEdges = (nodeId: string, edges: Edge[]): Edge[] => {
-    return edges.filter(edge => edge.target === nodeId);
-}
+	return edges.filter((edge) => edge.target === nodeId);
+};
 
 // Get all outgoing edges to a node
 export const getOutgoingEdges = (nodeId: string, edges: Edge[]): Edge[] => {
-    return edges.filter(edge => edge.source === nodeId);
-}
+	return edges.filter((edge) => edge.source === nodeId);
+};
 
 // Get all nodes that are directed at a specific node
-export const getIncomingNodes = (nodeId: string, nodes: Node[], edges: Edge[], nodeTypeFilter: string[]=[]): Node[] => {
-    const incomingEdges = getIncomingEdges(nodeId, edges);
-    const incomingNodeIds = incomingEdges.map(edge => edge.source);
-    return nodes.filter(node => incomingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
-}
+export const getIncomingNodes = (
+	nodeId: string,
+	nodes: Node[],
+	edges: Edge[],
+	nodeTypeFilter: (n: Node) => boolean = (_) => true,
+    edgeTypeFilter: (e: Edge) => boolean = (_) => true,
+): Node[] => {
+	const incomingEdges = getIncomingEdges(nodeId, edges).filter(edgeTypeFilter);
+	const incomingNodeIds = incomingEdges.map((edge) => edge.source);
+	return nodes.filter(
+		(node) =>
+			incomingNodeIds.includes(node.id) &&
+			node.type !== undefined &&
+			nodeTypeFilter(node),
+	);
+};
 
 // Get all nodes that are out of a specific node
-export const getOutgoingNodes = (nodeId: string, nodes: Node[], edges: Edge[], nodeTypeFilter: string[]=[]): Node[] => {
-    const outgoingEdges = getOutgoingEdges(nodeId, edges);
-    const outgoingNodeIds = outgoingEdges.map(edge => edge.target);
-    return nodes.filter(node => outgoingNodeIds.includes(node.id) && node.type !== undefined && nodeTypeFilter.includes(node.type));
-}
+export const getOutgoingNodes = (
+	nodeId: string,
+	nodes: Node[],
+	edges: Edge[],
+    nodeTypeFilter: (n: Node) => boolean = (_) => true,
+	edgeTypeFilter: (e: Edge) => boolean = (_) => true,
+): Node[] => {
+	const outgoingEdges = getOutgoingEdges(nodeId, edges).filter(edgeTypeFilter);
+	const outgoingNodeIds = outgoingEdges.map((edge) => edge.target);
+	return nodes.filter(
+		(node) =>
+			outgoingNodeIds.includes(node.id) &&
+			node.type !== undefined &&
+			nodeTypeFilter(node),
+	);
+};

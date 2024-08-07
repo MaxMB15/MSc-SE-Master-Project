@@ -16,6 +16,7 @@ const ExecutionRelationship: ComponentType<ExecutionRelationshipProps> = (
 				...props.data,
 				backgroundColor: STYLES.executionRelationshipColor,
 			}}
+            labelRadius={50}
 		/>
 	);
 };
