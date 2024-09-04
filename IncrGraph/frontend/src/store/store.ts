@@ -7,6 +7,7 @@ interface FileHistory {
 	prevContent: string;
 	prevSavedContent: string;
 }
+type ThemeMode = "light" | "dark";
 
 type Callback = () => void;
 
@@ -61,6 +62,9 @@ interface State {
 	setCodeRunData: (
 		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
 	) => void;
+
+	mode: ThemeMode;
+	setMode: (updater: (prev: ThemeMode) => ThemeMode) => void;
 
 	// HOOKS
 	listenersEdgeTypeUpdate: Map<string, Set<Callback>>;
@@ -172,7 +176,7 @@ const useStore = create<State>((set) => ({
 			if (listeners) {
 				listeners.forEach((listener) => listener());
 			}
-            return state;
+			return state;
 		}),
 	subscribeEdgeTypeUpdate: (id: string, callback: Callback) => {
 		set((state) => {
@@ -180,7 +184,7 @@ const useStore = create<State>((set) => ({
 				state.listenersEdgeTypeUpdate.set(id, new Set());
 			}
 			state.listenersEdgeTypeUpdate.get(id)!.add(callback);
-            return state;
+			return state;
 		});
 
 		return () => {
@@ -192,10 +196,14 @@ const useStore = create<State>((set) => ({
 						state.listenersEdgeTypeUpdate.delete(id);
 					}
 				}
-                return state;
+				return state;
 			});
 		};
 	},
+
+	mode: "light",
+	setMode: (updater: (prev: ThemeMode) => ThemeMode) =>
+		set((state) => ({ mode: updater(state.mode) })),
 }));
 
 export default useStore;

@@ -10,6 +10,7 @@ export const STYLES = {
     methodNodeColor: "#ff0000",
 	codeFragmentNodeColor: "#0077ff",
     documentationNodeColor: "#ff00ff",
+    importNodeColor: "#454545",
 
     baseRelationshipColor: "#ffffff",
     inheritanceRelationshipColor: "#00ff00",
@@ -20,6 +21,17 @@ export const STYLES = {
     documentationRelationshipColor: "#ff00ff",
 
 
+    mainBackgroundColorLight: "#f0f0f0",
+    mainBackgroundColorDark: "#1e1e1e",
+
+    mainBackgroundAccentColorLight: "#d5d5d5",
+    mainBackgroundAccentColorDark: "#252526",
+
+    mainFontColorDark: "#ffffff",
+    mainFontColorLight: "#1e1e1e",
+
+    mainFontAccentColorDark: "#cccccc",
+    mainFontAccentColorLight: "#444444",
 
     edgeWidth: "3",
     defaultEdgeColor: "#eeeeee",
@@ -29,4 +41,5 @@ export const STYLES = {
     nodePickColor: "#75e7b7",
     nodeDropColor: "#ea6c76",
 };
+
 

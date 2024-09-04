@@ -27,18 +27,19 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Vars",
-                "code": "a = 5\nb = 10\nc = a + b\n\nprint(c)",
+                "code": "a = 5\nb = 10\n\nprint(c)",
                 "dependencies": {
-                    "variables": [],
+                    "variables": [
+                        "c"
+                    ],
                     "functions": [],
                     "classes": [],
                     "modules": []
                 },
                 "new_definitions": {
                     "variables": [
-                        "a",
-                        "c",
-                        "b"
+                        "b",
+                        "a"
                     ],
                     "functions": [],
                     "classes": []
@@ -62,7 +63,7 @@
             "type": "codeFragmentNode",
             "data": {
                 "label": "Multiply C",
-                "code": "c = c * 2\n\nprint(c)",
+                "code": "# c = c * 2\n\n# print(c)",
                 "dependencies": {
                     "variables": [
                         "c"
@@ -80,15 +81,15 @@
                 }
             },
             "position": {
-                "x": -356,
-                "y": 52
+                "x": -355,
+                "y": 77
             },
             "selected": false,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
-                "x": -356,
-                "y": 52
+                "x": -355,
+                "y": 77
             },
             "dragging": false
         },
@@ -372,8 +373,8 @@
                 "dependencies": {
                     "variables": [],
                     "functions": [
-                        "Animal.__init__",
-                        "Animal.getName"
+                        "Animal.getName",
+                        "Animal.__init__"
                     ],
                     "classes": [
                         "Animal"
@@ -528,6 +529,26 @@
                 "y": 408.3246724139688
             },
             "dragging": false
+        },
+        {
+            "id": "10",
+            "type": "importNode",
+            "data": {
+                "label": "Node 18",
+                "code": ""
+            },
+            "position": {
+                "x": -54.92316552752732,
+                "y": -363.4387839275788
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": -54.92316552752732,
+                "y": -363.4387839275788
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -665,9 +686,9 @@
             "selected": false
         },
         {
-            "id": "D0-1>0",
-            "source": "1",
-            "target": "0",
+            "id": "D1-0>1",
+            "source": "0",
+            "target": "1",
             "type": "dependencyRelationship",
             "data": {
                 "label": "c"

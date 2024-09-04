@@ -1,0 +1,44 @@
+.fileExplorerContainer {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+}
+
+.fileExplorer {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
+	border-right: 1px solid #333333;
+	overflow: hidden;
+	height: 100%;
+	position: relative;
+	flex: 0 0 auto;
+}
+
+.loading {
+	border: 1px solid #333333;
+	padding: 10px;
+}
+
+.resizeHandleContainer {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 5px;
+	cursor: ew-resize;
+	z-index: 5;
+}
+
+.resizeHandle {
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+}
+
+.treeViewContainer {
+    margin-left: 10px;
+    overflow-y: auto;
+    max-height: 100%;
+}

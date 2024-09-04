@@ -8,8 +8,8 @@ import {
 	ClickAwayListener,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import "./FilterPane.css";
 import useStore from "@/store/store";
+import styles from "./FilterPane.module.css"; // Import the CSS module
 
 const FilterPane: React.FC = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -55,10 +55,7 @@ const FilterPane: React.FC = () => {
 	) => {
 		setEdges((prevEdges) => {
 			const newEdges = prevEdges.map((edge) => {
-				if (
-					relationshipType ===
-					edge.type
-				) {
+				if (relationshipType === edge.type) {
 					edge.hidden = !visible;
 				}
 				return edge;
@@ -74,7 +71,10 @@ const FilterPane: React.FC = () => {
 			...filterOptions,
 			[event.target.name]: event.target.checked,
 		});
-		changeEdgeVisibility(mapDisplayNameToRelationshipType(event.target.name) || "", event.target.checked);
+		changeEdgeVisibility(
+			mapDisplayNameToRelationshipType(event.target.name) || "",
+			event.target.checked,
+		);
 	};
 
 	const open = Boolean(anchorEl);
@@ -82,7 +82,7 @@ const FilterPane: React.FC = () => {
 	return (
 		<>
 			<button
-				className="icon-button"
+				className={styles.iconButton} // Apply the iconButton styles
 				title="Filter Relationships"
 				onClick={handleMenuOpen}
 			>
@@ -92,10 +92,12 @@ const FilterPane: React.FC = () => {
 				open={open}
 				anchorEl={anchorEl}
 				placement="bottom-start"
-				className="filter-pane-popper"
+				className={styles.filterPanePopper} // Apply the filterPanePopper styles
 			>
 				<ClickAwayListener onClickAway={handleMenuClose}>
-					<Paper className="filter-pane-paper">
+					<Paper className={styles.filterPanePaper}>
+						{" "}
+						{/* Apply the filterPanePaper styles */}
 						{[
 							"Base",
 							"Inheritance",
@@ -106,19 +108,19 @@ const FilterPane: React.FC = () => {
 						].map((relationshipType) => (
 							<MenuItem
 								key={relationshipType}
-								className={`filter-pane-menu-item filter-pane-${relationshipType
-									.replace(/\s/g, "-")
-									.toLowerCase()}`}
+								className={`${styles.filterPaneMenuItem} ${
+									styles[`filterPane${relationshipType}`]
+								}`} // Apply the filterPaneMenuItem and relationship-specific styles
 							>
-								<div className="filter-pane-color" />
+								<div className={styles.filterPaneColor} />{" "}
+								{/* Apply the filterPaneColor styles */}
 								<ListItemText primary={relationshipType} />
 								<Checkbox
 									checked={filterOptions[relationshipType]}
 									onChange={handleCheckboxChange}
 									name={relationshipType}
 									color="primary"
-									className="filter-pane-checkbox"
-									style={{ color: "#ffffff" }}
+									className={styles.filterPaneCheckbox} // Apply the filterPaneCheckbox styles
 								/>
 							</MenuItem>
 						))}

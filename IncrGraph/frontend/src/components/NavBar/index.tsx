@@ -12,12 +12,14 @@ import {
 	List,
 	ListItem,
 	ListItemText,
-	ListItemButton,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import InfoIcon from "@mui/icons-material/Info";
 import OpenDirectoryButton from "../OpenDirectoryButton";
 import useStore from "@/store/store";
+import ThemeToggle from "../ThemeToggle";
+import styles from './NavBar.module.css'; // Import the CSS module
+import { isCodeContainingNode } from "../EditorPane/components/utils/types";
 
 const Navbar: React.FC = () => {
 	const [anchorElFile, setAnchorElFile] = useState<null | HTMLElement>(null);
@@ -26,7 +28,9 @@ const Navbar: React.FC = () => {
 	const [isConnectionStatusOpen, setIsConnectionStatusOpen] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
 
-    const { setProjectDirectory } = useStore(); // Variables from data store
+	const { nodes, mode } = useStore();
+
+	const { setProjectDirectory } = useStore(); // Variables from data store
 
 	const handleFileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorElFile(event.currentTarget);
@@ -40,9 +44,10 @@ const Navbar: React.FC = () => {
 		setAnchorElFile(null);
 		setAnchorElEdit(null);
 	};
-    const handleOpenDirectory = (pathSelected: string) => {
-        setProjectDirectory(() => pathSelected);
-    }
+
+	const handleOpenDirectory = (pathSelected: string) => {
+		setProjectDirectory(() => pathSelected);
+	};
 
 	const toggleProjectInfoDrawer = () => {
 		setIsProjectInfoOpen(!isProjectInfoOpen);
@@ -62,13 +67,26 @@ const Navbar: React.FC = () => {
 		console.log("Syncing with server...");
 	};
 
+	const SLOC = (): string => {
+		let sloc = 0;
+		nodes.forEach((node) => {
+			if (isCodeContainingNode(node)) {
+				sloc += node.data.code.split("\n").length;
+			}
+		});
+		return sloc.toString();
+	};
+
 	return (
-		<AppBar position="static" sx={{ backgroundColor: "#1e1e1e" }}>
+		<AppBar
+			position="static"
+			className={styles.header} // Apply the header styles
+		>
 			<Toolbar>
 				<img
 					src="/logo.png"
 					alt="Logo"
-					style={{ width: "40px", marginRight: "16px" }}
+					className={styles.logo} // Apply the logo styles
 				/>
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 					Incremental Graph Code (IncrCode)
@@ -79,7 +97,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="file menu"
 						onClick={handleFileMenuOpen}
-						sx={{ mr: 2 }}
+						className={styles.menuButton} // Apply the menu button styles
 					>
 						<MenuIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -95,11 +113,16 @@ const Navbar: React.FC = () => {
 							New Project
 						</MenuItem>
 						<Divider />
-						<MenuItem onClick={handleMenuClose} style={{padding: 0}}>
-							<OpenDirectoryButton onClick={handleOpenDirectory} style={{padding: "6px 16px"}}>
+						<MenuItem
+							onClick={handleMenuClose}
+							style={{ padding: 0 }}
+						>
+							<OpenDirectoryButton
+								onClick={handleOpenDirectory}
+								style={{ padding: "6px 16px" }}
+							>
 								Open Project
 							</OpenDirectoryButton>
-                            {/* <OpenDirectoryButton /> */}
 						</MenuItem>
 						<Divider />
 						<MenuItem onClick={handleMenuClose}>
@@ -115,7 +138,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="edit menu"
 						onClick={handleEditMenuOpen}
-						sx={{ mr: 2 }}
+						className={styles.menuButton} // Apply the menu button styles
 					>
 						<MenuIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -139,7 +162,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="project info"
 						onClick={toggleProjectInfoDrawer}
-						sx={{ mr: 2 }}
+						className={styles.menuButton} // Apply the menu button styles
 					>
 						<InfoIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -151,96 +174,44 @@ const Navbar: React.FC = () => {
 						open={isProjectInfoOpen}
 						onClose={toggleProjectInfoDrawer}
 					>
-						<Box sx={{ width: 250, padding: 2 }}>
-							<Typography variant="h6">Project Info</Typography>
-							<List>
-								<ListItem>
-									<ListItemText
-										primary="Time Worked"
-										secondary="10 hours"
-									/>
-								</ListItem>
-								<ListItem>
-									<ListItemText
-										primary="Number of Cells"
-										secondary="42"
-									/>
-								</ListItem>
-								<ListItem>
-									<ListItemText
-										primary="SLOC"
-										secondary="1200"
-									/>
-								</ListItem>
-								{/* Add more project metrics here */}
-							</List>
-						</Box>
-					</Drawer>
-					{/* <IconButton
-						edge="end"
-						color="inherit"
-						aria-label="connection status"
-						onClick={toggleConnectionStatusDrawer}
-					>
-						<Badge
-							color={isConnected ? "success" : "error"}
-							variant="dot"
-						>
-							<SyncIcon />
-						</Badge>
-						<Typography variant="button" sx={{ ml: 1 }}>
-							Connection Status
-						</Typography>
-					</IconButton> */}
-					<Drawer
-						anchor="right"
-						open={isConnectionStatusOpen}
-						onClose={toggleConnectionStatusDrawer}
-					>
-						<Box sx={{ width: 250, padding: 2 }}>
-							<Typography variant="h6">
-								Connection Status
-							</Typography>
-							{isConnected ? (
-								<>
+						<Box className={styles.container}> {/* Use the container styles */}
+							<div>
+								<Typography variant="h6">
+									Project Info
+								</Typography>
+								<List>
 									<ListItem>
 										<ListItemText
-											primary="Status"
-											secondary="Connected"
+											primary="Time Worked"
+											secondary="10 hours"
 										/>
 									</ListItem>
 									<ListItem>
 										<ListItemText
-											primary="Last Update"
-											secondary="5 minutes ago"
+											primary="Number of Nodes"
+											secondary={nodes.length}
 										/>
 									</ListItem>
 									<ListItem>
 										<ListItemText
-											primary="Session Id"
-											secondary="abc123"
+											primary="SLOC"
+											secondary={SLOC()}
 										/>
 									</ListItem>
-									<ListItem>
-										<ListItemButton
-											onClick={() =>
-												setIsConnected(false)
-											}
-										>
-											Disconnect
-										</ListItemButton>
-									</ListItem>
-								</>
-							) : (
-								<>
-									<ListItem button onClick={handleConnectNow}>
-										<ListItemText primary="Connect Now" />
-									</ListItem>
-									<ListItem button onClick={handleSync}>
-										<ListItemText primary="Sync" />
-									</ListItem>
-								</>
-							)}
+									{/* Add more project metrics here */}
+								</List>
+							</div>
+							<Box className={styles.themeToggleContainer}> {/* Use the theme toggle container styles */}
+								<Typography
+									variant="body2"
+									className={styles.themeToggleLabel} // Apply the theme toggle label styles
+								>
+									{mode === "light"
+										? "Light Mode"
+										: "Dark Mode"}
+								</Typography>
+								<ThemeToggle />
+							</Box>
 						</Box>
 					</Drawer>
 				</Box>

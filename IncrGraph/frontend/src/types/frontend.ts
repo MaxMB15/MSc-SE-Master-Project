@@ -1,4 +1,5 @@
 import { Node, Edge } from "reactflow";
+import { FileNode } from "shared";
 
 export interface Item {
 	type: "Node" | "Edge";
@@ -89,4 +90,19 @@ export interface CodeRunData {
 export interface SessionData {
 	configuration: any;
 	executionPath: string[];
+}
+
+export interface TreeItemActionHandlers {
+	onSelect?: (node: FileNode) => void;
+	onRename?: (node: FileNode, newName: string) => void;
+	onContextMenu?: (
+		event: React.MouseEvent,
+		node: FileNode,
+	) => void;
+}
+export interface TreeItemState {
+    editing: string | null;
+    setEditing: React.Dispatch<React.SetStateAction<string | null>>;
+    expandedSet: Set<string>;
+    setExpandedSet: React.Dispatch<React.SetStateAction<Set<string>>>;
 }

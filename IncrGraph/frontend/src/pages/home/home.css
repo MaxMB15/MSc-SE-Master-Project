@@ -30,8 +30,8 @@ body {
 .file-explorer {
 	display: flex;
 	flex-direction: column;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	border-right: 1px solid #333333;
 	overflow: hidden;
 	height: 100%; /* Ensure the file explorer takes full height */
@@ -41,7 +41,7 @@ body {
 .file-explorer .icon-button {
 	background: none;
 	border: none;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	cursor: pointer;
 	padding: 0 8px;
 	display: flex;
@@ -51,7 +51,7 @@ body {
 .icon-button {
 	background: none;
 	border: none;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	cursor: pointer;
 	padding: 0 8px;
 	display: flex;
@@ -96,8 +96,8 @@ body {
 .editor-pane {
 	display: flex;
 	flex-direction: column;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	border-right: 1px solid #333333;
 	overflow: hidden;
 	height: 100%; /* Ensure the editor pane takes full height */
@@ -112,8 +112,8 @@ body {
 .file-editor {
 	display: flex;
 	flex-direction: column;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	border-right: 1px solid #333333;
 	overflow: hidden;
 	height: 100%; /* Ensure the file editor takes full height */

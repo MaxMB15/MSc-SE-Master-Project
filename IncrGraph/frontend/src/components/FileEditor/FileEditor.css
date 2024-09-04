@@ -9,8 +9,8 @@
 .file-editor {
 	display: flex;
 	flex-direction: column;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	overflow: hidden;
 	height: 100%; /* Ensure the file editor takes full height */
 	width: 100%; /* Ensure the file editor takes full width */

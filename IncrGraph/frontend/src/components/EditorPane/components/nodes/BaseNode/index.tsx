@@ -20,21 +20,17 @@ interface BaseNodeProps extends NodeProps {
 	id: string;
 	data: {
 		label: string;
+		children?: React.ReactNode;
 		backgroundColor?: string;
 		code?: string;
-        scope?: string;
-        dependencies?: Dependencies;
-        new_definitions?: Definitions;
-
+		scope?: string;
+		dependencies?: Dependencies;
+		new_definitions?: Definitions;
 	};
 }
 
 const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
-	const {
-		projectDirectory,
-		setNodes,
-		setEdges,
-	} = useStore();
+	const { projectDirectory, setNodes, setEdges } = useStore();
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
 		mouseY: number;
@@ -110,6 +106,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 						: data.backgroundColor,
 				}}
 			>
+				{data.children !== undefined && data.children}
 				{!isConnecting && (
 					<Handle
 						className="customHandle"
@@ -125,7 +122,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				/>
 				<div style={{ textAlign: "center" }}>
 					{isConnecting && label}
-					{!isConnecting && data.label}
+					{!isConnecting && data.children === undefined && data.label}
 				</div>
 
 				{!isConnecting && <div className="base"></div>}

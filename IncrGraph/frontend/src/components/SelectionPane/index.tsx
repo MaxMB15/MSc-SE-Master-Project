@@ -236,6 +236,11 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 					label: "Code Fragment",
 					className: "selection-pane-node-code-fragment",
 				},
+                {
+					value: "importNode",
+					label: "Import File Node",
+					className: "selection-pane-node-import",
+				},
 			];
 		} else if (type === "Edge") {
 			return [

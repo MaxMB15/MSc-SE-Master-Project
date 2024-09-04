@@ -32,6 +32,7 @@ import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
+import { STYLES } from "@/styles/constants";
 
 interface EditorPaneProps {}
 
@@ -281,7 +282,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 			<Box
 				sx={{
 					flexGrow: 1,
-					backgroundColor: "#1e1e1e",
+					backgroundColor: STYLES.mainBackgroundColor,
 					overflow: "hidden",
 				}}
 				ref={reactFlowWrapper}

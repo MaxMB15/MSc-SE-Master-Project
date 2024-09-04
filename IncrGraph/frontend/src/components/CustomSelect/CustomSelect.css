@@ -8,14 +8,14 @@
 	display: block;
 	margin-bottom: 8px;
 	font-size: 14px;
-	color: #cccccc;
+	color: var(--mui-palette-text-secondary);
 }
 
 .custom-select {
 	padding: 8px;
-	background-color: #3c3c3c;
+	background-color: var(--mui-palette-background-default);
 	border: 1px solid #555555;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	font-size: 14px;
 	border-radius: 4px;
 	cursor: pointer;
@@ -27,7 +27,7 @@
 	top: 100%;
 	left: 0;
 	width: 100%;
-	background-color: #252526;
+	background-color: var(--mui-palette-background-default);
 	border: 1px solid #555555;
 	border-radius: 4px;
 	max-height: 200px;
@@ -56,58 +56,4 @@
 	height: 12px;
 	border-radius: 2px;
 	margin-right: 8px;
-}
-
-/* Node colors */
-.selection-pane-node-base .custom-select-color {
-	background-color: #ffffff;
-}
-
-.selection-pane-node-class .custom-select-color {
-	background-color: #00ff00;
-}
-
-.selection-pane-node-abstract-class .custom-select-color {
-	background-color: #66ff66;
-}
-
-.selection-pane-node-interface .custom-select-color {
-	background-color: #008000;
-}
-
-.selection-pane-node-library .custom-select-color {
-	background-color: #ffa500;
-}
-
-.selection-pane-node-method .custom-select-color {
-	background-color: #ff0000;
-}
-
-.selection-pane-node-code-fragment .custom-select-color {
-	background-color: #0000ff;
-}
-
-/* Edge colors */
-.selection-pane-edge-base .custom-select-color {
-	background-color: #ffffff;
-}
-
-.selection-pane-edge-inheritance .custom-select-color {
-	background-color: #00ff00;
-}
-
-.selection-pane-edge-overrides .custom-select-color {
-	background-color: #ffa500;
-}
-
-.selection-pane-edge-method .custom-select-color {
-	background-color: #ff0000;
-}
-
-.selection-pane-edge-execution .custom-select-color {
-	background-color: #0000ff;
-}
-
-.selection-pane-edge-dependency .custom-select-color {
-	background-color: #ffa500;
 }

@@ -19,6 +19,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
 import { getIncomingNodes } from "../EditorPane/components/utils/utils";
+import { STYLES } from "@/styles/constants";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -933,7 +934,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					<Box
 						sx={{
 							flexGrow: 1,
-							backgroundColor: "#1e1e1e",
+							backgroundColor: STYLES.mainBackgroundColor,
 							overflowY: "auto",
 							display: isCollapsed ? "none" : "block",
 						}}
@@ -958,7 +959,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						>
 							<Editor
 								height="100%"
-								theme="vs-dark"
+								// theme="vs-dark"
+								theme="light"
 								options={{ readOnly: false }}
 								onMount={handleEditorMount}
 								onChange={handleEditorChange}

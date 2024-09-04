@@ -1,8 +1,8 @@
 .editor-pane {
 	display: flex;
 	flex-direction: column;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	overflow: hidden;
 	height: 100%;
 	flex-grow: 1;
@@ -33,7 +33,7 @@
 	top: 10px;
 	right: 10px;
 	background: rgba(0, 0, 0, 0.8);
-	color: white;
+	color: var(--mui-palette-text-primary);
 	padding: 1rem;
 	border-radius: 4px;
 	z-index: 10;
@@ -107,12 +107,12 @@
 
 /* MiniMap styles */
 .react-flow__minimap {
-	background-color: #252526;
+	background-color: var(--mui-palette-background-default);
 	border: 1px solid #333333;
 }
 
 .react-flow__minimap-mask {
-	fill: #1e1e1e;
+	fill: var(--mui-palette-background-paper);
 	stroke: #444444;
 }
 
@@ -123,17 +123,17 @@
 
 /* Controls styles */
 .react-flow__controls {
-	background-color: #1e1e1e;
+	background-color: var(--mui-palette-background-paper);
 	border: 1px solid #333333;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	padding: 4px;
 	margin-bottom: 42px;
 	margin-left: 5px;
 }
 
 .react-flow__controls-button {
-	background-color: #252526;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-default);
+	color: var(--mui-palette-text-primary);
 	border: 1px solid #444444;
 	border-radius: 4px;
 	margin: 2px 0;
@@ -141,7 +141,7 @@
 	transition: background-color 0.3s, transform 0.3s;
 }
 .react-flow__controls-button svg {
-	fill: #ffffff;
+	fill: var(--mui-palette-text-primary);
 }
 
 .react-flow__controls-button:hover {

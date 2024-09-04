@@ -1,7 +1,7 @@
 .selection-pane-formControl {
-	background-color: #252526;
+	background-color: var(--mui-palette-background-default);
 	padding: 16px;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -10,7 +10,7 @@
 	display: block;
 	margin-bottom: 8px;
 	font-size: 14px;
-	color: #cccccc;
+	color: var(--mui-palette-text-secondary);
 }
 
 .selection-pane-select,
@@ -18,9 +18,9 @@
 	width: 100%;
 	padding: 8px;
 	margin-bottom: 16px;
-	background-color: #3c3c3c;
+	background-color: var(--mui-palette-background-default);
 	border: 1px solid #555555;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	font-size: 14px;
 	border-radius: 4px;
 	box-sizing: border-box;
@@ -30,7 +30,7 @@
 	width: 100%;
 	padding: 12px;
 	background-color: #ff1744;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	border: none;
 	font-size: 16px;
 	border-radius: 4px;
@@ -75,6 +75,11 @@
 
 .selection-pane-node-code-fragment {
 	background-color: var(--codeFragmentNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-import {
+	background-color: var(--importNodeColor);
 	color: #ffffff;
 }
 

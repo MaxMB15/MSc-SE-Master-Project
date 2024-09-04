@@ -1,0 +1,35 @@
+/* NavBar.module.css */
+
+.container {
+	width: 250px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100vh;
+}
+
+.header {
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
+}
+
+.logo {
+	width: 40px;
+	margin-right: 16px;
+}
+
+.menuButton {
+	margin-right: 16px;
+}
+
+.themeToggleContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 16px;
+}
+
+.themeToggleLabel {
+	margin-right: 8px;
+}

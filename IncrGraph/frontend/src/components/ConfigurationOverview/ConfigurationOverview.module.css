@@ -1,7 +1,7 @@
 .configurationOverview {
 	width: 100%;
-	background-color: #1e1e1e;
-	color: #ffffff;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
 	padding: 16px;
 	box-sizing: border-box;
 	display: flex;
@@ -30,17 +30,17 @@
 .configurationOverviewButton {
 	width: 100%;
 	background-color: #007acc;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 	text-transform: none;
 }
 
 .configurationOverviewButton:disabled {
 	background-color: #555555 !important;
-	color: #ffffff;
+	color: var(--mui-palette-text-primary);
 }
 
 .configurationPlaceholder {
-	color: #cccccc;
+	color: var(--mui-palette-text-secondary);
 	text-align: center;
 	margin-top: 16px;
 }

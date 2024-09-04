@@ -1,0 +1,9 @@
+.container {
+	overflow-y: auto;
+	height: 100%;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
+	padding: 16px;
+	box-sizing: border-box;
+	width: 100%;
+}

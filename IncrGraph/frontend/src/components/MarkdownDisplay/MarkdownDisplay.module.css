@@ -4,11 +4,11 @@
     padding: 10px;
     border: 1px solid #888888;
     border-radius: 2px;
-    background-color: #1f1f1f;
+    background-color: var(--mui-palette-background-paper);
     font-family: Arial, sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: #ffffff;
+    color: var(--mui-palette-text-primary);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
@@ -17,7 +17,7 @@
   }
   
   .markdownDisplayContainer:hover {
-    background-color: #333333;
+    background-color: var(--mui-palette-background-default);
     border-color: #aaaaaa;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }

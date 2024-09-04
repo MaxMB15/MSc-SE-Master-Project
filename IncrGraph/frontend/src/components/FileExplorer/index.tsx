@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { SimpleTreeView, TreeItem } from "@mui/x-tree-view";
-import FolderIcon from "@mui/icons-material/Folder";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddFileIcon from "@mui/icons-material/NoteAdd";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { FileNode, GetDirectoryStructureRequest } from "shared";
+import { FileNode, GetFileTreeRequest } from "shared";
 import { useAxiosRequest } from "../../utils/requests";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import "./FileExplorer.css";
+import styles from "./FileExplorer.module.css";
 import useStore from "@/store/store";
 import ConfigurationOverview from "../ConfigurationOverview";
 import path from "path-browserify";
+import ContextMenu from "./components/ContextMenu";
+import TreeView from "../TreeView";
+import { createNewDirectory, createNewFile, deleteFileOrDirectory } from "@/requests";
 
 interface FileExplorerProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
 }
+type ContextMenuState = {
+	mouseX: number;
+	mouseY: number;
+} | null;
 
 const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 	// VARIABLES
 	const { response, error, loading, sendRequest } = useAxiosRequest<
-		GetDirectoryStructureRequest,
+        GetFileTreeRequest,
 		FileNode[]
 	>();
 
@@ -32,18 +36,22 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [width, setWidth] = useState(300);
 	const [currentDir, setCurrentDir] = useState<string | null>(null);
+	const [selectedNode, setSelectedNode] = useState<FileNode | null>(null);
+	const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
+	const [tree, setTree] = useState<FileNode[]>([]);
+	const [treeItemEditing, setTreeItemEditing] = useState<string | null>(null);
+    const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set<string>());
 
-	const toggleCollapse = () => {
-		setIsCollapsed(!isCollapsed);
-	};
 
 	const refreshFileTree = () => {
 		if (!projectDirectory) return;
 		sendRequest({
 			method: "GET",
-			route: "/api/file-explorer",
+			route: "/api/file-explorer/file-tree",
 			data: { path: projectDirectory },
 			useJWT: false,
+		}).then((response) => {
+			setTree(response);
 		});
 	};
 
@@ -52,34 +60,100 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 		setCurrentDir(() => projectDirectory);
 	}, [projectDirectory]);
 
-	const handleFileSelect = (filePath: string) => {
-		setSelectedFile(() => filePath);
+	const toggleCollapse = () => {
+		setIsCollapsed(!isCollapsed);
 	};
 
-	const renderTree = (nodes: FileNode[]) => {
-		return nodes.map((node) => {
-			return (
-				<TreeItem
-					key={node.fullPath}
-					itemId={node.fullPath}
-					label={node.name}
-					slots={
-						node.type === "directory"
-							? { icon: FolderIcon }
-							: { icon: InsertDriveFileIcon }
-					}
-					onClick={() =>
-						node.type === "file" && handleFileSelect(node.fullPath)
-					}
-				>
-					{node.children && renderTree(node.children)}
-				</TreeItem>
-			);
-		});
+	const handleNodeSelect = (node: FileNode) => {
+		setSelectedNode(node);
+		if (node.type === "file") {
+			setSelectedFile(() => node.fullPath);
+		}
 	};
+
+	const handleNodeRename = (node: FileNode, newName: string) => {
+		if (!selectedNode) return;
+        if (newName === "") return;
+
+		const updatedNode = { ...selectedNode, name: newName };
+		console.log(`Renaming ${selectedNode.fullPath} to ${newName}`);
+		setTree((prevTree) =>
+			prevTree.map((n) =>
+				n.fullPath === updatedNode.fullPath ? updatedNode : n,
+			),
+		);
+	};
+    const handleDelete = async (node: FileNode | null) => {
+        if(node === null) return;
+        console.log(`Deleting ${node.fullPath}`);
+        await deleteFileOrDirectory(node.fullPath);
+        setTree((prevTree) =>
+            prevTree.filter((n) => n.fullPath !== node.fullPath),
+        );
+    }
+
+	const handleNodeContextMenu = (event: React.MouseEvent, node: FileNode) => {
+		event.preventDefault();
+		setContextMenu({
+			mouseX: event.clientX - 2,
+			mouseY: event.clientY - 4,
+		});
+		setSelectedNode(node);
+        refreshFileTree();
+	};
+
+	const handleClose = () => {
+		setContextMenu(null);
+	};
+
+	const createNewFileHandler = async () => {
+        if (projectDirectory === null) return;
+        let dirPath = projectDirectory;
+        if(selectedNode !== null){
+            dirPath = selectedNode.type === "directory" ? selectedNode.fullPath : path.dirname(selectedNode.fullPath);
+        }
+
+		const newFilePath = path.join(dirPath, "New File");
+		await createNewFile(newFilePath);
+
+		refreshFileTree();
+		setTreeItemEditing(newFilePath); // Enable renaming immediately
+    };
+
+    const createNewDirectoryHandler = async () => {
+		if (projectDirectory === null) return;
+        let dirPath = projectDirectory;
+        if(selectedNode !== null){
+            dirPath = selectedNode.type === "directory" ? selectedNode.fullPath : path.dirname(selectedNode.fullPath);
+        }
+
+		const newDirPath = path.join(dirPath, "New Folder");
+		await createNewDirectory(newDirPath);
+
+		refreshFileTree();
+		setTreeItemEditing(newDirPath); // Enable renaming immediately
+	};
+
+	// useEffect(() => {
+	// 	const handleFocusIn = (event: FocusEvent) => {
+	// 		console.log("Focus in:", event.target);
+	// 	};
+
+	// 	const handleFocusOut = (event: FocusEvent) => {
+	// 		console.log("Focus out:", event.target);
+	// 	};
+
+	// 	document.addEventListener("focusin", handleFocusIn);
+	// 	document.addEventListener("focusout", handleFocusOut);
+
+	// 	return () => {
+	// 		document.removeEventListener("focusin", handleFocusIn);
+	// 		document.removeEventListener("focusout", handleFocusOut);
+	// 	};
+	// }, []);
 
 	return (
-		<div className="file-explorer-container">
+		<div className={styles.fileExplorerContainer}>
 			<ResizableBox
 				width={isCollapsed ? 40 : width}
 				height={Infinity}
@@ -89,9 +163,9 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 				onResize={(_, { size }) => setWidth(size.width)}
 				resizeHandles={["e"]}
 				handle={
-					<div className="resize-handle-container">
+					<div className={styles.resizeHandleContainer}>
 						<div
-							className="resize-handle"
+							className={styles.resizeHandle}
 							style={{
 								cursor: "ew-resize",
 								height: "100%",
@@ -106,7 +180,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 				}
 			>
 				<div
-					className="file-explorer"
+					className={styles.fileExplorer}
 					style={{ width: isCollapsed ? 40 : width }}
 				>
 					<div
@@ -119,7 +193,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 								<span
 									className="navbar-component-title take-full-width"
 									title={currentDir ? currentDir : ""}
-                                    style={{cursor: "default"}}
+									style={{ cursor: "default" }}
 								>
 									{currentDir
 										? path.basename(currentDir)
@@ -128,12 +202,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 								<button
 									className="icon-button"
 									title="Add File"
+									onClick={createNewFileHandler}
 								>
 									<AddFileIcon />
 								</button>
 								<button
 									className="icon-button"
 									title="Add Directory"
+									onClick={createNewDirectoryHandler}
 								>
 									<CreateNewFolderIcon />
 								</button>
@@ -155,32 +231,41 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 						</button>
 					</div>
 					{!isCollapsed && (
-						<>  
-                            <div style={{height: "50%", maxHeight: "50%"}}>
-							{loading ? (
-								<div className="loading">
-									<p>Loading...</p>
-								</div>
-							) : error ? (
-								<p>Error: {error}</p>
-							) : response ? (
-								<SimpleTreeView
-									slots={{
-										collapseIcon: FolderIcon,
-										expandIcon: FolderIcon,
-									}}
-									sx={{
-										height: "100%",
-										flexGrow: 1,
-										overflowY: "auto",
-									}}
-								>
-									{renderTree(response)}
-								</SimpleTreeView>
-							) : <div style={{margin: "10px"}}>
-                            No Project Open
-                        </div>}
-                            </div>
+						<>
+							<div style={{ height: "50%", maxHeight: "50%" }}>
+								{loading ? (
+									<div className="loading">
+										<p>Loading...</p>
+									</div>
+								) : error ? (
+									<p>Error: {error}</p>
+								) : response !== null ? (
+									<div className={styles.treeViewContainer}>
+										<TreeView
+											nodes={tree}
+											selectedNodeId={
+												selectedNode?.fullPath || null
+											}
+											actions={{
+												onSelect: handleNodeSelect,
+												onRename: handleNodeRename,
+												onContextMenu:
+													handleNodeContextMenu,
+											}}
+											state={{
+												editing: treeItemEditing,
+												setEditing: setTreeItemEditing,
+                                                expandedSet: expandedSet,
+                                                setExpandedSet: setExpandedSet,
+											}}
+										/>
+									</div>
+								) : (
+									<div style={{ margin: "10px" }}>
+										No Project Open
+									</div>
+								)}
+							</div>
 							<ConfigurationOverview
 								openTextDialog={openTextDialog}
 							/>
@@ -188,6 +273,17 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 					)}
 				</div>
 			</ResizableBox>
+			<ContextMenu
+				mouseX={contextMenu?.mouseX || null}
+				mouseY={contextMenu?.mouseY || null}
+				handleClose={handleClose}
+				actions={{
+					onRename: () =>
+						setTreeItemEditing(selectedNode?.fullPath || null),
+                    onDelete: () => handleDelete(selectedNode),
+					// Other actions can be omitted and will default to empty functions
+				}}
+			/>
 		</div>
 	);
 };

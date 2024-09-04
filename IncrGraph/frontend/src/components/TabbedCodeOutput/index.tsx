@@ -6,6 +6,7 @@ import ConfigurationDisplay from "../ConfigurationDisplay";
 import { CodeRunData } from "@/types/frontend";
 import "@xterm/xterm/css/xterm.css";
 import "./TabbedCodeOutput.css";
+import { STYLES } from "@/styles/constants";
 
 interface TabbedCodeOutputProps {
 	codeRunData: CodeRunData | undefined;
@@ -26,8 +27,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				console.log(`Initializing terminal ${index}`);
 				terminals.current[index] = new Terminal({
 					theme: {
-						background: "#1a1a1a",
-						cursor: "#1a1a1a",
+						background: STYLES.mainBackgroundColor,
+						cursor: STYLES.mainBackgroundColor,
 					},
 					cursorStyle: "block",
 					cursorBlink: false,
@@ -62,11 +63,11 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
             terminal?.clear();
             if (index === 0) {
                 terminal?.writeln(
-                    codeRunData && codeRunData.stdout ? codeRunData.stdout : "<No output>",
+                    codeRunData && codeRunData.stdout ? `\x1b[30m${codeRunData.stdout}` : "\x1b[30m<No output>",
                 );
             } else if (index === 1) {
                 terminal?.writeln(
-                    codeRunData && codeRunData.stderr ? codeRunData.stderr : "<No errors>",
+                    codeRunData && codeRunData.stderr ? `\x1b[30m${codeRunData.stderr}` : "\x1b[30m<No errors>",
                 );
             }
         });
