@@ -29,8 +29,6 @@
 
 .configurationOverviewButton {
 	width: 100%;
-	background-color: #007acc;
-	color: var(--mui-palette-text-primary);
 	text-transform: none;
 }
 

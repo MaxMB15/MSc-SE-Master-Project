@@ -183,7 +183,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 				addEdge(
 					{
 						...params,
-						type: "BaseRelationship",
+						type: "baseRelationship",
 						id: getEdgeId(source, target, eds),
 						selected: true,
 					},
@@ -252,6 +252,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<Button
 							startIcon={<AddCircle />}
 							onClick={handleAddNode}
+                            sx={{color: STYLES.primary}}
 						>
 							Add Node
 						</Button>
@@ -282,7 +283,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 			<Box
 				sx={{
 					flexGrow: 1,
-					backgroundColor: STYLES.mainBackgroundColor,
 					overflow: "hidden",
 				}}
 				ref={reactFlowWrapper}

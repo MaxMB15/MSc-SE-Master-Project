@@ -80,13 +80,12 @@ const Navbar: React.FC = () => {
 	return (
 		<AppBar
 			position="static"
-			className={styles.header} // Apply the header styles
 		>
 			<Toolbar>
 				<img
 					src="/logo.png"
 					alt="Logo"
-					className={styles.logo} // Apply the logo styles
+					className={styles.logo}
 				/>
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 					Incremental Graph Code (IncrCode)
@@ -97,7 +96,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="file menu"
 						onClick={handleFileMenuOpen}
-						className={styles.menuButton} // Apply the menu button styles
+						className={styles.menuButton}
 					>
 						<MenuIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -138,7 +137,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="edit menu"
 						onClick={handleEditMenuOpen}
-						className={styles.menuButton} // Apply the menu button styles
+						className={styles.menuButton}
 					>
 						<MenuIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -162,7 +161,7 @@ const Navbar: React.FC = () => {
 						color="inherit"
 						aria-label="project info"
 						onClick={toggleProjectInfoDrawer}
-						className={styles.menuButton} // Apply the menu button styles
+						className={styles.menuButton}
 					>
 						<InfoIcon />
 						<Typography variant="button" sx={{ ml: 1 }}>
@@ -174,7 +173,7 @@ const Navbar: React.FC = () => {
 						open={isProjectInfoOpen}
 						onClose={toggleProjectInfoDrawer}
 					>
-						<Box className={styles.container}> {/* Use the container styles */}
+						<Box className={styles.container}>
 							<div>
 								<Typography variant="h6">
 									Project Info
@@ -201,10 +200,10 @@ const Navbar: React.FC = () => {
 									{/* Add more project metrics here */}
 								</List>
 							</div>
-							<Box className={styles.themeToggleContainer}> {/* Use the theme toggle container styles */}
+							<Box className={styles.themeToggleContainer}>
 								<Typography
 									variant="body2"
-									className={styles.themeToggleLabel} // Apply the theme toggle label styles
+									className={styles.themeToggleLabel}
 								>
 									{mode === "light"
 										? "Light Mode"

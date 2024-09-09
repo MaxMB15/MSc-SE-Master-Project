@@ -27,8 +27,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				console.log(`Initializing terminal ${index}`);
 				terminals.current[index] = new Terminal({
 					theme: {
-						background: STYLES.mainBackgroundColor,
-						cursor: STYLES.mainBackgroundColor,
+						background: STYLES.mainBackgroundColorLight,
+						cursor: STYLES.mainBackgroundColorLight,
 					},
 					cursorStyle: "block",
 					cursorBlink: false,

@@ -3,16 +3,20 @@ import { deepmerge } from "@mui/utils";
 import { STYLES } from "./constants";
 
 const defaultTheme: ThemeOptions = {
-	palette: {
-		primary: {
-			main: "#0096ed",
-		},
-	},
 	components: {
 		MuiCssBaseline: {
 			styleOverrides: {
 				body: {
 					transition: "all 0.3s ease",
+				},
+			},
+		},
+		MuiAppBar: {
+			styleOverrides: {
+				root: {
+					"& .MuiIconButton-root": {
+						borderRadius: "5px",
+					},
 				},
 			},
 		},
@@ -22,6 +26,7 @@ const defaultTheme: ThemeOptions = {
 // Light Theme
 export const lightTheme: Theme = createTheme(
 	deepmerge(defaultTheme, {
+		cssVariables: true,
 		palette: {
 			mode: "light",
 			background: {
@@ -30,7 +35,11 @@ export const lightTheme: Theme = createTheme(
 			},
 			text: {
 				primary: STYLES.mainFontColorLight,
-                secondary: STYLES.mainFontAccentColorLight,
+				secondary: STYLES.mainFontAccentColorLight,
+			},
+			primary: {
+				main: STYLES.mainBackgroundColorLight,
+				contrastText: STYLES.mainFontColorLight,
 			},
 		},
 	}),
@@ -39,6 +48,7 @@ export const lightTheme: Theme = createTheme(
 // Dark Theme
 export const darkTheme: Theme = createTheme(
 	deepmerge(defaultTheme, {
+		cssVariables: true,
 		palette: {
 			mode: "dark",
 			background: {
@@ -47,7 +57,11 @@ export const darkTheme: Theme = createTheme(
 			},
 			text: {
 				primary: STYLES.mainFontColorDark,
-                secondary: STYLES.mainFontAccentColorDark,
+				secondary: STYLES.mainFontAccentColorDark,
+			},
+			primary: {
+				main: STYLES.mainBackgroundColorDark,
+				contrastText: STYLES.mainFontColorDark,
 			},
 		},
 	}),

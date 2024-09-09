@@ -21,6 +21,7 @@
 
 .menuButton {
 	margin-right: 16px;
+    border-radius: 5px;
 }
 
 .themeToggleContainer {

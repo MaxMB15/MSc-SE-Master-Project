@@ -5,6 +5,7 @@ import CustomSelect from "../CustomSelect";
 import styles from "./ConfigurationOverview.module.css";
 import useStore from "@/store/store";
 import { getEdgeId } from "../EditorPane/components/utils/utils";
+import { STYLES } from "@/styles/constants";
 
 interface ConfigurationOverviewProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
@@ -101,6 +102,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 					variant="contained"
 					onClick={handleStartNewSession}
 					className={styles.configurationOverviewButton}
+                    sx={{ backgroundColor: STYLES.primary }}
 					// disabled={selectedSessionId === null}
 				>
 					{/* {selectedSessionId === null

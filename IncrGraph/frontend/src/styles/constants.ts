@@ -2,6 +2,8 @@ export const STYLES = {
     startNodeColor1: "#0080ff",
     startNodeColor2: "#00f2ff",
 
+	primary: "#0096ed",
+
 	defaultNodeColor: "#ffffffc2",
 	classNodeColor: "#00ff00",
 	abstractClassNodeColor: "#66ff66",

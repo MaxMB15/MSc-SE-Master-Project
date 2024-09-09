@@ -109,16 +109,38 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 				{data.children !== undefined && data.children}
 				{!isConnecting && (
 					<Handle
-						className="customHandle"
 						position={Position.Right}
 						type="source"
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            position: "absolute",
+                            backgroundColor: "transparent",
+                            top: 0,
+                            left: 0,
+                            borderRadius: 0,
+                            transform: "none",
+                            border: "none",
+                            zIndex: 5,
+                        }}
 					/>
 				)}
 				<Handle
-					className="customHandle"
 					position={Position.Left}
 					type="target"
 					isConnectableStart={false}
+					style={{
+						width: "100%",
+						height: "100%",
+						position: "absolute",
+						backgroundColor: "transparent",
+						top: 0,
+						left: 0,
+						borderRadius: 0,
+						transform: "none",
+						border: "none",
+						zIndex: 5,
+					}}
 				/>
 				<div style={{ textAlign: "center" }}>
 					{isConnecting && label}

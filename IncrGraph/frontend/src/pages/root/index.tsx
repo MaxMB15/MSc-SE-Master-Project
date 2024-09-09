@@ -32,7 +32,7 @@ const RootPage: FC<RootPageProps> = ({ children }) => {
 								rel="noopener noreferrer"
 							>
 								<GitHubIcon
-									// style={{ color: STYLES.mainFontColor }}
+									style={{ color: "#ffffff" }}
 								/>
 							</a>
 						</div>
