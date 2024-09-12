@@ -1,0 +1,38 @@
+.popupOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.popupContainer {
+	background-color: var(--mui-palette-background-default);
+	padding: 15px;
+	border-radius: 8px;
+	min-width: 400px;
+	max-width: 100%;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.popupHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: move;
+}
+
+.closeBtn {
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+}
+
+.popupContent {
+	margin-top: 5px;
+}

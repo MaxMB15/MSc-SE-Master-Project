@@ -29,6 +29,9 @@ export const STYLES = {
     mainBackgroundAccentColorLight: "#d5d5d5",
     mainBackgroundAccentColorDark: "#252526",
 
+    mainBackgroundPureColorLight: "#ffffff",
+    mainBackgroundPureColorDark: "#000000",
+
     mainFontColorDark: "#ffffff",
     mainFontColorLight: "#1e1e1e",
 

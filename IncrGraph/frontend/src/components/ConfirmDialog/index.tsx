@@ -38,10 +38,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 				<DialogContentText>{message}</DialogContentText>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={handleKeepChanges} color="primary">
+				<Button onClick={handleKeepChanges}>
 					{buttonLabelCancel}
 				</Button>
-				<Button onClick={handleRefreshFile} color="primary" autoFocus>
+				<Button onClick={handleRefreshFile} autoFocus>
 					{buttonLabelConfirm}
 				</Button>
 			</DialogActions>

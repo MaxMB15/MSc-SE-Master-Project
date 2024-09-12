@@ -4,7 +4,7 @@ import ConfigurationDisplay from "../ConfigurationDisplay";
 import CustomSelect from "../CustomSelect";
 import styles from "./ConfigurationOverview.module.css";
 import useStore from "@/store/store";
-import { getEdgeId } from "../EditorPane/components/utils/utils";
+import { getEdgeId } from "../../IGCItems/utils/utils";
 import { STYLES } from "@/styles/constants";
 
 interface ConfigurationOverviewProps {

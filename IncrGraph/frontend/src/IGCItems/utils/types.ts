@@ -33,6 +33,10 @@ export const nodeTypes: NodeTypes = {
     importNode: ImportNode,
 };
 
+const createDefaultNodeTypes = () => {
+    
+}
+
 export const edgeTypes: EdgeTypes = {
 	baseRelationship: BaseRelationship,
 	inheritanceRelationship: InheritanceRelationship,

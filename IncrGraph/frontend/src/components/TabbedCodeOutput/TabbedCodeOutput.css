@@ -4,7 +4,6 @@
 
 .tabbed-code-output-tabs {
 	background-color: var(--mui-palette-background-default);
-	color: var(--mui-palette-text-primary);
 	min-height: 30px !important;
 }
 
@@ -13,6 +12,11 @@
 	padding: 0px 12px !important;
     color: var(--mui-palette-text-primary);
 }
+/* .tabbed-code-output-tabs .MuiTab-root ::selected {
+	min-height: 30px !important;
+	padding: 0px 12px !important;
+    color: var(--mui-palette-text-primary);
+} */
 
 .tabbed-code-output-container {
 	height: calc(100% - 35px);
@@ -22,11 +26,9 @@
 
 .tabbed-code-output-terminal {
 	height: 100%;
-	background-color: var(--mui-palette-background-paper);
-    color: var(--mui-palette-text-primary) !important;
 	padding: 10px 10px 10px 10px;
-	box-sizing: border-box; /* Ensure padding is included in height calculation */
-	overflow: hidden; /* Hide overflow to prevent it from affecting other components */
+	box-sizing: border-box;
+	overflow: hidden;
 }
 
 .tabbed-code-output-terminal.hidden {

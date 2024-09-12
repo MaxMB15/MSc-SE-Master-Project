@@ -20,19 +20,19 @@ import "./EditorPane.css";
 import {
 	addEdge,
 	getEdgeId,
-	getNodeId,
 	updateExecutionPath,
 	updateExecutionPathEdge,
-} from "./components/utils/utils";
-import { edgeTypes, nodeTypes } from "./components/utils/types";
+} from "../../IGCItems/utils/utils";
+import { edgeTypes, nodeTypes } from "../../IGCItems/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
-} from "./components/edges/CustomConnectionLine";
+} from "../../IGCItems/edges/CustomConnectionLine";
 import { Item } from "@/types/frontend";
 import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
 import { STYLES } from "@/styles/constants";
+import { createBaseNode, IGCNodeData, IGCNodeProps } from "../../IGCItems/nodes/BaseNode";
 
 interface EditorPaneProps {}
 
@@ -55,7 +55,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// STATE
 	const [showGraph, setShowGraph] = useState(false); // If the graph should show up or not
 
-	const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+	const [selectedNodes, setSelectedNodes] = useState<Node<IGCNodeData>[]>([]);
 
 	const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
 
@@ -109,16 +109,10 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const handleAddNode = () => {
 		// Select the new node and deselect all other nodes/edges
 		setNodes((nodes) => {
-			const newNode: Node = {
-				id: getNodeId(nodes),
-				type: "baseNode",
-				data: { label: `Node ${nodes.length}`, code: "" },
-				position: {
-					x: Math.random() * 500 - 250,
-					y: Math.random() * 500 - 250,
-				},
-				selected: true,
-			};
+			const newNode: Node<IGCNodeData> = createBaseNode(
+				nodes
+            );
+			
 			let newNodes = nodes.map((node) => {
 				node.selected = false;
 				return node;

@@ -5,13 +5,13 @@ import {
 	getEdgeId,
 	getIncomingNodes,
 	getOutgoingNodes,
-} from "@/components/EditorPane/components/utils/utils";
+} from "@/IGCItems/utils/utils";
 import { callAnalyze, callExecute } from "@/requests";
 import useStore from "@/store/store";
-import { createDependencyGraph } from "@/components/EditorPane/components/utils/edgeCreation";
-import { nodeHasCode } from "@/components/EditorPane/components/utils/types";
+import { createDependencyGraph } from "@/IGCItems/utils/edgeCreation";
+import { nodeHasCode } from "@/IGCItems/utils/types";
 import { method } from "lodash";
-import MethodRelationship from "@/components/EditorPane/components/edges/MethodRelationship";
+import MethodRelationship from "@/IGCItems/edges/MethodRelationship";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {

@@ -19,7 +19,9 @@ import OpenDirectoryButton from "../OpenDirectoryButton";
 import useStore from "@/store/store";
 import ThemeToggle from "../ThemeToggle";
 import styles from './NavBar.module.css'; // Import the CSS module
-import { isCodeContainingNode } from "../EditorPane/components/utils/types";
+import { isCodeContainingNode } from "../../IGCItems/utils/types";
+import { usePopupContext } from "../Popup/PopupProvider";
+import AddOnManager from "../AddOnManager/AddOnManager";
 
 const Navbar: React.FC = () => {
 	const [anchorElFile, setAnchorElFile] = useState<null | HTMLElement>(null);
@@ -27,6 +29,7 @@ const Navbar: React.FC = () => {
 	const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
 	const [isConnectionStatusOpen, setIsConnectionStatusOpen] = useState(false);
 	const [isConnected, setIsConnected] = useState(false);
+    const { showPopup } = usePopupContext();
 
 	const { nodes, mode } = useStore();
 
@@ -66,6 +69,9 @@ const Navbar: React.FC = () => {
 		// Simulate a sync action
 		console.log("Syncing with server...");
 	};
+    const handleAddOnManager = () => {
+        showPopup(<AddOnManager onClose={() => console.log("Popup closed!")} />, "AddOnManager");
+    };
 
 	const SLOC = (): string => {
 		let sloc = 0;
@@ -124,6 +130,10 @@ const Navbar: React.FC = () => {
 							</OpenDirectoryButton>
 						</MenuItem>
 						<Divider />
+						<MenuItem onClick={handleAddOnManager}>
+							Manage Add-ons
+						</MenuItem>
+                        <Divider />
 						<MenuItem onClick={handleMenuClose}>
 							Save File Editor
 						</MenuItem>

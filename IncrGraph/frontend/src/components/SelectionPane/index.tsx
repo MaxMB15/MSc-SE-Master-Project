@@ -6,7 +6,7 @@ import { applyEdgeChanges } from "reactflow";
 import {
 	updateExecutionPath,
 	updateExecutionPathEdge,
-} from "../EditorPane/components/utils/utils";
+} from "../../IGCItems/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
 

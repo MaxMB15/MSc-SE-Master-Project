@@ -13,15 +13,15 @@ const HomePage: React.FC = () => {
     const { openTextDialog, TextDialogPortal } = useTextDialog();
 	return (
 		<RootPage>
-			<div className="app-container">
-				<FileExplorer openTextDialog={openTextDialog}/>
-				<EditorPane/>
-				<FileEditor
-					openConfirmDialog={openConfirmDialog}
-				/>
-				<ConfirmDialogPortal />
-				<TextDialogPortal />
-            </div>
+                <div className="app-container">
+                    <FileExplorer openTextDialog={openTextDialog}/>
+                    <EditorPane/>
+                    <FileEditor
+                        openConfirmDialog={openConfirmDialog}
+                    />
+                    <ConfirmDialogPortal />
+                    <TextDialogPortal />
+                </div>
 		</RootPage>
 	);
 };

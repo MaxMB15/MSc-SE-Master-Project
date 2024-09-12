@@ -6,7 +6,7 @@ import { Node, Edge } from "reactflow";
 import {
 	getEdgeId,
 	getIncomingNodes,
-} from "../EditorPane/components/utils/utils";
+} from "../../IGCItems/utils/utils";
 import useStore from "@/store/store";
 
 interface MarkdownDisplayProps {

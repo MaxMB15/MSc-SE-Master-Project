@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
+    Node,
 	Handle,
 	NodeProps,
 	Position,
@@ -12,24 +13,32 @@ import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
 import { runCode } from "@/utils/codeExecution";
 import { Definitions, Dependencies } from "shared";
+import { getNodeId } from "../../utils/utils";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
 
-interface BaseNodeProps extends NodeProps {
-	id: string;
-	data: {
-		label: string;
-		children?: React.ReactNode;
-		backgroundColor?: string;
-		code?: string;
-		scope?: string;
-		dependencies?: Dependencies;
-		new_definitions?: Definitions;
-	};
-}
+type CodeData = {
+	code: string;
+	scope?: string;
+	dependencies?: Dependencies;
+	new_definitions?: Definitions;
+};
 
-const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
+export type IGCNodeData<T = {}> = T & {
+	label: string;
+    backgroundColor?: string;
+	codeData?: CodeData;
+	children?: React.ReactNode;
+};
+
+export type IGCNodeProps<T={}> = React.FC<NodeProps<IGCNodeData<T>>> & { 
+    NAME: string,
+    COLOR: string;
+    SETABLE?: boolean; // Default is false
+};
+
+const BaseNode: IGCNodeProps = ({ id, data }) => {
 	const { projectDirectory, setNodes, setEdges } = useStore();
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
@@ -53,8 +62,8 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 
 	const handleRun = () => {
 		console.log("Run action triggered for node:", id);
-		if (data.code !== undefined && projectDirectory !== null) {
-			runCode(data.code, id, data.scope);
+		if (data.codeData !== undefined && projectDirectory !== null) {
+			runCode(data.codeData.code, id, data.codeData.scope);
 		}
 
 		// Select the node
@@ -103,7 +112,7 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 						? isTarget
 							? STYLES.nodeDropColor
 							: STYLES.nodePickColor
-						: data.backgroundColor,
+						: (data.backgroundColor !== undefined ? data.backgroundColor : BaseNode.COLOR),
 				}}
 			>
 				{data.children !== undefined && data.children}
@@ -111,18 +120,18 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 					<Handle
 						position={Position.Right}
 						type="source"
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            position: "absolute",
-                            backgroundColor: "transparent",
-                            top: 0,
-                            left: 0,
-                            borderRadius: 0,
-                            transform: "none",
-                            border: "none",
-                            zIndex: 5,
-                        }}
+						style={{
+							width: "100%",
+							height: "100%",
+							position: "absolute",
+							backgroundColor: "transparent",
+							top: 0,
+							left: 0,
+							borderRadius: 0,
+							transform: "none",
+							border: "none",
+							zIndex: 5,
+						}}
 					/>
 				)}
 				<Handle
@@ -159,5 +168,23 @@ const BaseNode: React.FC<BaseNodeProps> = ({ id, data }) => {
 		</div>
 	);
 };
+BaseNode.NAME = "BaseNode";
+BaseNode.COLOR = STYLES.defaultNodeColor;
+BaseNode.SETABLE = true;
+
+export const createBaseNode = (curNodes: Node<IGCNodeData>[]): Node<IGCNodeData> => { 
+    return {
+        id: getNodeId(curNodes),
+        type: BaseNode.NAME,
+        data: { 
+            label: `Node ${curNodes.length}`, 
+        },
+        position: {
+            x: Math.random() * 500 - 250,
+            y: Math.random() * 500 - 250,
+        },
+        selected: true,
+    }
+}
 
 export default BaseNode;

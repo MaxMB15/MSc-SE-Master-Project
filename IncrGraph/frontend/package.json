@@ -26,6 +26,7 @@
 		"path-browserify": "^1.0.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
+		"react-draggable": "^4.4.6",
 		"react-markdown": "^8.0.6",
 		"react-resizable": "^3.0.5",
 		"react-router-dom": "^6.23.1",

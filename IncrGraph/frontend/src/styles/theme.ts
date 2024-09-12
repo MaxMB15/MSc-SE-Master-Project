@@ -20,6 +20,15 @@ const defaultTheme: ThemeOptions = {
 				},
 			},
 		},
+        MuiTab: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-selected": {
+                        color: STYLES.primary,
+                    },
+                },
+            },
+        },
 	},
 };
 
@@ -32,6 +41,7 @@ export const lightTheme: Theme = createTheme(
 			background: {
 				default: STYLES.mainBackgroundAccentColorLight,
 				paper: STYLES.mainBackgroundColorLight,
+                pure: STYLES.mainBackgroundPureColorLight,
 			},
 			text: {
 				primary: STYLES.mainFontColorLight,
@@ -54,6 +64,7 @@ export const darkTheme: Theme = createTheme(
 			background: {
 				default: STYLES.mainBackgroundAccentColorDark,
 				paper: STYLES.mainBackgroundColorDark,
+                pure: STYLES.mainBackgroundPureColorDark,
 			},
 			text: {
 				primary: STYLES.mainFontColorDark,
@@ -62,7 +73,7 @@ export const darkTheme: Theme = createTheme(
 			primary: {
 				main: STYLES.mainBackgroundColorDark,
 				contrastText: STYLES.mainFontColorDark,
-			},
+			},   
 		},
 	}),
 );

@@ -18,7 +18,7 @@ import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
-import { getIncomingNodes } from "../EditorPane/components/utils/utils";
+import { getIncomingNodes } from "../../IGCItems/utils/utils";
 
 interface FileEditorProps {
 	openConfirmDialog: (
