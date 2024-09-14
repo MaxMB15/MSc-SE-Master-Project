@@ -79,3 +79,14 @@ export interface CodeAnalysisResponse {
 	dependencies: Dependencies;
 	new_definitions: Definitions;
 }
+
+export type Cache = CacheEntry[];
+export interface CacheEntry {
+	search_path: string;
+	last_updated: string;
+	files: string[];
+    meta?: ModuleConfigurationData;
+}
+export interface ModuleConfigurationData {
+    name: string;
+}

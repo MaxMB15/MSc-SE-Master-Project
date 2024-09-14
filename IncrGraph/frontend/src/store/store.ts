@@ -1,9 +1,15 @@
 import { Node, Edge } from "reactflow";
-import { CodeRunData, Item, SessionData } from "@/types/frontend";
+import {
+	CodeRunData,
+	Item,
+	ModuleComponent,
+	SessionData,
+} from "@/types/frontend";
 import { create } from "zustand";
 import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
 import { IGCViewProps } from "@/IGCItems/views/BaseView";
+import { Cache } from "shared";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
@@ -69,13 +75,28 @@ interface State {
 	mode: ThemeMode;
 	setMode: (updater: (prev: ThemeMode) => ThemeMode) => void;
 
-    // Registry for Node, Relationship, and View Components
-    nodeTypes: Map<string, IGCNodeProps>;
-    setNodeTypes: (updater: (prev: Map<string, IGCNodeProps>) => Map<string, IGCNodeProps>) => void;
-    relationshipTypes: Map<string, IGCRelationshipProps>;
-    setRelationshipTypes: (updater: (prev: Map<string, IGCRelationshipProps>) => Map<string, IGCRelationshipProps>) => void;
-    viewTypes: Map<string, IGCViewProps>;
-    setViewTypes: (updater: (prev: Map<string, IGCViewProps>) => Map<string, IGCViewProps>) => void;
+	// Registry for Node, Relationship, and View Components
+	nodeTypes: ModuleComponent<IGCNodeProps>;
+	setNodeTypes: (
+		updater: (
+			prev: ModuleComponent<IGCNodeProps>,
+		) => ModuleComponent<IGCNodeProps>,
+	) => void;
+	relationshipTypes: ModuleComponent<IGCRelationshipProps>;
+	setRelationshipTypes: (
+		updater: (
+			prev: ModuleComponent<IGCRelationshipProps>,
+		) => ModuleComponent<IGCRelationshipProps>,
+	) => void;
+	viewTypes: ModuleComponent<IGCViewProps>;
+	setViewTypes: (
+		updater: (
+			prev: ModuleComponent<IGCViewProps>,
+		) => ModuleComponent<IGCViewProps>,
+	) => void;
+
+	moduleData: Cache;
+	setModuleData: (updater: (prev: Cache) => Cache) => void;
 
 	// HOOKS
 	listenersEdgeTypeUpdate: Map<string, Set<Callback>>;
@@ -179,20 +200,32 @@ const useStore = create<State>((set) => ({
 		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
 	) => set((state) => ({ codeRunData: updater(state.codeRunData) })),
 
-    // Registry for Node, Relationship, and View Components
-    nodeTypes: new Map<string, IGCNodeProps>(),
-    setNodeTypes: (
-        updater: (prev: Map<string, IGCNodeProps>) => Map<string, IGCNodeProps>,
-    ) => set((state) => ({ nodeTypes: updater(state.nodeTypes) })),
-    relationshipTypes: new Map<string, IGCRelationshipProps>(),
-    setRelationshipTypes: (
-        updater: (prev: Map<string, IGCRelationshipProps>) => Map<string, IGCRelationshipProps>,
-    ) => set((state) => ({ relationshipTypes: updater(state.relationshipTypes) })),
-    viewTypes: new Map<string, IGCViewProps>(),
-    setViewTypes: (
-        updater: (prev: Map<string, IGCViewProps>) => Map<string, IGCViewProps>,
-    ) => set((state) => ({ viewTypes: updater(state.viewTypes) })),
+	// Registry for Node, Relationship, and View Components
+	nodeTypes: {},
+	setNodeTypes: (
+		updater: (
+			prev: ModuleComponent<IGCNodeProps>,
+		) => ModuleComponent<IGCNodeProps>,
+	) => set((state) => ({ nodeTypes: updater(state.nodeTypes) })),
+	relationshipTypes: {},
+	setRelationshipTypes: (
+		updater: (
+			prev: ModuleComponent<IGCRelationshipProps>,
+		) => ModuleComponent<IGCRelationshipProps>,
+	) =>
+		set((state) => ({
+			relationshipTypes: updater(state.relationshipTypes),
+		})),
+	viewTypes: {},
+	setViewTypes: (
+		updater: (
+			prev: ModuleComponent<IGCViewProps>,
+		) => ModuleComponent<IGCViewProps>,
+	) => set((state) => ({ viewTypes: updater(state.viewTypes) })),
 
+	moduleData: [],
+	setModuleData: (updater: (prev: Cache) => Cache) =>
+		set((state) => ({ moduleData: updater(state.moduleData) })),
 	// HOOKS
 	listenersEdgeTypeUpdate: new Map(),
 	triggerEdgeTypeUpdate: (id: string) =>

@@ -13,6 +13,7 @@ import {
 	NewDirectoryRequest,
 	NewFileRequest,
 	DeleteRequest,
+    Cache,
 } from "shared";
 
 export const callAnalyze = (code: string) => {
@@ -36,7 +37,6 @@ export const callExecute = (
 	projectPath: string,
 	sessionId: string | null,
 ) => {
-	console.log("runAnalysis");
 	const options: UseAxiosRequestOptions<CodeExecutionRequest> = {
 		method: "POST",
 		data: {
@@ -137,21 +137,43 @@ export const createNewDirectory = (dirPath: string) => {
 	return sendAxiosRequest<NewDirectoryRequest, Empty>(options);
 };
 
-interface ComponentDirectory {
-	[directoryPath: string]: string[]; // The key is a directory path, and the value is an array of file paths
-}
-
-interface GetComponentsResponse {
-	validComponents: ComponentDirectory;
-}
-
 export const callGetComponents = () => {
-	console.log("runAnalysis");
 	const options: UseAxiosRequestOptions<CodeAnalysisRequest> = {
 		method: "GET",
 		route: "/api/file-explorer/find-components",
 		useJWT: false,
 	};
 
-	return sendAxiosRequest<Empty, GetComponentsResponse>(options);
+	return sendAxiosRequest<Empty, Cache>(options);
 };
+interface ModuleChangeRequest {
+    directory: string
+}
+
+export const callAddModule = (directoryPath: string) => {
+	const options: UseAxiosRequestOptions<ModuleChangeRequest> = {
+		method: "POST",
+		route: "/api/file-explorer/add-module",
+		useJWT: false,
+        data: {
+            directory: directoryPath
+        }
+	};
+
+	return sendAxiosRequest<ModuleChangeRequest, any>(options);
+};
+
+
+export const callRemoveModule = (directoryPath: string) => {
+	const options: UseAxiosRequestOptions<ModuleChangeRequest> = {
+		method: "DELETE",
+		route: "/api/file-explorer/remove-module",
+		useJWT: false,
+        data: {
+            directory: directoryPath
+        }
+	};
+
+	return sendAxiosRequest<ModuleChangeRequest, any>(options);
+};
+

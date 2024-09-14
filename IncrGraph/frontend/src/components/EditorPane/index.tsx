@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Box, Button } from "@mui/material";
 import { PlayArrow, BugReport, AddCircle, Home } from "@mui/icons-material";
 import ReactFlow, {
@@ -23,7 +23,6 @@ import {
 	updateExecutionPath,
 	updateExecutionPathEdge,
 } from "../../IGCItems/utils/utils";
-import { edgeTypes } from "../../IGCItems/utils/types";
 import CustomConnectionLine, {
 	connectionLineStyle,
 } from "../../IGCItems/relationships/CustomConnectionLine";
@@ -33,6 +32,8 @@ import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
 import { STYLES } from "@/styles/constants";
 import { createBaseNode, IGCNodeData, IGCNodeProps } from "../../IGCItems/nodes/BaseNode";
+import { convertMapToTrueEdgeTypes, convertMapToTrueNodeTypes } from "@/IGCItems/utils/types";
+import { get } from "lodash";
 
 interface EditorPaneProps {}
 
@@ -50,7 +51,8 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		sessions,
 		setSessions,
 		currentSessionId,
-        nodeTypes
+        nodeTypes,
+        relationshipTypes
 	} = useStore();
 
 	// STATE
@@ -236,6 +238,15 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		console.log("Node double clicked", node);
 		console.log("Event", event);
 	};
+
+    const getNodeTypes = useMemo(() => {
+        return convertMapToTrueNodeTypes(nodeTypes)
+    }, [nodeTypes]);
+
+    const getEdgeTypes = useMemo(() => {
+        return convertMapToTrueEdgeTypes(relationshipTypes)
+    }, [nodeTypes]);
+
 	return (
 		<div className="editor-pane">
 			<div className="navbar-component">
@@ -291,9 +302,9 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 							onEdgesDelete={console.log}
 							onEdgesChange={onEdgesChange}
 							onConnect={onConnect}
-							nodeTypes={nodeTypes}
+							nodeTypes={getNodeTypes}
 							onNodeDoubleClick={onNodeDoubleClick}
-							edgeTypes={edgeTypes}
+							edgeTypes={getEdgeTypes}
 							connectionLineComponent={CustomConnectionLine}
 							connectionLineStyle={connectionLineStyle}
 							zoomOnScroll

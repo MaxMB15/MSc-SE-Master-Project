@@ -1,3 +1,6 @@
+import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
+import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
+import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import { Node, Edge } from "reactflow";
 import { FileNode } from "shared";
 
@@ -95,21 +98,31 @@ export interface SessionData {
 export interface TreeItemActionHandlers {
 	onSelect?: (node: FileNode) => void;
 	onRename?: (node: FileNode, newName: string) => void;
-	onContextMenu?: (
-		event: React.MouseEvent,
-		node: FileNode,
-	) => void;
+	onContextMenu?: (event: React.MouseEvent, node: FileNode) => void;
 }
 export interface TreeItemState {
-    editing: string | null;
-    setEditing: React.Dispatch<React.SetStateAction<string | null>>;
-    expandedSet: Set<string>;
-    setExpandedSet: React.Dispatch<React.SetStateAction<Set<string>>>;
+	editing: string | null;
+	setEditing: React.Dispatch<React.SetStateAction<string | null>>;
+	expandedSet: Set<string>;
+	setExpandedSet: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 export interface RegistryComponent {
-    NAME: string,
-    COLOR: string;
-    TYPE: "node" | "relationship" | "view";
-    SETABLE?: boolean; // Default is false
+	NAME: string;
+	COLOR: string;
+	TYPE: "node" | "relationship" | "view";
+	SETABLE?: boolean; // Default is false
+}
+
+export type ModuleComponentValues<T extends RegistryComponent> = {
+	object: T;
+	modulePath: string;
+	enabled: boolean;
+};
+export type ModuleComponent<T extends RegistryComponent> = { [key: string]: ModuleComponentValues<T> };
+
+export interface ModuleComponentStored {
+    nodes: ModuleComponent<IGCNodeProps>;
+    relationships: ModuleComponent<IGCRelationshipProps>;
+    views: ModuleComponent<IGCViewProps>;
 }

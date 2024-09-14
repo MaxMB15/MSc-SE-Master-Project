@@ -1,62 +1,46 @@
-import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
-import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
-import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import useStore from "@/store/store";
-import { RegistryComponent } from "@/types/frontend";
+import { ModuleComponentStored, ModuleComponentValues } from "@/types/frontend";
 
 export const useComponentRegistry = () => {
-	const {
-		setNodeTypes,
-		setRelationshipTypes,
-		setViewTypes,
-	} = useStore();
+	const { setNodeTypes, setRelationshipTypes, setViewTypes } = useStore();
 
 	// Functions to register/unregister Nodes, Relationships, and Views
-	const registerComponent = (
-		component: IGCNodeProps | IGCRelationshipProps | IGCViewProps,
-	) => {
-		if (component.TYPE === "node") {
-			setNodeTypes((prevNodeTypes) => ({
-				...prevNodeTypes,
-				[component.NAME]: component,
-			}));
-		} else if (component.TYPE === "relationship") {
-			setRelationshipTypes((prevRelationshipTypes) => ({
-				...prevRelationshipTypes,
-				[component.NAME]: component,
-			}));
-		} else if (component.TYPE === "view") {
-			setViewTypes((prevViewTypes) => ({
-				...prevViewTypes,
-				[component.NAME]: component,
-			}));
+	const registerComponent = (component: ModuleComponentValues<any>): ModuleComponentStored => {
+        const allModuleComponentStored: ModuleComponentStored = {
+			nodes: {},
+			relationships: {},
+			views: {},
+		};
+		if (component.object.TYPE === "node") {
+            allModuleComponentStored.nodes = {[component.object.NAME]: component};
+		} else if (component.object.TYPE === "relationship") {
+            allModuleComponentStored.relationships = {[component.object.NAME]: component};
+		} else if (component.object.TYPE === "view") {
+            allModuleComponentStored.views = {[component.object.NAME]: component};
 		}
+        return allModuleComponentStored;
 	};
 
-	const unregisterComponent = (
-		type: "node" | "relationship" | "view",
-		componentName: string,
-	) => {
-		if (type === "node") {
+	const updateComponent = (component: ModuleComponentValues<any>) => {
+		if (component.object.TYPE === "node") {
 			setNodeTypes((prevNodeTypes) => {
-				prevNodeTypes.delete(componentName);
+				prevNodeTypes[component.object.NAME] = component;
 				return prevNodeTypes;
 			});
-		} else if (type === "relationship") {
-			setRelationshipTypes((prevRelationshipTypes) => {
-				prevRelationshipTypes.delete(componentName);
+		} else if (component.object.TYPE === "relationship") {
+            setRelationshipTypes((prevRelationshipTypes) => {
+				prevRelationshipTypes[component.object.NAME] = component;
 				return prevRelationshipTypes;
 			});
-		} else if (type === "view") {
-			setViewTypes((prevViewTypes) => {
-				prevViewTypes.delete(componentName);
+		} else if (component.object.TYPE === "view") {
+            setViewTypes((prevViewTypes) => {
+				prevViewTypes[component.object.NAME] = component;
 				return prevViewTypes;
 			});
 		}
 	};
-
 	return {
 		registerComponent,
-		unregisterComponent,
+		updateComponent,
 	};
 };

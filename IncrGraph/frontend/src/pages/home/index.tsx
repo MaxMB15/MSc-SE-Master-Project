@@ -20,21 +20,21 @@ const HomePage: React.FC = () => {
 
 	useEffect(() => {
 		// Check if cache exists and load components
-		const cache = loadComponentCache();
+		// const cache = loadComponentCache();
 
-		if (cache) {
-			// Load components from cache
-			cache.forEach(({ filePath }) => {
-				importAndCategorizeComponents(filePath, registerComponent);
-			});
-			setIsLoading(false); // Components loaded, hide loading screen
-		} else {
-			// Load default components and fetch new ones from the backend
-			// loadDefaultComponents();
-			fetchAndRegisterComponents(registerComponent).then(() => {
-				setIsLoading(false); // Components loaded, hide loading screen
-			});
-		}
+		// if (cache) {
+		// 	// Load components from cache
+		// 	cache.forEach((CacheEntry) => {
+		// 		importAndCategorizeComponents(CacheEntry, registerComponent);
+		// 	});
+		// 	setIsLoading(false); // Components loaded, hide loading screen
+		// } else {
+		// 	// Load default components and fetch new ones from the backend
+		// 	// loadDefaultComponents();
+        fetchAndRegisterComponents(registerComponent).then(() => {
+            setIsLoading(false); // Components loaded, hide loading screen
+        });
+		// }
 	}, []);
 
 	// For importing and categorizing components

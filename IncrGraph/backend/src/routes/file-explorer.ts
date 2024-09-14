@@ -1,8 +1,7 @@
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import { createCustomLogger } from "shared";
-import { FileNode } from "shared";
+import { FileNode, Cache, CacheEntry, createCustomLogger, ModuleConfigurationData } from "shared";
 // import { Project } from "ts-morph";
 
 const router = Router();
@@ -232,18 +231,15 @@ router.post("/new-directory", async (req: Request, res: Response) => {
 // 	};
 // }
 
-interface CacheEntry {
-	search_path: string;
-	last_updated: string;
-	files: string[];
-}
 
-type Cache = CacheEntry[];
+
+
 
 // const componentTypesToSearchFor: string[] = ["IGCNodeProps"];
 
 // Cache file path
 const CACHE_FILE = path.join(__dirname, "../../cache.json");
+const IGC_MODULE_CONFIG_FILE = "igc.module.json";
 
 // Function to read the cache
 const readCache = async (): Promise<Cache> => {
@@ -442,18 +438,28 @@ const updateCacheForDirectory = (
 	return cacheEntry;
 };
 
+const checkModuleConfig = (modulePath: string): ModuleConfigurationData | undefined => {
+    const configPath = path.join(modulePath, IGC_MODULE_CONFIG_FILE);
+    if (fs.existsSync(configPath)) {
+        const rawData = fs.readFileSync(configPath, "utf-8");
+        return JSON.parse(rawData) as ModuleConfigurationData;
+    }
+    return undefined;
+}
+
 router.get("/find-components", async (_, res: Response) => {
 	let cache = await readCache();
-	// const result: { [directory: string]: { [file: string]: ComponentType[] } } = {};
-	const result: { [directory: string]: string[] } = {};
 
 	cache.forEach((entry) => {
-		const updatedEntry = updateCacheForDirectory(entry.search_path, cache);
-		result[entry.search_path] = updatedEntry.files;
+        const moduleConfig = checkModuleConfig(entry.search_path);
+        if (moduleConfig){
+            entry.meta = moduleConfig;
+        }
+		updateCacheForDirectory(entry.search_path, cache);
 	});
 
 	writeCache(cache); // Update cache after processing
-	res.json({ validComponents: result });
+	res.json(cache);
 });
 
 export default router;

@@ -1,6 +1,6 @@
 import { Node, NodeTypes, EdgeTypes } from "reactflow";
 
-import BaseRelationship from "../relationships/BaseRelationship";
+import BaseRelationship, { IGCRelationshipProps } from "../relationships/BaseRelationship";
 import DependencyRelationship from "../relationships/DependencyRelationship";
 import ExecutionRelationship from "../relationships/ExecutionRelationship";
 import InheritanceRelationship from "../relationships/InheritanceRelationship";
@@ -8,7 +8,7 @@ import MethodRelationship from "../relationships/MethodRelationship";
 import OverridesRelationship from "../relationships/OverridesRelationship";
 import AbstractClassNode from "../nodes/AbstractClassNode";
 
-import BaseNode from "../nodes/BaseNode";
+import BaseNode, { IGCNodeProps } from "../nodes/BaseNode";
 import ClassNode from "../nodes/ClassNode";
 import CodeFragmentNode from "../nodes/CodeFragmentNode";
 import InterfaceNode from "../nodes/InterfaceNode";
@@ -18,6 +18,7 @@ import StartNode from "../nodes/StartNode";
 import DocumentationNode from "../nodes/DocumentationNode";
 import DocumentationRelationship from "../relationships/DocumentationRelationship";
 import ImportNode from "../nodes/ImportNode";
+import { ModuleComponent } from "@/types/frontend";
 
 //Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
 export const nodeTypes: NodeTypes = {
@@ -29,9 +30,37 @@ export const nodeTypes: NodeTypes = {
 	libraryNode: LibraryNode,
 	methodNode: MethodNode,
 	codeFragmentNode: CodeFragmentNode,
-    documentationNode: DocumentationNode,
-    importNode: ImportNode,
+	documentationNode: DocumentationNode,
+	importNode: ImportNode,
 };
+export const convertMapToTrueNodeTypes = (
+	componentMap: ModuleComponent<IGCNodeProps>,
+): { [key: string]: IGCNodeProps } => {
+	const result: { [key: string]: IGCNodeProps } = {};
+    const keys = Object.keys(componentMap);
+	for (let i = 0; i<keys.length; i++) {
+        if (componentMap[keys[i]].enabled) {
+            result[keys[i]] = componentMap[keys[i]].object;
+        }
+	};
+
+	return result;
+};
+
+export const convertMapToTrueEdgeTypes = (
+	componentMap: ModuleComponent<IGCRelationshipProps>,
+): { [key: string]: IGCRelationshipProps } => {
+	const result: { [key: string]: IGCRelationshipProps } = {};
+    const keys = Object.keys(componentMap);
+	for (let i = 0; i<keys.length; i++) {
+		if (componentMap[keys[i]].enabled) {
+            result[keys[i]] = componentMap[keys[i]].object;
+        }
+	};
+
+	return result;
+};
+
 
 export const edgeTypes: EdgeTypes = {
 	baseRelationship: BaseRelationship,
@@ -40,15 +69,28 @@ export const edgeTypes: EdgeTypes = {
 	methodRelationship: MethodRelationship,
 	executionRelationship: ExecutionRelationship,
 	dependencyRelationship: DependencyRelationship,
-    documentationRelationship: DocumentationRelationship,
+	documentationRelationship: DocumentationRelationship,
 };
 
-const codeContainingNodes = ["baseNode", "classNode", "abstractClassNode", "interfaceNode", "libraryNode", "methodNode", "codeFragmentNode"];
+const codeContainingNodes = [
+	"baseNode",
+	"classNode",
+	"abstractClassNode",
+	"interfaceNode",
+	"libraryNode",
+	"methodNode",
+	"codeFragmentNode",
+];
 
 export const isCodeContainingNode = (node: Node) => {
-    return node.type !== undefined && codeContainingNodes.includes(node.type);
-}
+	return node.type !== undefined && codeContainingNodes.includes(node.type);
+};
 
 export const nodeHasCode = (node: Node) => {
-    return isCodeContainingNode(node) && node.data !== undefined && node.data.code !== undefined && node.data.code !== "";
-}
+	return (
+		isCodeContainingNode(node) &&
+		node.data !== undefined &&
+		node.data.code !== undefined &&
+		node.data.code !== ""
+	);
+};

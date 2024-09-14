@@ -9,7 +9,7 @@ import {
 } from "../../IGCItems/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
-import { RegistryComponent } from "@/types/frontend";
+import { ModuleComponent, ModuleComponentValues, RegistryComponent } from "@/types/frontend";
 
 interface SelectionPaneProps {}
 
@@ -293,7 +293,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 					options={selectedItems.map((item) => ({
 						value: item.id,
 						label: item.name,
-						className: "",
+						style: {},
 					}))}
 					value={selectedItem?.id ? selectedItem.id : ""}
 					onChange={handleItemChange}
@@ -358,18 +358,18 @@ const cleanLabel = (rc: RegistryComponent): string => {
 }
 
 export const createSelectionList = (
-	componentTypes: Map<string, RegistryComponent>,
+	componentTypes: ModuleComponent<any>,
 ): SelectOption[] => {
 	const mappedArray = Object.values(componentTypes)
 		.filter(
-			(component: RegistryComponent) =>
-				component.SETABLE !== undefined && component.SETABLE === true,
+			(component: ModuleComponentValues<any>) =>
+				component.object.SETABLE !== undefined && component.object.SETABLE === true,
 		)
-		.map((component: RegistryComponent) => {
+		.map((component: ModuleComponentValues<any>) => {
 			return {
-				value: component.NAME,
-				label: cleanLabel(component),
-				style: { backgroundColor: component.COLOR },
+				value: component.object.NAME,
+				label: cleanLabel(component.object),
+				style: { backgroundColor: component.object.COLOR },
 			};
 		});
 	return mappedArray;

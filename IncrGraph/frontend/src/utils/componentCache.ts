@@ -1,13 +1,19 @@
+import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
+import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
+import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import { callGetComponents } from "@/requests";
-import { IGCNodeProps } from "../IGCItems/nodes/BaseNode";
-import { IGCRelationshipProps } from "../IGCItems/relationships/BaseRelationship";
-import { IGCViewProps } from "../IGCItems/views/BaseView";
-
-const CACHE_KEY = "component_cache";
+import useStore from "@/store/store";
+import {
+	ModuleComponent,
+	ModuleComponentStored,
+	ModuleComponentValues,
+} from "@/types/frontend";
+const CACHE_KEY = "component_cache1";
 
 interface CacheEntry {
 	filePath: string;
-	componentName: string;
+	modulePath: string;
+	enabled: boolean;
 }
 
 // Function to load cache from localStorage
@@ -23,54 +29,141 @@ export const updateComponentCache = (cache: CacheEntry[]): void => {
 
 // Function to dynamically import and check all exports
 export const importAndCategorizeComponents = async (
-	filePath: string,
+	componentFilePath: string,
+	moduleFilePath: string,
 	registerComponent: (
-		node: IGCNodeProps | IGCRelationshipProps | IGCViewProps,
-	) => void,
-) => {
+		component: ModuleComponentValues<any>,
+	) => ModuleComponentStored,
+): Promise<ModuleComponentStored> => {
+	const allModuleComponentStored: ModuleComponentStored = {
+		nodes: {},
+		relationships: {},
+		views: {},
+	};
 	try {
-		const componentModule = await import(`${filePath}`);
+		const componentModule = await import(`${componentFilePath}`);
 
 		// Check all exports
 		Object.keys(componentModule).forEach((exportedKey) => {
 			const exportedComponent = componentModule[exportedKey];
 
 			// Detect component type based on properties
-			if (exportedComponent?.TYPE === "node") {
-				// It is a Node component
-				registerComponent(exportedComponent as IGCNodeProps);
-			} else if (exportedComponent?.TYPE === "relationship") {
-				// It is a Relationship component
-				registerComponent(exportedComponent as IGCRelationshipProps);
-			} else if (exportedComponent?.TYPE === "view") {
-				// It is a View component
-				registerComponent(exportedComponent as IGCViewProps);
+			if (
+				["node", "relationship", "view"].includes(
+					exportedComponent?.TYPE,
+				)
+			) {
+				// See if cache has enable/disable status
+				let componentEnabled = true;
+				const webCache = loadComponentCache();
+				if (webCache !== null) {
+					const cacheEntry = webCache.find(
+						(entry) => entry.filePath === componentFilePath,
+					);
+					if (cacheEntry !== undefined) {
+						componentEnabled = cacheEntry.enabled;
+					}
+				}
+
+				// Register the component
+				const { nodes, relationships, views } = registerComponent({
+					object: exportedComponent,
+					modulePath: moduleFilePath,
+					enabled: componentEnabled,
+				});
+
+				// Update the stored components
+				allModuleComponentStored.nodes = {
+					...allModuleComponentStored.nodes,
+					...nodes,
+				};
+				allModuleComponentStored.relationships = {
+					...allModuleComponentStored.relationships,
+					...relationships,
+				};
+				allModuleComponentStored.views = {
+					...allModuleComponentStored.views,
+					...views,
+				};
+
+				// Update the cache
+				const entry: CacheEntry = {
+					filePath: componentFilePath,
+					modulePath: moduleFilePath,
+					enabled: componentEnabled,
+				};
+				if (webCache === null) {
+					updateComponentCache([entry]);
+				} else {
+					updateComponentCache([...webCache, entry]);
+				}
 			} else {
 				console.warn(
-					`Component in ${filePath} with key ${exportedKey} does not match known types`,
+					`Component in ${componentFilePath} with key ${exportedKey} does not match known types`,
 				);
 			}
 		});
 	} catch (error) {
-		console.error(`Error importing components from ${filePath}:`, error);
+		console.error(
+			`Error importing components from ${componentFilePath}:`,
+			error,
+		);
 	}
+	return allModuleComponentStored;
 };
 
 // Function to fetch components from backend and register them
 export const fetchAndRegisterComponents = async (
-	registerComponent: (
-		component: IGCNodeProps | IGCRelationshipProps | IGCViewProps,
-	) => void,
+	registerComponent: (component: ModuleComponentValues<any>) => ModuleComponentStored,
 ) => {
+	const { setNodeTypes, setRelationshipTypes, setViewTypes, setModuleData } =
+		useStore.getState();
+
 	try {
+		const allModuleComponentStored: ModuleComponentStored = {
+			nodes: {},
+			relationships: {},
+			views: {},
+		};
 		// Fetch the list of .tsx file paths from the backend
-		const response = await callGetComponents();
-		const componentFiles: string[] = Object.values(response.validComponents).flat();
+		const modules = await callGetComponents();
 
 		// Loop through each fetched component file path and import/categorize them
-        for (let i = 0; i < componentFiles.length; i++) {
-			await importAndCategorizeComponents(componentFiles[i], registerComponent);
+		for (let i = 0; i < modules.length; i++) {
+			const componentFiles = modules[i].files;
+			for (let j = 0; j < componentFiles.length; j++) {
+				// Register all components from the module
+				const { nodes, relationships, views } =
+					await importAndCategorizeComponents(
+						componentFiles[j],
+						modules[i].search_path,
+						registerComponent,
+					);
+
+				// Update the stored components
+				allModuleComponentStored.nodes = {
+					...allModuleComponentStored.nodes,
+					...nodes,
+				};
+				allModuleComponentStored.relationships = {
+					...allModuleComponentStored.relationships,
+					...relationships,
+				};
+				allModuleComponentStored.views = {
+					...allModuleComponentStored.views,
+					...views,
+				};
+
+				// Update the module data
+				setModuleData(() => modules);
+			}
 		}
+
+        // Update the type stores
+        setNodeTypes(() => allModuleComponentStored.nodes);
+        setRelationshipTypes(() => allModuleComponentStored.relationships);
+        setViewTypes(() => allModuleComponentStored.views);
+
 	} catch (error) {
 		console.error("Error fetching components from backend:", error);
 	}

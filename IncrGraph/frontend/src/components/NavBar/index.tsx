@@ -70,6 +70,7 @@ const Navbar: React.FC = () => {
 		console.log("Syncing with server...");
 	};
     const handleAddOnManager = () => {
+        handleMenuClose();
         showPopup(<AddOnManager onClose={() => console.log("Popup closed!")} />, "AddOnManager");
     };
 
