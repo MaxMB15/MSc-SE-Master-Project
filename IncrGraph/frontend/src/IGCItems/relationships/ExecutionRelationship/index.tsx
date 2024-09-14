@@ -1,12 +1,7 @@
-import { ComponentType } from "react";
 import { STYLES } from "@/styles/constants";
+import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 
-import BaseRelationship from "../BaseRelationship";
-import { EdgeProps } from "reactflow";
-
-interface ExecutionRelationshipProps extends EdgeProps {}
-
-const ExecutionRelationship: ComponentType<ExecutionRelationshipProps> = (
+const ExecutionRelationship: IGCRelationshipProps = (
 	props,
 ) => {
 	return (
@@ -14,11 +9,16 @@ const ExecutionRelationship: ComponentType<ExecutionRelationshipProps> = (
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: STYLES.executionRelationshipColor,
+				backgroundColor: ExecutionRelationship.COLOR,
+                labelRadius: 50
 			}}
-            labelRadius={50}
 		/>
 	);
 };
+ExecutionRelationship.NAME = "ExecutionRelationship";
+ExecutionRelationship.COLOR = STYLES.executionRelationshipColor;
+ExecutionRelationship.TYPE = "relationship";
+ExecutionRelationship.SETABLE = true;
 
 export default ExecutionRelationship;
+

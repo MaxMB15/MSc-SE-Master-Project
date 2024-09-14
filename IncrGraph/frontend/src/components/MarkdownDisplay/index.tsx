@@ -29,7 +29,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 			node.id,
 			nodes,
 			edges,
-            (node) => node.type === "documentationNode",
+            (node) => node.type === "DocumentationNode",
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			return null;
@@ -46,14 +46,14 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 			node.id,
 			nodes,
 			edges,
-            (node) => node.type === "documentationNode",
+            (node) => node.type === "DocumentationNode",
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			// Need to create the documentation node
 			const documentationNodeId = `documentation-${node.id}`;
 			const documentationNode = {
 				id: documentationNodeId,
-				type: "documentationNode",
+				type: "DocumentationNode",
 				position: {
 					x: node.position.x,
 					y: node.position.y - 200,
@@ -69,7 +69,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 				id: getEdgeId(documentationNodeId, node.id, edges),
 				source: documentationNodeId,
 				target: node.id,
-				type: "documentationRelationship",
+				type: "DocumentationRelationship",
 			};
 			setNodes((prevNodes) => [
 				...prevNodes.map((node) => {

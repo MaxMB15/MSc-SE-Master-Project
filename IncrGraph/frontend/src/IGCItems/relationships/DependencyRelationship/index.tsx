@@ -1,12 +1,7 @@
-import { ComponentType } from "react";
 import { STYLES } from "@/styles/constants";
+import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 
-import BaseRelationship from "../BaseRelationship";
-import { EdgeProps } from "reactflow";
-
-interface DependencyRelationshipProps extends EdgeProps {}
-
-const DependencyRelationship: ComponentType<DependencyRelationshipProps> = (
+const DependencyRelationship: IGCRelationshipProps = (
 	props,
 ) => {
 	return (
@@ -14,11 +9,15 @@ const DependencyRelationship: ComponentType<DependencyRelationshipProps> = (
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: STYLES.dependencyRelationshipColor,
+				backgroundColor: DependencyRelationship.COLOR,
+                labelRadius: 5
 			}}
-            labelRadius={5}
 		/>
 	);
 };
+DependencyRelationship.NAME = "DependencyRelationship";
+DependencyRelationship.COLOR = STYLES.dependencyRelationshipColor;
+DependencyRelationship.TYPE = "relationship";
+DependencyRelationship.SETABLE = true;
 
 export default DependencyRelationship;

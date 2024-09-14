@@ -1,12 +1,7 @@
-import { ComponentType } from "react";
 import { STYLES } from "@/styles/constants";
+import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 
-import BaseRelationship from "../BaseRelationship";
-import { EdgeProps } from "reactflow";
-
-interface DocumentationRelationshipProps extends EdgeProps {}
-
-const DocumentationRelationship: ComponentType<DocumentationRelationshipProps> = (
+const DocumentationRelationship: IGCRelationshipProps = (
 	props,
 ) => {
 	return (
@@ -14,10 +9,14 @@ const DocumentationRelationship: ComponentType<DocumentationRelationshipProps> =
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: STYLES.documentationRelationshipColor,
+				backgroundColor: DocumentationRelationship.COLOR,
 			}}
 		/>
 	);
 };
+DocumentationRelationship.NAME = "DocumentationRelationship";
+DocumentationRelationship.COLOR = STYLES.documentationRelationshipColor;
+DocumentationRelationship.TYPE = "relationship";
+DocumentationRelationship.SETABLE = false;
 
 export default DocumentationRelationship;

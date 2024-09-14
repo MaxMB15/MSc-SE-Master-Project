@@ -1,12 +1,7 @@
-import { ComponentType } from "react";
 import { STYLES } from "@/styles/constants";
+import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 
-import BaseRelationship from "../BaseRelationship";
-import { EdgeProps } from "reactflow";
-
-interface OverridesRelationshipProps extends EdgeProps {}
-
-const OverridesRelationship: ComponentType<OverridesRelationshipProps> = (
+const OverridesRelationship: IGCRelationshipProps = (
 	props,
 ) => {
 	return (
@@ -14,11 +9,16 @@ const OverridesRelationship: ComponentType<OverridesRelationshipProps> = (
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: STYLES.overridesRelationshipColor,
+				backgroundColor: OverridesRelationship.COLOR,
+                labelRadius: 10
 			}}
-            labelRadius={10}
 		/>
 	);
 };
+OverridesRelationship.NAME = "OverridesRelationship";
+OverridesRelationship.COLOR = STYLES.overridesRelationshipColor;
+OverridesRelationship.TYPE = "relationship";
+OverridesRelationship.SETABLE = true;
 
 export default OverridesRelationship;
+

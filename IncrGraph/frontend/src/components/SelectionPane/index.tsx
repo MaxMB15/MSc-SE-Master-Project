@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import CustomSelect from "../CustomSelect";
+import CustomSelect, { SelectOption } from "../CustomSelect";
 import "./SelectionPane.css";
 import useStore from "@/store/store";
 import { applyEdgeChanges } from "reactflow";
@@ -9,6 +9,7 @@ import {
 } from "../../IGCItems/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
+import { RegistryComponent } from "@/types/frontend";
 
 interface SelectionPaneProps {}
 
@@ -24,13 +25,14 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		currentSessionId,
 		sessions,
 		setSessions,
+		nodeTypes,
+		relationshipTypes,
 	} = useStore();
-    const triggerEdgeTypeUpdate = useTriggerEdgeTypeUpdate();
+	const triggerEdgeTypeUpdate = useTriggerEdgeTypeUpdate();
 
 	// STATE
 	const [name, setName] = useState<string>("");
 	const [selectedOption, setSelectedOption] = useState<string>("");
-
 
 	useEffect(() => {
 		if (selectedItems.length > 0) {
@@ -79,7 +81,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 						return edge;
 					}),
 				);
-                triggerEdgeTypeUpdate(selectedItem.id);
+				triggerEdgeTypeUpdate(selectedItem.id);
 			}
 		}
 	};
@@ -198,86 +200,86 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		setSelectedItem(() => (item ? item : null));
 	};
 
-	const getOptions = (type: "Node" | "Edge") => {
-		if (type === "Node") {
-			return [
-				{
-					value: "BaseNode",
-					label: "Base",
-					className: "selection-pane-node-base",
-				},
-				{
-					value: "ClassNode",
-					label: "Class",
-					className: "selection-pane-node-class",
-				},
-				{
-					value: "AbstractClassNode",
-					label: "Abstract Class",
-					className: "selection-pane-node-abstract-class",
-				},
-				{
-					value: "InterfaceNode",
-					label: "Interface",
-					className: "selection-pane-node-interface",
-				},
-				{
-					value: "LibraryNode",
-					label: "Library",
-					className: "selection-pane-node-library",
-				},
-				{
-					value: "MethodNode",
-					label: "Method",
-					className: "selection-pane-node-method",
-				},
-				{
-					value: "CodeFragmentNode",
-					label: "Code Fragment",
-					className: "selection-pane-node-code-fragment",
-				},
-                {
-					value: "ImportNode",
-					label: "Import File Node",
-					className: "selection-pane-node-import",
-				},
-			];
-		} else if (type === "Edge") {
-			return [
-				{
-					value: "BaseRelationship",
-					label: "Base",
-					className: "selection-pane-edge-base",
-				},
-				{
-					value: "InheritanceRelationship",
-					label: "Inheritance",
-					className: "selection-pane-edge-inheritance",
-				},
-				{
-					value: "OverridesRelationship",
-					label: "Overrides",
-					className: "selection-pane-edge-overrides",
-				},
-				{
-					value: "MethodRelationship",
-					label: "Method",
-					className: "selection-pane-edge-method",
-				},
-				{
-					value: "ExecutionRelationship",
-					label: "Execution",
-					className: "selection-pane-edge-execution",
-				},
-				{
-					value: "DependencyRelationship",
-					label: "Dependency",
-					className: "selection-pane-edge-dependency",
-				},
-			];
-		}
-		return [];
-	};
+	// const getOptions = (type: "Node" | "Edge") => {
+	// 	if (type === "Node") {
+	// 		return [
+	// 			{
+	// 				value: "BaseNode",
+	// 				label: "Base",
+	// 				className: "selection-pane-node-base",
+	// 			},
+	// 			{
+	// 				value: "ClassNode",
+	// 				label: "Class",
+	// 				className: "selection-pane-node-class",
+	// 			},
+	// 			{
+	// 				value: "AbstractClassNode",
+	// 				label: "Abstract Class",
+	// 				className: "selection-pane-node-abstract-class",
+	// 			},
+	// 			{
+	// 				value: "InterfaceNode",
+	// 				label: "Interface",
+	// 				className: "selection-pane-node-interface",
+	// 			},
+	// 			{
+	// 				value: "LibraryNode",
+	// 				label: "Library",
+	// 				className: "selection-pane-node-library",
+	// 			},
+	// 			{
+	// 				value: "MethodNode",
+	// 				label: "Method",
+	// 				className: "selection-pane-node-method",
+	// 			},
+	// 			{
+	// 				value: "CodeFragmentNode",
+	// 				label: "Code Fragment",
+	// 				className: "selection-pane-node-code-fragment",
+	// 			},
+	// 			{
+	// 				value: "ImportNode",
+	// 				label: "Import File Node",
+	// 				className: "selection-pane-node-import",
+	// 			},
+	// 		];
+	// 	} else if (type === "Edge") {
+	// 		return [
+	// 			{
+	// 				value: "BaseRelationship",
+	// 				label: "Base",
+	// 				className: "selection-pane-edge-base",
+	// 			},
+	// 			{
+	// 				value: "InheritanceRelationship",
+	// 				label: "Inheritance",
+	// 				className: "selection-pane-edge-inheritance",
+	// 			},
+	// 			{
+	// 				value: "OverridesRelationship",
+	// 				label: "Overrides",
+	// 				className: "selection-pane-edge-overrides",
+	// 			},
+	// 			{
+	// 				value: "MethodRelationship",
+	// 				label: "Method",
+	// 				className: "selection-pane-edge-method",
+	// 			},
+	// 			{
+	// 				value: "ExecutionRelationship",
+	// 				label: "Execution",
+	// 				className: "selection-pane-edge-execution",
+	// 			},
+	// 			{
+	// 				value: "DependencyRelationship",
+	// 				label: "Dependency",
+	// 				className: "selection-pane-edge-dependency",
+	// 			},
+	// 		];
+	// 	}
+	// 	return [];
+	// };
 
 	if (!isIGCFile) {
 		return;
@@ -303,7 +305,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 					<CustomSelect
 						id="node-select"
 						label="Node"
-						options={getOptions("Node")}
+						options={createSelectionList(nodeTypes)}
 						value={selectedOption}
 						onChange={handleOptionChange}
 					/>
@@ -328,7 +330,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 					<CustomSelect
 						id="edge-select"
 						label="Relation"
-						options={getOptions("Edge")}
+						options={createSelectionList(relationshipTypes)}
 						value={selectedOption}
 						onChange={handleOptionChange}
 					/>
@@ -343,6 +345,34 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 			</button>
 		</div>
 	);
+};
+
+const insertSpaceBeforeUppercase = (str: string): string => {
+    return str.replace(/([A-Z])/g, (_, p1, offset) => {
+      return offset > 0 ? ` ${p1}` : p1; // Add space only if it's not the first character
+    });
+  }
+
+const cleanLabel = (rc: RegistryComponent): string => {
+    return insertSpaceBeforeUppercase(rc.NAME.toUpperCase().endsWith(rc.TYPE.toUpperCase()) ? rc.NAME.slice(0, rc.NAME.length-rc.TYPE.length) : rc.NAME);
+}
+
+export const createSelectionList = (
+	componentTypes: Map<string, RegistryComponent>,
+): SelectOption[] => {
+	const mappedArray = Object.values(componentTypes)
+		.filter(
+			(component: RegistryComponent) =>
+				component.SETABLE !== undefined && component.SETABLE === true,
+		)
+		.map((component: RegistryComponent) => {
+			return {
+				value: component.NAME,
+				label: cleanLabel(component),
+				style: { backgroundColor: component.COLOR },
+			};
+		});
+	return mappedArray;
 };
 
 export default SelectionPane;

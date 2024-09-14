@@ -20,7 +20,7 @@
 		"@mui/x-tree-view": "^7.15.0",
 		"@xterm/addon-fit": "^0.10.0",
 		"@xterm/xterm": "^5.5.0",
-		"axios": "^1.6.8",
+		"axios": "^1.7.7",
 		"js-cookie": "^3.0.5",
 		"lodash": "^4.17.21",
 		"path-browserify": "^1.0.1",

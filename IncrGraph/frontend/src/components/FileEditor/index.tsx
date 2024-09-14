@@ -663,7 +663,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		if (node === null) {
 			setNodes((prevNodes) =>
 				prevNodes.map((n) => {
-					if (n.type === "documentationNode") {
+					if (n.type === "DocumentationNode") {
 						n.hidden = true;
 					}
 					return n;
@@ -673,14 +673,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 		setNodes((prevNodes) => {
 			let nodesToShow: string[] = [];
-			if (node.type === "documentationNode") {
+			if (node.type === "DocumentationNode") {
 				nodesToShow.push(node.id);
 			} else {
 				const incomingDocumentationNodes = getIncomingNodes(
 					node.id,
 					nodes,
 					edges,
-					(node) => node.type === "documentationNode",
+					(node) => node.type === "DocumentationNode",
 				);
 				if (incomingDocumentationNodes.length !== 0) {
 					nodesToShow.push(incomingDocumentationNodes[0].id);
@@ -690,7 +690,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			return prevNodes.map((n) => {
 				if (nodesToShow.includes(n.id)) {
 					n.hidden = false;
-				} else if (n.type === "documentationNode") {
+				} else if (n.type === "DocumentationNode") {
 					n.hidden = true;
 				}
 				return n;
@@ -901,7 +901,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 									projectDirectory !== null &&
 									selectedItem.type === "Node" &&
 									selectedItem.item.type !==
-										"documentationNode" && (
+										"DocumentationNode" && (
 										<button
 											className="icon-button"
 											title="Run Code"
@@ -947,7 +947,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							fileContent !== null &&
 							selectedItem !== null &&
 							selectedItem.type === "Node" &&
-							selectedItem.item.type !== "documentationNode" && (
+							selectedItem.item.type !== "DocumentationNode" && (
 								<MarkdownDisplay
 									node={selectedItem.item as Node}
 								/>

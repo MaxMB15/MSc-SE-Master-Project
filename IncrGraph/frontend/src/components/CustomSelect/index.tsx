@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./CustomSelect.css";
 
-interface Option {
+export interface SelectOption {
 	value: string;
 	label: string;
-	className: string;
+	style: React.CSSProperties;
 }
 
 interface CustomSelectProps {
 	id: string;
 	label: string;
-	options: Option[];
+	options: SelectOption[];
 	value: string;
 	onChange: (value: string) => void;
 }
@@ -84,7 +84,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 							onClick={() => handleSelect(option.value)}
 						>
 							<span
-								className={`custom-select-color ${option.className}`}
+								className={`custom-select-color`}
+                                style={option.style}
 							/>
 							{option.label}
 						</li>

@@ -1,4 +1,4 @@
-import BaseNode, { IGCNodeProps } from "../BaseNode";
+import BaseNode, { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 
 const TestNode: IGCNodeProps = ( props ) => (
 	<BaseNode {...props} data={{
@@ -8,6 +8,7 @@ const TestNode: IGCNodeProps = ( props ) => (
 );
 TestNode.NAME = "TestNode";
 TestNode.COLOR = "cyan";
+TestNode.TYPE = "node";
 TestNode.SETABLE = true;
 
 export default TestNode;
