@@ -1,0 +1,46 @@
+.tabbed-code-output {
+	height: 200px;
+}
+
+.tabbed-code-output-tabs {
+	background-color: var(--mui-palette-background-default);
+	min-height: 30px !important;
+}
+
+.tabbed-code-output-tabs .MuiTab-root {
+	min-height: 30px !important;
+	padding: 0px 12px !important;
+    color: var(--mui-palette-text-primary);
+}
+/* .tabbed-code-output-tabs .MuiTab-root ::selected {
+	min-height: 30px !important;
+	padding: 0px 12px !important;
+    color: var(--mui-palette-text-primary);
+} */
+
+.tabbed-code-output-container {
+	height: calc(100% - 35px);
+	position: relative;
+
+}
+
+.tabbed-code-output-terminal {
+	height: 100%;
+	padding: 10px 10px 10px 10px;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.tabbed-code-output-terminal.hidden {
+	display: none;
+}
+
+.tabbed-code-output-config {
+	height: 100%;
+	display: block;
+	background-color: var(--mui-palette-background-paper);
+	overflow-y: auto;
+    color: var(--mui-palette-text-primary) !important;
+	padding: 16px;
+	box-sizing: border-box;
+}

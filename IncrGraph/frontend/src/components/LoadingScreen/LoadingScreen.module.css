@@ -1,0 +1,30 @@
+.loadingScreen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--mui-palette-background-default);
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .spinner {
+    border: 8px solid var(--mui-palette-background-paper);
+    border-top: 8px solid var(--primary);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1.5s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .message {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: var(--mui-palette-text-primary);
+  }
+  

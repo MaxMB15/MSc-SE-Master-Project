@@ -1,0 +1,131 @@
+{
+	"name": "electron",
+	"version": "1.0.0",
+	"main": "dist/main.js",
+	"scripts": {
+		"build": "rm -rf electron/dist && tsc",
+		"dist": "electron-builder",
+		"pack": "electron-builder --dir",
+		"start": "electron ."
+	},
+	"build": {
+		"appId": "com.IncrGraph.app",
+		"productName": "Incremental Graph Code",
+		"files": [
+			"assets/**/*",
+            {
+				"from": "../electron/dist",
+				"to": "dist",
+				"filter": [
+					"**/*"
+				]
+			}
+            
+		],
+		"extraResources": [
+			{
+				"from": "../electron/dist",
+				"to": "electron/dist",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../electron/node_modules",
+				"to": "electron/node_modules",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../frontend/dist",
+				"to": "frontend/dist",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../frontend/node_modules",
+				"to": "frontend/node_modules",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../frontend/package.json",
+				"to": "frontend/package.json"
+			},
+			{
+				"from": "../backend/dist",
+				"to": "backend/dist",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../backend/node_modules",
+				"to": "backend/node_modules",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../backend/package.json",
+				"to": "backend/package.json"
+			},
+			{
+				"from": "../shared/dist",
+				"to": "shared/dist",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../shared/node_modules",
+				"to": "shared/node_modules",
+				"filter": [
+					"**/*"
+				]
+			},
+			{
+				"from": "../shared/package.json",
+				"to": "shared/package.json"
+			},
+			{
+				"from": "../.env.packaged",
+				"to": ".env"
+			}
+		],
+		"win": {
+			"icon": "assets/logo.ico"
+		},
+		"mac": {
+			"icon": "assets/logo.icns"
+		},
+		"linux": {
+			"icon": "assets/logo.png"
+		},
+		"directories": {
+			"output": "../dist"
+		}
+	},
+	"author": "Max Boksem",
+	"license": "GPL-3.0",
+	"description": "IncrGraph App",
+	"bugs": {
+		"url": "https://github.com/MaxMB15/MSc-SE-Master-Project/issues"
+	},
+	"homepage": "https://github.com/MaxMB15/MSc-SE-Master-Project#readme",
+	"dependencies": {
+		"dotenv": "^16.0.0",
+		"dotenv-expand": "^11.0.6",
+		"http-server": "^14.1.1",
+		"shared": "file:../shared"
+	},
+	"devDependencies": {
+		"@types/http-server": "^0.12.4",
+		"electron": "^31.2.1",
+		"electron-builder": "^24.13.3",
+		"typescript": "^5.5.3"
+	}
+}

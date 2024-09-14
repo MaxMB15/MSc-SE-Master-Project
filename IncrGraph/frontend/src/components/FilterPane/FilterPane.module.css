@@ -1,0 +1,63 @@
+.iconButton {
+	color: inherit;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 8px;
+}
+
+.filterPanePopper {
+	z-index: 1300;
+}
+
+.filterPanePaper {
+	background-color: var(--mui-palette-background-default) !important;
+	color: var(--mui-palette-text-primary) !important;
+	margin-top: 8px;
+	box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+	padding: 8px;
+}
+
+.filterPaneMenuItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 8px;
+}
+
+.filterPaneCheckbox {
+	color: var(--mui-palette-text-primary) !important;
+}
+
+.filterPaneColor {
+	width: 12px;
+	height: 12px;
+	margin-right: 8px;
+}
+
+/* Relationship-specific color classes */
+.filterPaneBase .filterPaneColor {
+	background-color: var(--baseRelationshipColor);
+}
+
+.filterPaneInheritance .filterPaneColor {
+	background-color: var(--inheritanceRelationshipColor);
+}
+
+.filterPaneOverrides .filterPaneColor {
+	background-color: var(--overridesRelationshipColor);
+}
+
+.filterPaneMethod .filterPaneColor {
+	background-color: var(--methodRelationshipColor);
+}
+
+.filterPaneExecution .filterPaneColor {
+	background-color: var(--executionRelationshipColor);
+}
+
+.filterPaneDependency .filterPaneColor {
+	background-color: var(--dependencyRelationshipColor);
+}

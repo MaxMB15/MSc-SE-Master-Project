@@ -1,0 +1,115 @@
+.selection-pane-formControl {
+	background-color: var(--mui-palette-background-default);
+	padding: 16px;
+	color: var(--mui-palette-text-primary);
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.selection-pane-label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 14px;
+	color: var(--mui-palette-text-secondary);
+}
+
+.selection-pane-select,
+.selection-pane-input {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 16px;
+	background-color: var(--mui-palette-background-default);
+	border: 1px solid #555555;
+	color: var(--mui-palette-text-primary);
+	font-size: 14px;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.selection-pane-deleteButton {
+	width: 100%;
+	padding: 12px;
+	background-color: #ff1744;
+	color: var(--mui-palette-text-primary);
+	border: none;
+	font-size: 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.selection-pane-deleteButton:hover {
+	background-color: #d50000;
+}
+
+/* Node colors */
+.selection-pane-node-base {
+	background-color: var(--defaultNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-class {
+	background-color: var(--classNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-abstract-class {
+	background-color: var(--abstractClassNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-interface {
+	background-color: var(--interfaceNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-library {
+	background-color: var(--libraryNodeColor);
+	color: #000000;
+}
+
+.selection-pane-node-method {
+	background-color: var(--methodNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-code-fragment {
+	background-color: var(--codeFragmentNodeColor);
+	color: #ffffff;
+}
+
+.selection-pane-node-import {
+	background-color: var(--importNodeColor);
+	color: #ffffff;
+}
+
+/* Edge colors */
+.selection-pane-edge-base {
+	background-color: var(--baseRelationshipColor);
+	color: #000000;
+}
+
+.selection-pane-edge-inheritance {
+	background-color: var(--inheritanceRelationshipColor);
+	color: #000000;
+}
+
+.selection-pane-edge-overrides {
+	background-color: var(--overridesRelationshipColor);;
+	color: #000000;
+}
+
+.selection-pane-edge-method {
+	background-color: var(--methodRelationshipColor);;
+	color: #ffffff;
+}
+
+.selection-pane-edge-execution {
+	background-color: var(--executionRelationshipColor);;
+	color: #ffffff;
+}
+
+.selection-pane-edge-dependency {
+	background-color: var(--dependencyRelationshipColor);;
+	color: #000000;
+}

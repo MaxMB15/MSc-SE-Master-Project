@@ -1,0 +1,788 @@
+{
+    "nodes": [
+        {
+            "id": "start",
+            "type": "StartNode",
+            "data": {
+                "label": "Start"
+            },
+            "position": {
+                "x": 0,
+                "y": -100
+            },
+            "positionAbsolute": {
+                "x": 0,
+                "y": -100
+            },
+            "style": {
+                "cursor": "grab"
+            },
+            "width": 150,
+            "height": 37,
+            "selected": false,
+            "draggable": false
+        },
+        {
+            "id": "0",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "Vars",
+                "code": "a = 5\nb = 10\n\nprint(c)",
+                "dependencies": {
+                    "variables": [
+                        "c"
+                    ],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "b",
+                        "a"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
+            },
+            "position": {
+                "x": -348.15624781133954,
+                "y": -61.91765426091547
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -348.15624781133954,
+                "y": -61.91765426091547
+            },
+            "dragging": false
+        },
+        {
+            "id": "1",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "Multiply C",
+                "code": "# c = c * 2\n\n# print(c)",
+                "dependencies": {
+                    "variables": [
+                        "c"
+                    ],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "c"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
+            },
+            "position": {
+                "x": -355,
+                "y": 77
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -355,
+                "y": 77
+            },
+            "dragging": false
+        },
+        {
+            "id": "2",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "Set X",
+                "code": "x = 6",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "x"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
+            },
+            "position": {
+                "x": -356.8171700807792,
+                "y": -201.75671134256004
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -356.8171700807792,
+                "y": -201.75671134256004
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentation-2",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -353.8171700807792,
+                "y": -317.55671134255994
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# This Node creates an x variable",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -353.8171700807792,
+                "y": -317.55671134255994
+            },
+            "dragging": false,
+            "hidden": true
+        },
+        {
+            "id": "documentation-1",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -543,
+                "y": 53
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Multiply C by 2",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "positionAbsolute": {
+                "x": -543,
+                "y": 53
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentation-0",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -544.7562478113396,
+                "y": -66.91765426091547
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Initialize Vars",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "positionAbsolute": {
+                "x": -544.7562478113396,
+                "y": -66.91765426091547
+            },
+            "dragging": false
+        },
+        {
+            "id": "3",
+            "type": "ClassNode",
+            "data": {
+                "label": "Animal",
+                "code": "class Animal:\n    \"\"\"\n    Animal Class\n    \"\"\"\n    \n",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Animal"
+                    ]
+                },
+                "class": "Animal"
+            },
+            "position": {
+                "x": -62.61844945673221,
+                "y": -8.532617617285553
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -62.61844945673221,
+                "y": -8.532617617285553
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentation-3",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -81.73685886652117,
+                "y": -203.4343751080085
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Define an animal class",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "dragging": false
+        },
+        {
+            "id": "4",
+            "type": "MethodNode",
+            "data": {
+                "label": "getName",
+                "code": "def getName(self):\n    return self.name",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Animal"
+                    ],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "Animal.getName"
+                    ],
+                    "classes": []
+                },
+                "class": "Animal",
+                "scope": "Animal",
+                "method": "getName"
+            },
+            "position": {
+                "x": -201.25280742171918,
+                "y": 210.9602915087022
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": -201.25280742171918,
+                "y": 210.9602915087022
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentation-4",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -398.2528074217192,
+                "y": 209.9602915087022
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Returns the name of the Animal",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "positionAbsolute": {
+                "x": -398.2528074217192,
+                "y": 209.9602915087022
+            },
+            "dragging": false
+        },
+        {
+            "id": "5",
+            "type": "MethodNode",
+            "data": {
+                "label": "__init__",
+                "code": "def __init__(self, name):\n    \"\"\"\n    Constructor method.\n    \"\"\"\n    self.name = name",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Animal"
+                    ],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "Animal.__init__"
+                    ],
+                    "classes": []
+                },
+                "class": "Animal",
+                "scope": "Animal",
+                "method": "__init__"
+            },
+            "position": {
+                "x": 38.434213675790204,
+                "y": 207.85843770010536
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": 38.434213675790204,
+                "y": 207.85843770010536
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentation-5",
+            "type": "DocumentationNode",
+            "position": {
+                "x": 198.4342136757902,
+                "y": 209.85843770010533
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Constructor for Animal",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "positionAbsolute": {
+                "x": 198.4342136757902,
+                "y": 209.85843770010533
+            },
+            "dragging": false
+        },
+        {
+            "id": "6",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "Call getName",
+                "code": "animal = Animal(\"Bob\")\nprint(animal.getName())",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [
+                        "Animal.getName",
+                        "Animal.__init__"
+                    ],
+                    "classes": [
+                        "Animal"
+                    ],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [
+                        "animal[Animal]"
+                    ],
+                    "functions": [],
+                    "classes": []
+                }
+            },
+            "position": {
+                "x": -106.58948655183428,
+                "y": 352.21572409212973
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": -106.58948655183428,
+                "y": 352.21572409212973
+            }
+        },
+        {
+            "id": "documentation-6",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -325.5894865518343,
+                "y": 359.21572409212973
+            },
+            "data": {
+                "label": "Documentation",
+                "code": "# Call Animal test",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "hidden": true,
+            "positionAbsolute": {
+                "x": -325.5894865518343,
+                "y": 359.21572409212973
+            },
+            "dragging": false
+        },
+        {
+            "id": "7",
+            "type": "ClassNode",
+            "data": {
+                "label": "Dog",
+                "code": "class Dog(Animal):\n    pass",
+                "dependencies": {
+                    "variables": [
+                        "Animal"
+                    ],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Dog"
+                    ]
+                },
+                "class": "Dog"
+            },
+            "position": {
+                "x": 193.51533096391074,
+                "y": -186.09829778978502
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": 193.51533096391074,
+                "y": -186.09829778978502
+            },
+            "dragging": false
+        },
+        {
+            "id": "8",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "method_name",
+                "code": "@staticmethod\ndef method_name(args):\n    \"\"\"\n    Method docstring\n    \"\"\"\n    pass",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "method_name"
+                    ],
+                    "classes": []
+                }
+            },
+            "position": {
+                "x": 333.2321123918275,
+                "y": -21.762171822034247
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": 333.2321123918275,
+                "y": -21.762171822034247
+            },
+            "dragging": false
+        },
+        {
+            "id": "9",
+            "type": "MethodNode",
+            "data": {
+                "label": "getName",
+                "code": "def getName(self):\n    return f\"DOG: {self.name}\"",
+                "scope": "Dog",
+                "dependencies": {
+                    "variables": [],
+                    "functions": [],
+                    "classes": [
+                        "Dog"
+                    ],
+                    "modules": []
+                },
+                "new_definitions": {
+                    "variables": [],
+                    "functions": [
+                        "Dog.getName"
+                    ],
+                    "classes": []
+                },
+                "method": "getName"
+            },
+            "position": {
+                "x": 201.14069511749915,
+                "y": 408.3246724139688
+            },
+            "selected": false,
+            "width": 150,
+            "height": 37,
+            "positionAbsolute": {
+                "x": 201.14069511749915,
+                "y": 408.3246724139688
+            },
+            "dragging": false
+        },
+        {
+            "id": "10",
+            "type": "ImportNode",
+            "data": {
+                "label": "Node 18",
+                "code": ""
+            },
+            "position": {
+                "x": -54.92316552752732,
+                "y": -363.4387839275788
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": -54.92316552752732,
+                "y": -363.4387839275788
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "id": "0-documentation-2>2",
+            "source": "documentation-2",
+            "target": "2",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-1>1",
+            "source": "documentation-1",
+            "target": "1",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-0>0",
+            "source": "documentation-0",
+            "target": "0",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-3>3",
+            "source": "documentation-3",
+            "target": "3",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-4>4",
+            "source": "documentation-4",
+            "target": "4",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-5>5",
+            "source": "documentation-5",
+            "target": "5",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "id": "0-documentation-6>6",
+            "source": "documentation-6",
+            "target": "6",
+            "type": "documentationRelationship",
+            "selected": false
+        },
+        {
+            "source": "5",
+            "sourceHandle": null,
+            "target": "3",
+            "targetHandle": null,
+            "type": "methodRelationship",
+            "id": "0-5>3",
+            "selected": false
+        },
+        {
+            "source": "4",
+            "sourceHandle": null,
+            "target": "3",
+            "targetHandle": null,
+            "type": "methodRelationship",
+            "id": "0-4>3",
+            "selected": false
+        },
+        {
+            "source": "start",
+            "target": "3",
+            "sourceHandle": null,
+            "targetHandle": null,
+            "type": "executionRelationship",
+            "id": "0-start>3",
+            "data": {
+                "label": 1
+            },
+            "selected": false
+        },
+        {
+            "source": "3",
+            "target": "5",
+            "sourceHandle": null,
+            "targetHandle": null,
+            "type": "executionRelationship",
+            "id": "0-3>5",
+            "data": {
+                "label": 2
+            },
+            "selected": false
+        },
+        {
+            "source": "5",
+            "target": "4",
+            "sourceHandle": null,
+            "targetHandle": null,
+            "type": "executionRelationship",
+            "id": "0-5>4",
+            "data": {
+                "label": 3
+            },
+            "selected": false
+        },
+        {
+            "source": "4",
+            "target": "6",
+            "sourceHandle": null,
+            "targetHandle": null,
+            "type": "executionRelationship",
+            "id": "0-4>6",
+            "data": {
+                "label": 4
+            },
+            "selected": false
+        },
+        {
+            "source": "2",
+            "sourceHandle": null,
+            "target": "0",
+            "targetHandle": null,
+            "type": "methodRelationship",
+            "id": "0-2>0",
+            "selected": false
+        },
+        {
+            "source": "9",
+            "sourceHandle": null,
+            "target": "7",
+            "targetHandle": null,
+            "type": "methodRelationship",
+            "id": "0-9>7",
+            "selected": false
+        },
+        {
+            "id": "D1-0>1",
+            "source": "0",
+            "target": "1",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "c"
+            }
+        },
+        {
+            "id": "D0-1>1",
+            "source": "1",
+            "target": "1",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "c"
+            }
+        },
+        {
+            "id": "D1-4>3",
+            "source": "4",
+            "target": "3",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal"
+            }
+        },
+        {
+            "id": "D1-5>3",
+            "source": "5",
+            "target": "3",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal"
+            }
+        },
+        {
+            "id": "D0-6>3",
+            "source": "6",
+            "target": "3",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal"
+            }
+        },
+        {
+            "id": "D1-6>4",
+            "source": "6",
+            "target": "4",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal.getName"
+            }
+        },
+        {
+            "id": "D1-6>5",
+            "source": "6",
+            "target": "5",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal.__init__"
+            }
+        },
+        {
+            "id": "D0-7>3",
+            "source": "7",
+            "target": "3",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Animal"
+            }
+        },
+        {
+            "id": "D0-9>7",
+            "source": "9",
+            "target": "7",
+            "type": "dependencyRelationship",
+            "data": {
+                "label": "Dog"
+            }
+        },
+        {
+            "id": "0-7>3",
+            "source": "7",
+            "target": "3",
+            "type": "inheritanceRelationship",
+            "data": {
+                "label": "Animal"
+            }
+        },
+        {
+            "id": "0-9>4",
+            "source": "9",
+            "target": "4",
+            "type": "overridesRelationship",
+            "data": {
+                "label": "getName"
+            }
+        }
+    ]
+}

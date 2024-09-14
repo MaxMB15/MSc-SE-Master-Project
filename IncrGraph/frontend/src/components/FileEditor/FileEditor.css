@@ -1,0 +1,45 @@
+.file-editor-container {
+	display: flex;
+	height: 100vh; /* Full height */
+	position: relative;
+	flex-shrink: 0; /* Prevent shrinking */
+	flex-grow: 0; /* Prevent growing */
+}
+
+.file-editor {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
+	overflow: hidden;
+	height: 100%; /* Ensure the file editor takes full height */
+	width: 100%; /* Ensure the file editor takes full width */
+}
+
+.file-editor.collapsed {
+	width: 40px; /* Adjust width when collapsed */
+}
+
+
+.take-full-width {
+	flex-grow: 1;
+}
+
+.resize-handle-container-left {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 5px;
+	cursor: ew-resize;
+	z-index: 5; /* Ensure the resize handle is above other elements */
+}
+
+.resize-handle {
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+}
+.selection-pane-container {
+    margin-bottom: 100px;
+}

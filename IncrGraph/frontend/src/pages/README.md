@@ -1,0 +1,1 @@
+As you know, the component that accesses via URL is called pages by us. But every page has the header, footer, sidebars, etc. We don't need to include those files are in the all pages, instead, we can make a parent component all those pages.

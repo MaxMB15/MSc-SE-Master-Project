@@ -1,0 +1,44 @@
+.treeItemButton {
+	background-color: transparent;
+	height: 32px;
+	padding: 4px 8px;
+	font-size: 0.875rem;
+	display: flex;
+	align-items: center;
+}
+
+.treeItemButton:hover {
+	background-color: #333333;
+}
+
+.treeItemIcon {
+	color: var(--mui-palette-text-primary);
+}
+
+.treeItemInput {
+	padding: 0 5px;
+	height: 24px;
+	font-size: 0.875rem !important;
+	border: 1px solid var(--startNodeColor1);
+	border-radius: 2px;
+	outline: none;
+	background: transparent;
+	color: var(--mui-palette-text-primary);
+	transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+	width: calc(100% - 10px); /* Adjust width to accommodate padding */
+}
+
+.treeItemInput:focus {
+	background-color: transparent;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	border-color: var(--startNodeColor1);
+}
+
+.treeItemText {
+	color: var(--mui-palette-text-primary);
+	flex-grow: 1;
+	padding: 0;
+	margin: 0;
+    padding-left: 6px;
+	font-size: 0.875rem; /* Ensure consistent font size */
+}

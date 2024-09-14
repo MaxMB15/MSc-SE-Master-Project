@@ -1,0 +1,16 @@
+[
+	"nodes.draggable",
+	"nodes.dragging",
+	"nodes.position",
+	"nodes.positionAbsolute",
+    "nodes.selected",
+    "nodes.hidden",
+    "nodes.data.metaNodeData",
+    "nodes.data.response",
+    "nodes.style",
+    "nodes.type",
+    "edges.sourceHandle",
+    "edges.targetHandle",
+    "edges.selected",
+    "edges.hidden"
+]

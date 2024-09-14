@@ -1,0 +1,44 @@
+.configurationOverview {
+	width: 100%;
+	background-color: var(--mui-palette-background-paper);
+	color: var(--mui-palette-text-primary);
+	padding: 16px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	border-top: 5px solid #121212;
+	margin-bottom: 40px; /* Add margin-bottom because of footer*/
+	align-items: center;
+    height: 50%;
+    max-height: 50%;
+}
+
+.configurationOverviewTitle {
+	margin-bottom: 8px;
+	text-align: center;
+}
+
+.configurationOverviewControls {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+	max-width: 300px;
+}
+
+.configurationOverviewButton {
+	width: 100%;
+	text-transform: none;
+}
+
+.configurationOverviewButton:disabled {
+	background-color: #555555 !important;
+	color: var(--mui-palette-text-primary);
+}
+
+.configurationPlaceholder {
+	color: var(--mui-palette-text-secondary);
+	text-align: center;
+	margin-top: 16px;
+}

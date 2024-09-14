@@ -1,0 +1,40 @@
+.markdownDisplayContainer {
+    min-height: 10px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #888888;
+    border-radius: 2px;
+    background-color: var(--mui-palette-background-paper);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--mui-palette-text-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .markdownDisplayContainer:hover {
+    background-color: var(--mui-palette-background-default);
+    border-color: #aaaaaa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .markdownDisplayContainer:active {
+    background-color: #555555;
+    border-color: #cccccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .iconContainer {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
