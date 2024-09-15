@@ -9,18 +9,20 @@ export interface SelectOption {
 
 interface CustomSelectProps {
 	id: string;
-	label: string;
 	options: SelectOption[];
 	value: string;
 	onChange: (value: string) => void;
+    className?: string;
+	label?: string;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
 	id,
-	label,
 	options,
 	value,
 	onChange,
+    className = "",
+	label,
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const selectRef = useRef<HTMLDivElement>(null);
@@ -63,10 +65,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 	}, [isOpen]);
 
 	return (
-		<div className="custom-select-container" ref={selectRef}>
-			<label htmlFor={id} className="custom-select-label">
-				{label}
-			</label>
+		<div className={`custom-select-container ${className}`} ref={selectRef}>
+			{label !== undefined && (
+				<label htmlFor={id} className="custom-select-label">
+					{label}
+				</label>
+			)}
+
 			<div
 				id={id}
 				className="custom-select"
@@ -85,7 +90,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 						>
 							<span
 								className={`custom-select-color`}
-                                style={option.style}
+								style={option.style}
 							/>
 							{option.label}
 						</li>

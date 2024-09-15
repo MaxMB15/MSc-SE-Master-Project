@@ -42,6 +42,8 @@ export const lightTheme: Theme = createTheme(
 				default: STYLES.mainBackgroundAccentColorLight,
 				paper: STYLES.mainBackgroundColorLight,
                 pure: STYLES.mainBackgroundPureColorLight,
+                hover: STYLES.mainBackgroundHoverColorLight,
+                selected: STYLES.mainBackgroundSelectedColorLight,
 			},
 			text: {
 				primary: STYLES.mainFontColorLight,
@@ -65,6 +67,8 @@ export const darkTheme: Theme = createTheme(
 				default: STYLES.mainBackgroundAccentColorDark,
 				paper: STYLES.mainBackgroundColorDark,
                 pure: STYLES.mainBackgroundPureColorDark,
+                hover: STYLES.mainBackgroundHoverColorDark,
+                selected: STYLES.mainBackgroundSelectedColorDark,
 			},
 			text: {
 				primary: STYLES.mainFontColorDark,

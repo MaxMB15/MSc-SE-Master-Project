@@ -11,7 +11,7 @@ import {
 const CACHE_KEY = "component_cache1";
 
 interface CacheEntry {
-	filePath: string;
+	name: string;
 	modulePath: string;
 	enabled: boolean;
 }
@@ -58,7 +58,7 @@ export const importAndCategorizeComponents = async (
 				const webCache = loadComponentCache();
 				if (webCache !== null) {
 					const cacheEntry = webCache.find(
-						(entry) => entry.filePath === componentFilePath,
+						(entry) => entry.modulePath === moduleFilePath && entry.name === exportedComponent.NAME,
 					);
 					if (cacheEntry !== undefined) {
 						componentEnabled = cacheEntry.enabled;
@@ -88,7 +88,7 @@ export const importAndCategorizeComponents = async (
 
 				// Update the cache
 				const entry: CacheEntry = {
-					filePath: componentFilePath,
+					name: exportedComponent.NAME,
 					modulePath: moduleFilePath,
 					enabled: componentEnabled,
 				};

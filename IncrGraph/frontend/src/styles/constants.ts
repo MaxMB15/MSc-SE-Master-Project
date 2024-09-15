@@ -29,6 +29,12 @@ export const STYLES = {
     mainBackgroundAccentColorLight: "#d5d5d5",
     mainBackgroundAccentColorDark: "#252526",
 
+    mainBackgroundHoverColorLight: "#dddddd",
+    mainBackgroundHoverColorDark: "#272727",
+
+    mainBackgroundSelectedColorLight: "#c5c5c5",
+    mainBackgroundSelectedColorDark: "#353535",
+
     mainBackgroundPureColorLight: "#ffffff",
     mainBackgroundPureColorDark: "#000000",
 

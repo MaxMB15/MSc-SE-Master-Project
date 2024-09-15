@@ -4,24 +4,28 @@
 	border-radius: 8px;
 	box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 	min-width: 900px;
+    min-height: 500px;
 	max-height: 600px;
 	margin: auto;
 	display: flex;
 	flex-direction: column;
 }
 
-.header {
+.moduleSelectContainer {
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
+	justify-content: space-between;
 	margin-bottom: 20px;
 }
 
-.closeBtn {
-	background: none;
-	border: none;
-	font-size: 24px;
-	cursor: pointer;
+.moduleSelect {
+	margin-right: 50%;
+    margin-bottom: 0;
+}
+
+.moduleActionButtons {
+	display: flex;
+	gap: 10px;
 }
 
 .listsContainer {
@@ -37,21 +41,12 @@
 	margin: 0 10px;
 }
 
-h3 {
-	font-size: 18px;
-	margin-bottom: 10px;
-	color: var(--mui-primary-text);
-}
-
-ul {
-	list-style-type: none;
-	padding: 0;
-}
-
 .scrollableList {
 	max-height: 300px;
 	overflow-y: auto;
 	padding-right: 8px;
+	list-style-type: none;
+	padding: 0;
 }
 
 .listItem {
@@ -59,44 +54,41 @@ ul {
 	border: 1px solid var(--mui-palette-background-default);
 	border-radius: 4px;
 	margin-bottom: 8px;
-	background-color: var(--mui-palette-background-pure);
+	background-color: var(--mui-palette-background-paper);
 	cursor: pointer;
+	transition: background-color 0.2s ease-in-out; /* Smooth transition for hover and selection */
 }
 
 .listItem:hover {
-	background-color: var(--mui-palette-background-default);
-}
-
-.selected {
-	background-color: var(--mui-palette-background-default);
-	color: white;
+	background-color: var(--mui-palette-background-hover);
 }
 
 .actionButtons {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	justify-content: flex-start;
+	margin-top: 10px;
 }
 
-.deleteBtn {
-	background-color: #dc3545;
-	border: none;
-	color: var(--mui-primary-text);
+.toggleBtn {
 	padding: 10px 20px;
 	border-radius: 4px;
-	cursor: pointer;
-}
-
-.deleteBtn:disabled {
-	background-color: var(--mui-palette-background-default);
-	cursor: not-allowed;
-}
-
-.importBtn {
-	background-color: #28a745;
-	border: none;
 	color: white;
-	padding: 10px 20px;
-	border-radius: 4px;
+	border: none;
 	cursor: pointer;
+}
+
+.enableBtn {
+	background-color: #28a745;
+}
+
+.disableBtn {
+	background-color: #dc3545;
+}
+.disabled {
+    background-color: #4f5153;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+.selected {
+	border-color: var(--primary);
 }

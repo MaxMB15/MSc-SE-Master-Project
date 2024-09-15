@@ -62,7 +62,6 @@ body {
 	color: #007acc;
 }
 .icon-button:disabled {
-	background-color: #555555; /* Disabled background color */
 	color: #aaaaaa; /* Disabled text color */
 	cursor: not-allowed;
 }

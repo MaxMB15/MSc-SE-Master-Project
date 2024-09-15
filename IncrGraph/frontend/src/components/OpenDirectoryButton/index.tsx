@@ -2,11 +2,13 @@ import React from "react";
 
 interface OpenDirectoryButtonProps {
     onClick: (path: string) => void,
-    style: React.CSSProperties,
     children: React.ReactNode
+    style?: React.CSSProperties,
+    className?: string,
+    title?: string
 }
 
-const OpenDirectoryButton: React.FC<OpenDirectoryButtonProps> = ({onClick, style, children}) => {
+const OpenDirectoryButton: React.FC<OpenDirectoryButtonProps> = ({onClick, children, style, className, title}) => {
 
 	const handleOpenDirectory = async () => {
 		if (window.electron && window.electron.selectDirectory) {
@@ -18,7 +20,7 @@ const OpenDirectoryButton: React.FC<OpenDirectoryButtonProps> = ({onClick, style
 		}
 	};
 
-	return <div style={style} onClick={handleOpenDirectory}>{children}</div>;
+	return <div className={className} title={title} style={style} onClick={handleOpenDirectory}>{children}</div>;
 };
 
 export default OpenDirectoryButton;

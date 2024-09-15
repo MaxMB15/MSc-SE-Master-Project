@@ -7,13 +7,20 @@ import path from "path-browserify";
 import { useComponentRegistry } from "@/hooks/useComponentRegistry";
 import { fetchAndRegisterComponents } from "@/utils/componentCache";
 
+// MUI Icons
+import RefreshIcon from "@mui/icons-material/Refresh";
+import InfoIcon from "@mui/icons-material/Info";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CustomSelect from "../CustomSelect";
+import OpenDirectoryButton from "../OpenDirectoryButton";
+
 interface AddOnManagerProps {
 	onClose: () => void;
 }
 
 const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 	const { nodeTypes, relationshipTypes, viewTypes, moduleData } = useStore();
-
 	const { registerComponent, updateComponent } = useComponentRegistry();
 	const everyComponentLabel = "All";
 
@@ -56,10 +63,8 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 			.map((component: ModuleComponentValues<any>) => (
 				<li
 					key={`${component.modulePath}~${component.object.NAME}`}
-					className={`${styles.listItem} ${
-						selectedItems.includes(component.object.NAME)
-							? styles.selected
-							: ""
+					className={`${styles.listItem} ${component.enabled ? "" : styles.disabled} ${
+						selectedItems.includes(component) ? styles.selected : ""
 					}`}
 					onClick={() => toggleSelection(component)}
 				>
@@ -70,65 +75,84 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 
 	// Placeholder function for importing an add-on
 	const handleImportAddon = (modulePath: string): void => {
-		// Logic for importing addon
 		callAddModule(modulePath).then(() => {
-			// Refresh components
 			handleRefreshComponents();
 		});
 	};
 
 	// Placeholder function for refreshing the components
 	const handleRefreshComponents = (): void => {
-		// Logic for refreshing components
 		fetchAndRegisterComponents(registerComponent);
 	};
 
 	const toggleEnableDisable = () => {
-		// Logic to enable or disable selected items
 		const toEnable =
 			selectedItems.length > 0 ? !selectedItems[0].enabled : true;
 		selectedItems.forEach((selectedItem) => {
 			selectedItem.enabled = toEnable;
 			updateComponent(selectedItem);
 		});
+        handleRefreshComponents();
+        setSelectedItems([]);
 	};
 
 	const deleteModule = (modulePath: string) => {
-		// Remove from files given from backend
 		callRemoveModule(modulePath).then(() => {
-			// Refresh components
 			handleRefreshComponents();
 		});
 	};
 
 	return (
 		<div className={styles.managerContainer}>
-			{/* Module Selector Dropdown */}
+			{/* Module Selector and Icon Buttons */}
 			<div className={styles.moduleSelectContainer}>
-				<select
-					value={selectedModule}
-					onChange={(e) => setSelectedModule(e.target.value)}
+				<CustomSelect
+					id="moduleSelect"
 					className={styles.moduleSelect}
-				>
-					<option value="All">All Modules</option>
-					{moduleData.map((module) => (
-						<option
-							key={module.search_path}
-							value={module.search_path}
-						>
-							{module.meta?.name ||
-								path.basename(module.search_path)}
-						</option>
-					))}
-				</select>
+					value={selectedModule}
+					onChange={(val) => setSelectedModule(val)}
+					options={[
+						{
+							value: everyComponentLabel,
+							label: everyComponentLabel,
+							style: {},
+						},
+						...moduleData.map((module) => ({
+							value: module.search_path,
+							label:
+								module.meta?.name ||
+								path.basename(module.search_path),
+							style: {},
+						})),
+					]}
+				></CustomSelect>
 
-				{/* Refresh Button */}
-				<button
-					className={styles.refreshBtn}
-					onClick={handleRefreshComponents}
-				>
-					Refresh
-				</button>
+				<div className={styles.moduleActionButtons}>
+					<button
+						className="icon-button"
+						title="Refresh"
+						onClick={handleRefreshComponents}
+					>
+						<RefreshIcon />
+					</button>
+					<button className="icon-button" title="Module Info">
+						<InfoIcon />
+					</button>
+                    <OpenDirectoryButton onClick={(path: string) => handleImportAddon(path)}
+						className="icon-button"
+						title="Import AddOn"
+					>   
+						<AddBoxIcon />
+                    </OpenDirectoryButton>
+					<button
+						className="icon-button"
+						title="Remove AddOn"
+						onClick={() => deleteModule(selectedModule)}
+						disabled={selectedModule === "All"}
+					>
+						<DeleteIcon />
+					</button>
+				</div>
 			</div>
 
 			<div className={styles.listsContainer}>
@@ -156,34 +180,21 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 
 			<div className={styles.actionButtons}>
 				{/* Enable/Disable Selected */}
+                {selectedItems.length > 0 && (
 				<button
-					className={styles.enableDisableBtn}
+					className={`${styles.toggleBtn} ${
+						selectedItems.length > 0 && selectedItems[0].enabled
+							? styles.disableBtn
+							: styles.enableBtn
+					}`}
 					onClick={toggleEnableDisable}
 					disabled={selectedItems.length === 0}
 				>
-					Enable/Disable Selected
+					{selectedItems.length > 0 && selectedItems[0].enabled
+						? "Disable Selected"
+						: "Enable Selected"}
 				</button>
-
-				{/* Import AddOn */}
-				<button
-					className={styles.importBtn}
-					onClick={() =>
-						handleImportAddon(
-							"/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/temp_import",
-						)
-					}
-				>
-					Import AddOn
-				</button>
-
-				{/* Remove Module */}
-				<button
-					className={styles.deleteBtn}
-					onClick={() => deleteModule(selectedModule)}
-					disabled={selectedModule === "All"}
-				>
-					Remove AddOn
-				</button>
+                )}
 			</div>
 		</div>
 	);

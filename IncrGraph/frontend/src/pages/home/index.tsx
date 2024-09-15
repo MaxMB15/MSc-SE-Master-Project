@@ -8,7 +8,7 @@ import useConfirmDialog from "@components/ConfirmDialog/useConfirmDialog";
 import useTextDialog from "@/components/TextDialog/useTextDialog";
 import { useComponentRegistry } from "@/hooks/useComponentRegistry";
 import LoadingScreen from "@/components/LoadingScreen";
-import { fetchAndRegisterComponents, importAndCategorizeComponents, loadComponentCache } from "@/utils/componentCache";
+import { fetchAndRegisterComponents,} from "@/utils/componentCache";
 
 const HomePage: React.FC = () => {
 	// Variables
@@ -19,22 +19,9 @@ const HomePage: React.FC = () => {
 	const { registerComponent } = useComponentRegistry();
 
 	useEffect(() => {
-		// Check if cache exists and load components
-		// const cache = loadComponentCache();
-
-		// if (cache) {
-		// 	// Load components from cache
-		// 	cache.forEach((CacheEntry) => {
-		// 		importAndCategorizeComponents(CacheEntry, registerComponent);
-		// 	});
-		// 	setIsLoading(false); // Components loaded, hide loading screen
-		// } else {
-		// 	// Load default components and fetch new ones from the backend
-		// 	// loadDefaultComponents();
         fetchAndRegisterComponents(registerComponent).then(() => {
             setIsLoading(false); // Components loaded, hide loading screen
         });
-		// }
 	}, []);
 
 	// For importing and categorizing components
