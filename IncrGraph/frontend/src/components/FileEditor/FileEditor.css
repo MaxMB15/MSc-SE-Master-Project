@@ -1,9 +1,10 @@
 .file-editor-container {
 	display: flex;
-	height: 100vh; /* Full height */
+	height: 100%; /* Full height */
 	position: relative;
 	flex-shrink: 0; /* Prevent shrinking */
 	flex-grow: 0; /* Prevent growing */
+    margin-bottom: var(--footerHeight);
 }
 
 .file-editor {
@@ -14,6 +15,7 @@
 	overflow: hidden;
 	height: 100%; /* Ensure the file editor takes full height */
 	width: 100%; /* Ensure the file editor takes full width */
+    margin-bottom: var(--footerHeight);
 }
 
 .file-editor.collapsed {

@@ -5,6 +5,7 @@ import Navbar from "../../components/NavBar";
 import { ThemeProvider } from "@mui/material/styles";
 import { useThemeMode } from "@/hooks/useThemeMode";
 import { PopupProvider } from "@/components/Popup/PopupProvider";
+import { STYLES } from "@/styles/constants";
 
 interface RootPageProps {
 	children?: ReactNode;
@@ -26,7 +27,7 @@ const RootPage: FC<RootPageProps> = ({ children }) => {
 							<div className="footer-logo">
 								<p>Incremental Graph Code</p>
 							</div>
-							<div className="footer-social">
+							<div className="footer-social" style={{height: STYLES.footerHeight}}>
 								<a
 									href="https://github.com/MaxMB15/MSc-SE-Master-Project/tree/main/IncrGraph"
 									target="_blank"

@@ -1,9 +1,9 @@
 import "./AbstractClassNode.css";
-import BaseNode, { IGCNodeProps } from "../BaseNode";
 import { STYLES } from "@/styles/constants";
+import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 
-const AbstractClassNode: IGCNodeProps = ( props ) => (
-	<BaseNode {...props} data={{
+const AbstractClassNode: IGCCodeNodeProps = ( props ) => (
+	<CodeNode {...props} data={{
         ...props.data,
         backgroundColor: AbstractClassNode.COLOR
     }}/>

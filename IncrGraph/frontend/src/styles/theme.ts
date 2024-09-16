@@ -26,6 +26,9 @@ const defaultTheme: ThemeOptions = {
                     "&.Mui-selected": {
                         color: STYLES.primary,
                     },
+                    height: STYLES.tabHeight,
+                    minHeight: STYLES.tabHeight,
+                    padding: "0px 10px",
                 },
             },
         },

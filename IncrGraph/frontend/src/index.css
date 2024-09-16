@@ -104,7 +104,7 @@ main {
 	background-color: var(--mui-palette-background-default);
 	padding: 8px;
 	border-bottom: 1px solid #333333;
-    height: 24px;
+    height: var(--componentNavbarHeight);
 }
 
 .navbar-component.collapsed {

@@ -11,32 +11,24 @@ import { STYLES } from "@/styles/constants";
 import useStore from "@/store/store";
 import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
-import { runCode } from "@/utils/codeExecution";
-import { Definitions, Dependencies } from "shared";
 import { getNodeId } from "../../utils/utils";
 import { RegistryComponent } from "@/types/frontend";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
 
-type CodeData = {
-	code: string;
-	scope?: string;
-	dependencies?: Dependencies;
-	new_definitions?: Definitions;
-};
-
 export type IGCNodeData<T = {}> = T & {
 	label: string;
     backgroundColor?: string;
-	codeData?: CodeData;
 	children?: React.ReactNode;
+    handleRun?: () => void;
 };
 
-export type IGCNodeProps<T={}> = React.FC<NodeProps<IGCNodeData<T>>> & RegistryComponent;
+export type IGCNodePropsWithoutRegistry<T={}> = React.FC<NodeProps<IGCNodeData<T>>>;
+export type IGCNodeProps<T={}> = IGCNodePropsWithoutRegistry<T> & RegistryComponent;
 
 const BaseNode: IGCNodeProps = ({ id, data }) => {
-	const { projectDirectory, setNodes, setEdges } = useStore();
+	const { setNodes } = useStore();
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
 		mouseY: number;
@@ -57,36 +49,18 @@ const BaseNode: IGCNodeProps = ({ id, data }) => {
 		setAnchorEl(null);
 	};
 
-	const handleRun = () => {
-		console.log("Run action triggered for node:", id);
-		if (data.codeData !== undefined && projectDirectory !== null) {
-			runCode(data.codeData.code, id, data.codeData.scope);
-		}
-
-		// Select the node
-		setNodes((prevNodes) => {
-			return prevNodes.map((node) => {
-				node.selected = node.id === id;
-				return node;
-			});
-		});
-
-		// Deselect all edges
-		setEdges((prevEdges) => {
-			return prevEdges.map((edge) => {
-				edge.selected = false;
-				return edge;
-			});
-		});
-
-		handleClose();
-	};
-
 	const handleDelete = () => {
 		console.log("Delete action triggered for node:", id);
 		setNodes((prevNodes) => prevNodes.filter((node) => node.id !== id));
-		handleClose();
+        handleClose();
 	};
+    const contextMenuAction = (action: (() => void) | undefined) => {
+        if (action === undefined) {
+            return undefined;
+        }
+        action();
+        handleClose();
+    }
 
 	const connectionNodeId = reactflowStore(connectionNodeIdSelector);
 	const defaultData = {
@@ -155,11 +129,12 @@ const BaseNode: IGCNodeProps = ({ id, data }) => {
 
 				{!isConnecting && <div className="base"></div>}
 			</div>
+
 			<ContextMenu
 				anchorEl={anchorEl}
 				handleClose={handleClose}
 				position={contextMenu}
-				onRun={handleRun}
+				onRun={() => contextMenuAction(data.handleRun)}
 				onDelete={handleDelete}
 			/>
 		</div>

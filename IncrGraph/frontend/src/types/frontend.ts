@@ -4,9 +4,20 @@ import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import { Node, Edge } from "reactflow";
 import { FileNode } from "shared";
 
+interface NodeItemObject {
+	type: "node";
+	object: Node;
+}
+
+interface RelationshipItemObject {
+	type: "relationship";
+	object: Edge;
+}
+
+type ItemObject = NodeItemObject | RelationshipItemObject;
+
 export interface Item {
-	type: "Node" | "Edge";
-	item: Node | Edge;
+	item: ItemObject;
 	id: string;
 	name: string;
 }
@@ -119,10 +130,12 @@ export type ModuleComponentValues<T extends RegistryComponent> = {
 	modulePath: string;
 	enabled: boolean;
 };
-export type ModuleComponent<T extends RegistryComponent> = { [key: string]: ModuleComponentValues<T> };
+export type ModuleComponent<T extends RegistryComponent> = {
+	[key: string]: ModuleComponentValues<T>;
+};
 
 export interface ModuleComponentStored {
-    nodes: ModuleComponent<IGCNodeProps>;
-    relationships: ModuleComponent<IGCRelationshipProps>;
-    views: ModuleComponent<IGCViewProps>;
+	nodes: ModuleComponent<IGCNodeProps>;
+	relationships: ModuleComponent<IGCRelationshipProps>;
+	views: ModuleComponent<IGCViewProps>;
 }

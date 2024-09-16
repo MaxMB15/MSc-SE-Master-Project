@@ -1,9 +1,9 @@
 import "./InterfaceNode.css";
-import BaseNode, { IGCNodeProps } from "../BaseNode";
+import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 import { STYLES } from "@/styles/constants";
 
-const InterfaceNode: IGCNodeProps = ( props ) => (
-	<BaseNode {...props} data={{
+const InterfaceNode: IGCCodeNodeProps = ( props ) => (
+	<CodeNode {...props} data={{
         ...props.data,
         backgroundColor: InterfaceNode.COLOR
     }}/>

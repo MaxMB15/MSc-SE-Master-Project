@@ -1,9 +1,9 @@
 import "./ClassNode.css";
-import BaseNode, { IGCNodeProps } from "../BaseNode";
+import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 import { STYLES } from "@/styles/constants";
 
-const ClassNode: IGCNodeProps = ( props ) => (
-	<BaseNode {...props} data={{
+const ClassNode: IGCCodeNodeProps = ( props ) => (
+	<CodeNode {...props} data={{
         ...props.data,
         backgroundColor: ClassNode.COLOR
     }}/>

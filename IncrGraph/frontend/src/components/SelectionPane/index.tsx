@@ -45,7 +45,6 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		if (selectedItems.length > 0) {
 			setSelectedItem(() => selectedItems[0]);
 			let optionType = selectedItems[0].item.type;
-			!optionType && (optionType = "");
 			setSelectedOption(optionType);
 		}
 	}, [selectedItems]);
@@ -57,7 +56,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	const handleOptionChange = (value: string) => {
 		setSelectedOption(value);
 		if (selectedItem) {
-			if (selectedItem.type === "Node") {
+			if (selectedItem.item.type === "node") {
 				setNodes((prevNodes) =>
 					prevNodes.map((node) => {
 						if (node.id === selectedItem.id) {
@@ -69,7 +68,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 						return node;
 					}),
 				);
-			} else if (selectedItem.type === "Edge") {
+			} else if (selectedItem.item.type === "relationship") {
 				setEdges((prevEdges) =>
 					prevEdges.map((edge) => {
 						if (edge.id === selectedItem.id) {
@@ -109,7 +108,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	const handleDelete = () => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
-			if (selectedItem.type === "Node") {
+			if (selectedItem.item.type === "node") {
 				// Get current session data
 				if (currentSessionId !== null) {
 					const session = sessions.get(currentSessionId);
@@ -155,7 +154,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 				setNodes((prevNodes) =>
 					prevNodes.filter((node) => node.id !== selectedItem.id),
 				);
-			} else if (selectedItem.type === "Edge") {
+			} else if (selectedItem.item.type === "relationship") {
 				setEdges((prevEdges) => {
 					// Get current session data
 					if (currentSessionId !== null) {
@@ -300,7 +299,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 				/>
 			)}
 
-			{selectedItem?.type === "Node" && (
+			{selectedItem?.item.type === "node" && (
 				<>
 					<CustomSelect
 						id="node-select"
@@ -325,7 +324,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 				</>
 			)}
 
-			{selectedItem?.type === "Edge" && (
+			{selectedItem?.item.type === "relationship" && (
 				<>
 					<CustomSelect
 						id="edge-select"

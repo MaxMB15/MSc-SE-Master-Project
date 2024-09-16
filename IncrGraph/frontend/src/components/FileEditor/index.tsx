@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box } from "@mui/material";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Box, Tab, Tabs } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { PlayArrow } from "@mui/icons-material";
 import { ResizableBox } from "react-resizable";
@@ -19,6 +19,11 @@ import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
 import { getIncomingNodes } from "../../IGCItems/utils/utils";
+import style from "./FileEditor.module.css";
+import { STYLES } from "@/styles/constants";
+import { ComponentReference, IGCViewProps } from "@/IGCItems/views/BaseView";
+import { nodeTypes } from "@/IGCItems/utils/types";
+import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -81,11 +86,11 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		edges,
 		setEdges,
 		currentSessionId,
-		setCurrentSessionId,
-		setSessions,
 		codeRunData,
-		setCodeRunData,
-        mode,
+		mode,
+        nodeTypes,
+        relationshipTypes,
+        viewTypes,
 	} = useStore();
 
 	// STATE
@@ -97,6 +102,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const [changeFromType, setChangeFromType] =
 		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE); // Checking what is responsible for the node update
 	const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
+	const [activeTab, setActiveTab] = useState(0);
 
 	// UTIL FUNCTIONS
 	// Check if the string is a valid JSON
@@ -426,8 +432,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	};
 	// Get the code of the selected item
 	const codeVersion = (): string => {
-		return selectedItem?.type === "Node"
-			? selectedItem.item.data.code
+		return selectedItem?.item.type === "node"
+			? selectedItem.item.object.data.code
 			: "THIS SHOULD NOT HAPPEN, SELECTED ITEM IS NOT VALID OR NOT A NODE!";
 	};
 	const getDisplayType = (): EditorDisplayContentType => {
@@ -436,7 +442,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 		if (!isIGCFile) {
 			return EditorDisplayContentType.NORMAL;
-		} else if (selectedItem?.type === "Node") {
+		} else if (selectedItem?.item.type === "node") {
 			return EditorDisplayContentType.CODE;
 		} else if (filterContent) {
 			return EditorDisplayContentType.FILTERED;
@@ -470,7 +476,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					"THIS SHOULD NOT HAPPEN, SELECTED ITEM CANNOT BE NULL HERE!",
 				);
 			}
-			if (selectedItem.type !== "Node") {
+			if (selectedItem.item.type !== "node") {
 				throw new Error(
 					"THIS SHOULD NOT HAPPEN, SELECTED ITEM MUST BE A NODE HERE!",
 				);
@@ -641,7 +647,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				displayType === EditorDisplayContentType.CODE &&
 				selectedItem !== null
 			) {
-				showRelaventDocumentation(selectedItem.item as Node);
+				showRelaventDocumentation(selectedItem.item.object as Node);
 				setShowTerminal(true);
 				if (model.getValue() === "" && model.languageId === "python") {
 					showSuggestionSnippet(
@@ -705,15 +711,15 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			selectedFile !== null &&
 			localContentBuffer !== null &&
 			selectedItem !== null &&
-			selectedItem.type === "Node"
+			selectedItem.item.type === "node"
 		) {
 			const codeKey = generateCodeKey(selectedFile, selectedItem.id);
 			if (!models.has(codeKey)) {
 				createModel(
 					codeKey,
-					selectedItem.item.data.code,
-					selectedItem.item.data.language
-						? selectedItem.item.data.language
+					selectedItem.item.object.data.code,
+					selectedItem.item.object.data.language
+						? selectedItem.item.object.data.language
 						: "python",
 				);
 			}
@@ -841,6 +847,79 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 	}, [selectedFile]);
 
+	const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+		// if(fitAddons.current && newValue <2){
+		//     fitAddons.current[newValue]?.fit();
+		// }
+		setActiveTab(newValue);
+	};
+
+	const createTabs = (views: IGCViewProps[]): JSX.Element => {
+        if(views.
+            length <= 1){
+            return <></>;
+        }
+		return (
+			<Tabs
+				value={activeTab}
+				onChange={handleTabChange}
+				className={style.tabs}
+				sx={{
+					padding: "0px 10px",
+					height: STYLES.tabHeight,
+					minHeight: STYLES.tabHeight,
+					display: "inline-flex",
+					"& .MuiTabs-indicator": {
+						backgroundColor: STYLES.primary,
+					},
+				}}
+			>
+				{views.map((view, index) => {
+					return <Tab label={view.NAME} key={index} />;
+				})}
+			</Tabs>
+		);
+	};
+    const createTabContent = (view: IGCViewProps[]): JSX.Element => {
+        if(view.length === 0){
+            return <></>;
+        }
+        const Component = view[activeTab]
+        return <Component />;
+    }
+
+    const componentIncludes = (component: IGCNodeProps, components: ComponentReference[]): boolean => {
+        return true;
+    }
+    const getViews = (): IGCViewProps[] => {
+        const selectedComponent = selectedItem?.item;
+        const allViews = Object.values(viewTypes).map((vt) => vt.object);
+        // General views
+        if(selectedComponent === undefined){
+            return allViews.filter((view) => {view.forComponents.length === 0});
+        }
+        else if(selectedComponent.type === "node"){
+            const componentType = selectedComponent.object.type;
+            if(componentType === undefined || !(componentType in nodeTypes)){
+                return [];
+            }
+            const realComponent = nodeTypes[componentType].object;
+            return allViews.filter((view) => componentIncludes(realComponent, view.forComponents));
+        }
+        else if(selectedComponent.type === "relationship"){
+            const componentType = selectedComponent.object.type;
+            if(componentType === undefined || !(componentType in relationshipTypes)){
+                return [];
+            }
+            const realComponent = relationshipTypes[componentType].object;
+            return allViews.filter((view) => view.forComponents.includes(realComponent));
+        }
+        return [];
+    }
+    const views = useMemo(() => getViews(), [selectedItem]);
+    const tabs = useMemo(() => createTabs(views), [views]);
+    const viewContent = useMemo(() => createTabContent(views), [views, activeTab]);
+
 	return (
 		<ResizableBox
 			width={isCollapsed ? 40 : width}
@@ -882,7 +961,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								<span className="navbar-component-title">
 									Code Editor
 								</span>
-								{selectedFile && (
+								{/* {selectedFile && (
 									<span
 										className="navbar-circle-icon"
 										style={{
@@ -894,9 +973,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 													: "orange",
 										}}
 									></span>
-								)}
+								)} */}
 								<span className="take-full-width"></span>
-								{isIGCFile &&
+								{/* {isIGCFile &&
 									selectedItem &&
 									projectDirectory !== null &&
 									selectedItem.type === "Node" &&
@@ -920,7 +999,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 										>
 											<PlayArrow />
 										</button>
-									)}
+									)} */}
 							</>
 						)}
 						<button
@@ -932,6 +1011,70 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						</button>
 					</div>
 					<Box
+						sx={{
+							flexGrow: 1,
+							overflowY: "auto",
+							display: isCollapsed ? "none" : "block",
+							marginBottom: "120px",
+						}}
+					>
+						<div className={style.tabsContainer}>
+                            {tabs}
+                            {viewContent}
+							<Tabs
+								value={activeTab}
+								onChange={handleTabChange}
+								className={style.tabs}
+								sx={{
+									padding: "0px 10px",
+									height: STYLES.tabHeight,
+									minHeight: STYLES.tabHeight,
+									display: "inline-flex",
+									"& .MuiTabs-indicator": {
+										backgroundColor: STYLES.primary,
+									},
+								}}
+							>
+								<Tab label="Output" />
+								<Tab label="Output" />
+								<Tab label="Output" />
+                                
+								{/* <Tab
+									label="Errors"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+								<Tab
+									label="Configuration"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+								<Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+                                <Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+                                <Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+                                <Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+                                <Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/>
+                                <Tab
+									label="Metrics"
+                                    sx={{ padding: "0px 10px"}}
+								/> */}
+							</Tabs>
+						</div>
+					</Box>
+					{/* <Box
 						sx={{
 							flexGrow: 1,
 							overflowY: "auto",
@@ -972,8 +1115,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								Select a file to view its content.
 							</div>
 						)}
-					</Box>
-					{showTerminal &&
+					</Box> */}
+					{/* {showTerminal &&
 						selectedItem !== null &&
 						codeRunData.get(selectedItem.id) !== undefined && (
 							<TabbedCodeOutput
@@ -987,7 +1130,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						style={{ display: isCollapsed ? "none" : "block" }}
 					>
 						<SelectionPane />
-					</div>
+					</div> */}
+                    <SelectionPane />
 				</div>
 			</div>
 		</ResizableBox>

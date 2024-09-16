@@ -1,0 +1,15 @@
+.tabsContainer {
+    overflow-x: auto;
+    white-space: nowrap;
+    background-color: var(--mui-palette-background-default);;
+}
+.tabs .MuiList-root .MuiTouchRipple-child {
+    background-color: red;
+}
+
+.tabs .MuiTab-root {
+    color: var(--mui-palette-text-primary);
+}
+.MuiButtonBase-root-MuiTab-root.Mui-selected {
+    color: var(--mui-palette-text-primary);
+}

@@ -51,6 +51,10 @@ export const STYLES = {
     nodeBottomBackgroundColor: "#3f3f3f",
     nodePickColor: "#75e7b7",
     nodeDropColor: "#ea6c76",
+
+    footerHeight: "25px",
+    componentNavbarHeight: "23px",
+    tabHeight: "30px",
 };
 
 

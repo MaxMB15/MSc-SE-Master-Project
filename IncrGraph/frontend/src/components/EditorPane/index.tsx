@@ -31,9 +31,8 @@ import useStore from "@/store/store";
 import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
 import { STYLES } from "@/styles/constants";
-import { createBaseNode, IGCNodeData, IGCNodeProps } from "../../IGCItems/nodes/BaseNode";
+import { createBaseNode, IGCNodeData } from "../../IGCItems/nodes/BaseNode";
 import { convertMapToTrueEdgeTypes, convertMapToTrueNodeTypes } from "@/IGCItems/utils/types";
-import { get } from "lodash";
 
 interface EditorPaneProps {}
 
@@ -216,8 +215,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		const items: Item[] = [];
 		selectedNodes.forEach((node) => {
 			items.push({
-				type: "Node",
-				item: node,
+				item: {type: 'node', object: node},
 				id: node.id,
 				name: node.data.label,
 			});
@@ -225,8 +223,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 		selectedEdges.forEach((edge) => {
 			items.push({
-				type: "Edge",
-				item: edge,
+				item: {type: 'relationship', object: edge},
 				id: edge.id,
 				name: edge.id,
 			});
