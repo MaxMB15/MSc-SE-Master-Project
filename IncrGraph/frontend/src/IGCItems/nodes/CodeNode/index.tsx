@@ -1,8 +1,9 @@
 import { Definitions, Dependencies } from "shared";
-import BaseNode, { IGCNodeProps, IGCNodePropsWithoutRegistry } from "../BaseNode";
+import BaseNode, { IGCNodeProps } from "../BaseNode";
 import { runCode } from "@/utils/codeExecution";
 import useStore from "@/store/store";
 import { RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
 type CodeData = {
 	code: string;
@@ -12,19 +13,22 @@ type CodeData = {
 };
 
 type IGCCodeNodeData<T = {}> = T & {
-    codeData: CodeData;
-}
+	codeData: CodeData;
+};
 
-export type IGCCodeNodePropsWithoutRegistry<T = {}> = IGCNodePropsWithoutRegistry<IGCCodeNodeData & T>;
-export type IGCCodeNodeProps<T = {}> = IGCCodeNodePropsWithoutRegistry<T> & RegistryComponent;
+export type IGCCodeNodeProps<T = {}> = IGCNodeProps<IGCCodeNodeData & T>;
 
-export const CodeNode: IGCCodeNodePropsWithoutRegistry = (props) => {
-    const { projectDirectory } = useStore();
+export const RawCodeNode: IGCCodeNodeProps = (props) => {
+	const { projectDirectory } = useStore();
 
-    const handleRun = () => {
+	const handleRun = () => {
 		console.log("Run action triggered for node:", props.id);
 		if (props.data.codeData !== undefined && projectDirectory !== null) {
-			runCode(props.data.codeData.code, props.id, props.data.codeData.scope);
+			runCode(
+				props.data.codeData.code,
+				props.id,
+				props.data.codeData.scope,
+			);
 		}
 
 		// // Select the node
@@ -42,15 +46,26 @@ export const CodeNode: IGCCodeNodePropsWithoutRegistry = (props) => {
 		// 		return edge;
 		// 	});
 		// });
-
 	};
-    return (
-        <BaseNode {...props} data={{
-            ...props.data,
-            handleRun: handleRun,
-        }}/>
-    );
-    
+	return (
+		<BaseNode
+			{...props}
+			data={{
+				...props.data,
+				handleRun: handleRun,
+			}}
+		/>
+	);
 };
+
+const CodeNode: IGCCodeNodeProps & RegistryComponent = createComponent(
+	RawCodeNode,
+	"CodeNode",
+	"Code Node",
+	{
+		parentComponent: BaseNode,
+		abstract: true,
+	},
+);
 
 export default CodeNode;

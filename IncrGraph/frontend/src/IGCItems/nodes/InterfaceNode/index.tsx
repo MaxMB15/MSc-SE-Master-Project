@@ -1,16 +1,28 @@
 import "./InterfaceNode.css";
 import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 import { STYLES } from "@/styles/constants";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-const InterfaceNode: IGCCodeNodeProps = ( props ) => (
-	<CodeNode {...props} data={{
-        ...props.data,
-        backgroundColor: InterfaceNode.COLOR
-    }}/>
+const RawInterfaceNode: IGCCodeNodeProps = (props) => (
+	<CodeNode
+		{...props}
+		data={{
+			...props.data,
+			backgroundColor: InterfaceNode.color,
+		}}
+	/>
 );
-InterfaceNode.NAME = "InterfaceNode";
-InterfaceNode.COLOR = STYLES.interfaceNodeColor;
-InterfaceNode.TYPE = "node";
-InterfaceNode.SETABLE = true;
+
+const InterfaceNode: IGCCodeNodeProps & RegistryComponent = createComponent(
+	RawInterfaceNode,
+	"InterfaceNode",
+	"Interface Node",
+	{
+		color: STYLES.interfaceNodeColor,
+		parentComponent: CodeNode,
+		settable: true,
+	},
+);
 
 export default InterfaceNode;

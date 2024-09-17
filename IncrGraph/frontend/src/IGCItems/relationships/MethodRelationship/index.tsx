@@ -5,8 +5,10 @@ import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 import { useStore as reactflowStore } from "reactflow";
 import useStore from "@/store/store";
 import { callAnalyze } from "@/requests";
+import { RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
-const MethodRelationship: IGCRelationshipProps = (props) => {
+const RawMethodRelationship: IGCRelationshipProps = (props) => {
 	const { setNodes } = useStore();
 	const sourceNode = reactflowStore(
 		useCallback(
@@ -59,14 +61,22 @@ const MethodRelationship: IGCRelationshipProps = (props) => {
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: MethodRelationship.COLOR,
+				backgroundColor: MethodRelationship.color,
 			}}
 		/>
 	);
 };
-MethodRelationship.NAME = "MethodRelationship";
-MethodRelationship.COLOR = STYLES.methodRelationshipColor;
-MethodRelationship.TYPE = "relationship";
-MethodRelationship.SETABLE = true;
+
+const MethodRelationship: IGCRelationshipProps & RegistryComponent =
+	createComponent(
+		RawMethodRelationship,
+		"MethodRelationship",
+		"MethodRelationship",
+		{
+			color: STYLES.methodRelationshipColor,
+			parentComponent: BaseRelationship,
+			settable: true,
+		},
+	);
 
 export default MethodRelationship;

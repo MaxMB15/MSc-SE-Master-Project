@@ -1,10 +1,5 @@
 import { ComponentType, useCallback } from "react";
-import {
-	useStore,
-	EdgeProps,
-	MarkerType,
-	EdgeLabelRenderer,
-} from "reactflow";
+import { useStore, EdgeProps, MarkerType, EdgeLabelRenderer } from "reactflow";
 import { STYLES } from "@/styles/constants";
 
 import {
@@ -12,6 +7,7 @@ import {
 	createSmartSelfLoopPath,
 } from "../CustomConnectionLine";
 import { Point, RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
 // interface BaseRelationshipProps extends EdgeProps {
 // 	id: string;
@@ -19,21 +15,22 @@ import { Point, RegistryComponent } from "@/types/frontend";
 // 	target: string;
 // 	style?: React.CSSProperties;
 // 	data?: {
-		
+
 // 	};
 // 	selected?: boolean;
 // }
 export type IGCRelationshipData<T = {}> = T & {
 	backgroundColor?: string;
-    offset?: number;
-    label?: string;
-    labelRadius?: number;
+	offset?: number;
+	label?: string;
+	labelRadius?: number;
 };
 
+export type IGCRelationshipProps<T = {}> = React.FC<
+	EdgeProps<IGCRelationshipData<T>>
+>;
 
-export type IGCRelationshipProps<T={}> = React.FC<EdgeProps<IGCRelationshipData<T>>> & RegistryComponent;
-
-const BaseRelationship: IGCRelationshipProps = ({
+const RawBaseRelationship: IGCRelationshipProps = ({
 	id,
 	source,
 	target,
@@ -41,7 +38,6 @@ const BaseRelationship: IGCRelationshipProps = ({
 	data,
 	selected,
 }) => {
-    
 	const sourceNode = useStore(
 		useCallback((store) => store.nodeInternals.get(source), [source]),
 	);
@@ -58,11 +54,17 @@ const BaseRelationship: IGCRelationshipProps = ({
 	if (source === target) {
 		const samePathEdges = useStore((store) =>
 			store.edges
-				.filter((edge) => edge.hidden !== true && (edge.source === source && edge.target === target) && source === target)
+				.filter(
+					(edge) =>
+						edge.hidden !== true &&
+						edge.source === source &&
+						edge.target === target &&
+						source === target,
+				)
 				.map((edge) => edge.id),
 		);
 		const selfPath = createSmartSelfLoopPath(sourceNode, id, samePathEdges);
-        edgePath = selfPath.path;
+		edgePath = selfPath.path;
 		labelPoint = selfPath.labelPoint;
 	} else {
 		const samePathEdges = useStore((store) =>
@@ -199,11 +201,18 @@ const BaseRelationship: IGCRelationshipProps = ({
 		</>
 	);
 };
-BaseRelationship.NAME = "BaseRelationship";
-BaseRelationship.COLOR = STYLES.defaultNodeColor;
-BaseRelationship.TYPE = "relationship";
-BaseRelationship.SETABLE = true;
 
+const BaseRelationship: IGCRelationshipProps & RegistryComponent =
+	createComponent(
+		RawBaseRelationship,
+		"BaseRelationship",
+		"Base Relationship",
+		{
+			color: STYLES.defaultEdgeColor,
+			type: "relationship",
+			settable: true,
+		},
+	);
 export default BaseRelationship;
 
 export const defaultEdgeOptions = {

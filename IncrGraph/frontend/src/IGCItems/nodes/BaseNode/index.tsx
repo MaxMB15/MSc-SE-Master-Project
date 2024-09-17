@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-    Node,
+	Node,
 	Handle,
 	NodeProps,
 	Position,
@@ -13,21 +13,21 @@ import ContextMenu from "@components/ContextMenu";
 import "./BaseNode.css";
 import { getNodeId } from "../../utils/utils";
 import { RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
 const connectionNodeIdSelector = (state: ReactFlowState) =>
 	state.connectionNodeId;
 
 export type IGCNodeData<T = {}> = T & {
 	label: string;
-    backgroundColor?: string;
+	backgroundColor?: string;
 	children?: React.ReactNode;
-    handleRun?: () => void;
+	handleRun?: () => void;
 };
 
-export type IGCNodePropsWithoutRegistry<T={}> = React.FC<NodeProps<IGCNodeData<T>>>;
-export type IGCNodeProps<T={}> = IGCNodePropsWithoutRegistry<T> & RegistryComponent;
+export type IGCNodeProps<T = {}> = React.FC<NodeProps<IGCNodeData<T>>>;
 
-const BaseNode: IGCNodeProps = ({ id, data }) => {
+const RawBaseNode: IGCNodeProps = ({ id, data }) => {
 	const { setNodes } = useStore();
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
@@ -52,15 +52,15 @@ const BaseNode: IGCNodeProps = ({ id, data }) => {
 	const handleDelete = () => {
 		console.log("Delete action triggered for node:", id);
 		setNodes((prevNodes) => prevNodes.filter((node) => node.id !== id));
-        handleClose();
+		handleClose();
 	};
-    const contextMenuAction = (action: (() => void) | undefined) => {
-        if (action === undefined) {
-            return undefined;
-        }
-        action();
-        handleClose();
-    }
+	const contextMenuAction = (action: (() => void) | undefined) => {
+		if (action === undefined) {
+			return undefined;
+		}
+		action();
+		handleClose();
+	};
 
 	const connectionNodeId = reactflowStore(connectionNodeIdSelector);
 	const defaultData = {
@@ -83,7 +83,9 @@ const BaseNode: IGCNodeProps = ({ id, data }) => {
 						? isTarget
 							? STYLES.nodeDropColor
 							: STYLES.nodePickColor
-						: (data.backgroundColor !== undefined ? data.backgroundColor : BaseNode.COLOR),
+						: data.backgroundColor !== undefined
+						? data.backgroundColor
+						: BaseNode.color,
 				}}
 			>
 				{data.children !== undefined && data.children}
@@ -140,24 +142,32 @@ const BaseNode: IGCNodeProps = ({ id, data }) => {
 		</div>
 	);
 };
-BaseNode.NAME = "BaseNode";
-BaseNode.COLOR = STYLES.defaultNodeColor;
-BaseNode.TYPE = "node";
-BaseNode.SETABLE = true;
+const BaseNode: IGCNodeProps & RegistryComponent = createComponent(
+	RawBaseNode,
+	"BaseNode",
+	"Base Node",
+	{
+		color: STYLES.defaultNodeColor,
+		type: "node",
+		settable: true,
+	},
+);
 
-export const createBaseNode = (curNodes: Node<IGCNodeData>[]): Node<IGCNodeData> => { 
-    return {
-        id: getNodeId(curNodes),
-        type: BaseNode.NAME,
-        data: { 
-            label: `Node ${curNodes.length}`, 
-        },
-        position: {
-            x: Math.random() * 500 - 250,
-            y: Math.random() * 500 - 250,
-        },
-        selected: true,
-    }
-}
+export const createBaseNode = (
+	curNodes: Node<IGCNodeData>[],
+): Node<IGCNodeData> => {
+	return {
+		id: getNodeId(curNodes),
+		type: BaseNode.key,
+		data: {
+			label: `Node ${curNodes.length}`,
+		},
+		position: {
+			x: Math.random() * 500 - 250,
+			y: Math.random() * 500 - 250,
+		},
+		selected: true,
+	};
+};
 
 export default BaseNode;

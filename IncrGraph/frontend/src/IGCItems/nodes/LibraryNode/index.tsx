@@ -1,16 +1,28 @@
 import "./LibraryNode.css";
 import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 import { STYLES } from "@/styles/constants";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-const LibraryNode: IGCCodeNodeProps = ( props ) => (
-	<CodeNode {...props} data={{
-        ...props.data,
-        backgroundColor: LibraryNode.COLOR
-    }}/>
+const RawLibraryNode: IGCCodeNodeProps = (props) => (
+	<CodeNode
+		{...props}
+		data={{
+			...props.data,
+			backgroundColor: LibraryNode.color,
+		}}
+	/>
 );
-LibraryNode.NAME = "LibraryNode";
-LibraryNode.COLOR = STYLES.libraryNodeColor;
-LibraryNode.TYPE = "node";
-LibraryNode.SETABLE = true;
+
+const LibraryNode: IGCCodeNodeProps & RegistryComponent = createComponent(
+	RawLibraryNode,
+	"LibraryNode",
+	"Library Node",
+	{
+		color: STYLES.libraryNodeColor,
+		parentComponent: CodeNode,
+		settable: true,
+	},
+);
 
 export default LibraryNode;

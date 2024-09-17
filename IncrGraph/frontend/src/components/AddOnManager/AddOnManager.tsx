@@ -5,7 +5,7 @@ import { callAddModule, callRemoveModule } from "@/requests";
 import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
 import path from "path-browserify";
 import { useComponentRegistry } from "@/hooks/useComponentRegistry";
-import { fetchAndRegisterComponents } from "@/utils/componentCache";
+import { fetchAndRegisterComponents, loadComponentCache } from "@/utils/componentCache";
 
 // MUI Icons
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -36,19 +36,20 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 	): boolean => {
 		return list.some(
 			(component) =>
-				component.object.NAME === moduleComponent.object.NAME &&
+				component.object.key === moduleComponent.object.key &&
 				component.modulePath === moduleComponent.modulePath,
 		);
 	};
 
 	const toggleSelection = (moduleComponent: ModuleComponentValues<any>) => {
+
 		setSelectedItems((prevSelected) =>
 			moduleComponentExists(moduleComponent, prevSelected)
 				? prevSelected.filter(
 						(selectedItem) => selectedItem !== moduleComponent,
 				  )
 				: [...prevSelected, moduleComponent],
-		);
+		);        
 	};
 
 	const getListFromComponentTypes = (
@@ -62,13 +63,13 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 			)
 			.map((component: ModuleComponentValues<any>) => (
 				<li
-					key={`${component.modulePath}~${component.object.NAME}`}
+					key={`${component.modulePath}~${component.object.key}`}
 					className={`${styles.listItem} ${component.enabled ? "" : styles.disabled} ${
 						selectedItems.includes(component) ? styles.selected : ""
 					}`}
 					onClick={() => toggleSelection(component)}
 				>
-					{component.object.NAME}
+					{component.object.key}
 				</li>
 			));
 	};

@@ -1,7 +1,6 @@
 import useStore from "@/store/store";
 import { ModuleComponentStored, ModuleComponentValues } from "@/types/frontend";
 import {
-	loadComponentCache,
 	updateComponentCache,
 } from "@/utils/componentCache";
 
@@ -17,55 +16,47 @@ export const useComponentRegistry = () => {
 			relationships: {},
 			views: {},
 		};
-		if (component.object.TYPE === "node") {
+		if (component.object.type === "node") {
 			allModuleComponentStored.nodes = {
-				[component.object.NAME]: component,
+				[component.object.key]: component,
 			};
-		} else if (component.object.TYPE === "relationship") {
+		} else if (component.object.type === "relationship") {
 			allModuleComponentStored.relationships = {
-				[component.object.NAME]: component,
+				[component.object.key]: component,
 			};
-		} else if (component.object.TYPE === "view") {
+		} else if (component.object.type === "view") {
 			allModuleComponentStored.views = {
-				[component.object.NAME]: component,
+				[component.object.key]: component,
 			};
 		}
 		return allModuleComponentStored;
 	};
 
 	const updateComponent = (component: ModuleComponentValues<any>) => {
-		if (component.object.TYPE === "node") {
+		if (component.object.type === "node") {
 			setNodeTypes((prevNodeTypes) => {
-				prevNodeTypes[component.object.NAME] = component;
+				prevNodeTypes[component.object.key] = component;
 				return prevNodeTypes;
 			});
-		} else if (component.object.TYPE === "relationship") {
+		} else if (component.object.type === "relationship") {
 			setRelationshipTypes((prevRelationshipTypes) => {
-				prevRelationshipTypes[component.object.NAME] = component;
+				prevRelationshipTypes[component.object.key] = component;
 				return prevRelationshipTypes;
 			});
-		} else if (component.object.TYPE === "view") {
+		} else if (component.object.type === "view") {
 			setViewTypes((prevViewTypes) => {
-				prevViewTypes[component.object.NAME] = component;
+				prevViewTypes[component.object.key] = component;
 				return prevViewTypes;
 			});
 		}
 
         // Update the cache
-		let webCache = loadComponentCache();
-		if (webCache === null) {
-			return;
-		}
-		webCache = webCache.map((entry) => {
-			if (
-				entry.modulePath === component.modulePath &&
-				entry.name === component.object.NAME
-			) {
-				entry.enabled = component.enabled;
-			}
-			return entry;
-		});
-		updateComponentCache(webCache);
+		const cacheEntry = {
+            key: component.object.key,
+            modulePath: component.modulePath,
+            enabled: component.enabled,
+        };
+		updateComponentCache(cacheEntry);
 	};
 	return {
 		registerComponent,

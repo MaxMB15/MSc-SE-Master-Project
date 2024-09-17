@@ -1,24 +1,29 @@
 import { STYLES } from "@/styles/constants";
 import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
+import { RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
-const OverridesRelationship: IGCRelationshipProps = (
-	props,
-) => {
+const RawOverridesRelationship: IGCRelationshipProps = (props) => {
 	return (
 		<BaseRelationship
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: OverridesRelationship.COLOR,
-                labelRadius: 10
+				backgroundColor: OverridesRelationship.color,
+				labelRadius: 10,
 			}}
 		/>
 	);
 };
-OverridesRelationship.NAME = "OverridesRelationship";
-OverridesRelationship.COLOR = STYLES.overridesRelationshipColor;
-OverridesRelationship.TYPE = "relationship";
-OverridesRelationship.SETABLE = true;
+const OverridesRelationship: IGCRelationshipProps & RegistryComponent =
+	createComponent(
+		RawOverridesRelationship,
+		"OverridesRelationship",
+		"OverridesRelationship",
+		{
+			color: STYLES.overridesRelationshipColor,
+			parentComponent: BaseRelationship,
+		},
+	);
 
 export default OverridesRelationship;
-

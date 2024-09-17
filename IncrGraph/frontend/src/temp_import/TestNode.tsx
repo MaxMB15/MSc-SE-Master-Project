@@ -1,14 +1,22 @@
 import BaseNode, { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
+import { createComponent } from "@/utils/componentCache";
 
-const TestNode: IGCNodeProps = ( props ) => (
+const TestNodeComponent: IGCNodeProps = ( props ) => (
 	<BaseNode {...props} data={{
         ...props.data,
-        backgroundColor: TestNode.COLOR
+        backgroundColor: TestNode.color
     }}/>
 );
-TestNode.NAME = "TestNode";
-TestNode.COLOR = "cyan";
-TestNode.TYPE = "node";
-TestNode.SETABLE = true;
+
+const TestNode = createComponent(
+    TestNodeComponent,
+    "TestNode",
+    "Test Node",
+    {
+        color: "cyan",
+        parentComponent: BaseNode,
+        settable: true,
+    },
+);
 
 export default TestNode;

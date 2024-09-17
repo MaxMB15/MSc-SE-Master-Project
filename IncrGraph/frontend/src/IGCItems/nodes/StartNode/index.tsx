@@ -2,33 +2,31 @@ import React from "react";
 import "./StartNode.css";
 import { Handle, Position } from "reactflow";
 import useStore from "@/store/store";
-import { IGCNodeProps } from "../BaseNode";
+import BaseNode, { IGCNodeProps } from "../BaseNode";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-
-const StartNode: IGCNodeProps = () => {
-    const {
-		setNodes,
-        setEdges,
-	} = useStore();
-    // Override single click and unselect all nodes
+const RawStartNode: IGCNodeProps = () => {
+	const { setNodes, setEdges } = useStore();
+	// Override single click and unselect all nodes
 	const onNodeClick = (event: React.MouseEvent<HTMLElement>) => {
 		event.stopPropagation(); // Prevent the default single click behavior
-        // Deselect All Nodes and Edges
-        setNodes((nodes) => {
-            let newNodes = nodes.map((node) => {
-                node.selected = false;
-                return node;
-            });
-            return [...newNodes];
-        });
+		// Deselect All Nodes and Edges
+		setNodes((nodes) => {
+			let newNodes = nodes.map((node) => {
+				node.selected = false;
+				return node;
+			});
+			return [...newNodes];
+		});
 
-        setEdges((edges) => {
-            let newEdges = edges.map((edge) => {
-                edge.selected = false;
-                return edge;
-            });
-            return [...newEdges];
-        });
+		setEdges((edges) => {
+			let newEdges = edges.map((edge) => {
+				edge.selected = false;
+				return edge;
+			});
+			return [...newEdges];
+		});
 	};
 
 	return (
@@ -41,7 +39,7 @@ const StartNode: IGCNodeProps = () => {
 						left: "50%",
 						top: "50%",
 						transform: "translate(-50%, -50%)",
-                        border: "1px solid transparent",
+						border: "1px solid transparent",
 					}}
 				/>
 			</div>
@@ -49,9 +47,13 @@ const StartNode: IGCNodeProps = () => {
 	);
 };
 
-StartNode.NAME = "StartNode";
-StartNode.COLOR = "cyan";
-StartNode.TYPE = "node";
-StartNode.SETABLE = false;
+const StartNode: IGCNodeProps & RegistryComponent = createComponent(
+	RawStartNode,
+	"StartNode",
+	"Start Node",
+	{
+		parentComponent: BaseNode,
+	},
+);
 
 export default StartNode;

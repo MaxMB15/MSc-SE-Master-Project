@@ -284,7 +284,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		return;
 	}
 	return (
-		<div className="selection-pane-formControl">
+		<div className="selection-pane-formControl" style={{marginBottom: "100px"}}>
 			{selectedItems.length !== 1 && (
 				<CustomSelect
 					id="item-select"
@@ -346,29 +346,19 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	);
 };
 
-const insertSpaceBeforeUppercase = (str: string): string => {
-    return str.replace(/([A-Z])/g, (_, p1, offset) => {
-      return offset > 0 ? ` ${p1}` : p1; // Add space only if it's not the first character
-    });
-  }
-
-const cleanLabel = (rc: RegistryComponent): string => {
-    return insertSpaceBeforeUppercase(rc.NAME.toUpperCase().endsWith(rc.TYPE.toUpperCase()) ? rc.NAME.slice(0, rc.NAME.length-rc.TYPE.length) : rc.NAME);
-}
-
 export const createSelectionList = (
 	componentTypes: ModuleComponent<any>,
 ): SelectOption[] => {
 	const mappedArray = Object.values(componentTypes)
 		.filter(
 			(component: ModuleComponentValues<any>) =>
-				component.object.SETABLE !== undefined && component.object.SETABLE === true,
+				component.object.settable !== undefined && component.object.settable === true,
 		)
 		.map((component: ModuleComponentValues<any>) => {
 			return {
-				value: component.object.NAME,
-				label: cleanLabel(component.object),
-				style: { backgroundColor: component.object.COLOR },
+				value: component.object.key,
+				label: component.object.displayName,
+				style: { backgroundColor: component.object.color },
 			};
 		});
 	return mappedArray;

@@ -1,22 +1,29 @@
 import { STYLES } from "@/styles/constants";
 import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
+import { RegistryComponent } from "@/types/frontend";
+import { createComponent } from "@/utils/componentCache";
 
-const DocumentationRelationship: IGCRelationshipProps = (
-	props,
-) => {
+const RawDocumentationRelationship: IGCRelationshipProps = (props) => {
 	return (
 		<BaseRelationship
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: DocumentationRelationship.COLOR,
+				backgroundColor: DocumentationRelationship.color,
 			}}
 		/>
 	);
 };
-DocumentationRelationship.NAME = "DocumentationRelationship";
-DocumentationRelationship.COLOR = STYLES.documentationRelationshipColor;
-DocumentationRelationship.TYPE = "relationship";
-DocumentationRelationship.SETABLE = false;
+
+const DocumentationRelationship: IGCRelationshipProps & RegistryComponent =
+	createComponent(
+		RawDocumentationRelationship,
+		"DocumentationRelationship",
+		"DocumentationRelationship",
+		{
+			color: STYLES.documentationRelationshipColor,
+			parentComponent: BaseRelationship,
+		},
+	);
 
 export default DocumentationRelationship;

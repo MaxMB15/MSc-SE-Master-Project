@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+	useState,
+	useEffect,
+	useRef,
+	useCallback,
+	useMemo,
+} from "react";
 import { Box, Tab, Tabs } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { PlayArrow } from "@mui/icons-material";
@@ -21,9 +27,10 @@ import MarkdownDisplay from "../MarkdownDisplay";
 import { getIncomingNodes } from "../../IGCItems/utils/utils";
 import style from "./FileEditor.module.css";
 import { STYLES } from "@/styles/constants";
-import { ComponentReference, IGCViewProps } from "@/IGCItems/views/BaseView";
+import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import { nodeTypes } from "@/IGCItems/utils/types";
 import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
+import { RegistryComponent } from "@/types/frontend";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -88,9 +95,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		currentSessionId,
 		codeRunData,
 		mode,
-        nodeTypes,
-        relationshipTypes,
-        viewTypes,
+		nodeTypes,
+		relationshipTypes,
+		viewTypes,
 	} = useStore();
 
 	// STATE
@@ -854,11 +861,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		setActiveTab(newValue);
 	};
 
-	const createTabs = (views: IGCViewProps[]): JSX.Element => {
-        if(views.
-            length <= 1){
-            return <></>;
-        }
+	const createTabs = (views: (IGCViewProps & RegistryComponent)[]): JSX.Element => {
+		if (views.length <= 1) {
+			return <></>;
+		}
 		return (
 			<Tabs
 				value={activeTab}
@@ -875,50 +881,84 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				}}
 			>
 				{views.map((view, index) => {
-					return <Tab label={view.NAME} key={index} />;
+					return <Tab label={view.displayName} key={index} />;
 				})}
 			</Tabs>
 		);
 	};
-    const createTabContent = (view: IGCViewProps[]): JSX.Element => {
-        if(view.length === 0){
-            return <></>;
+	const createTabContent = (view: IGCViewProps[]): JSX.Element => {
+		if (view.length === 0) {
+			return <></>;
+		}
+		const Component = view[activeTab];
+		return <Component />;
+	};
+	const isComponentOfType = (
+		component: RegistryComponent,
+		typeComponent: RegistryComponent,
+	): boolean => {
+        const componentTypeHierarchy = component.typeHierarchy;
+        const tcSymbol = typeComponent.typeSymbol;
+        if(componentTypeHierarchy === undefined){
+            return false;
         }
-        const Component = view[activeTab]
-        return <Component />;
-    }
-
-    const componentIncludes = (component: IGCNodeProps, components: ComponentReference[]): boolean => {
-        return true;
-    }
-    const getViews = (): IGCViewProps[] => {
-        const selectedComponent = selectedItem?.item;
-        const allViews = Object.values(viewTypes).map((vt) => vt.object);
-        // General views
-        if(selectedComponent === undefined){
-            return allViews.filter((view) => {view.forComponents.length === 0});
-        }
-        else if(selectedComponent.type === "node"){
-            const componentType = selectedComponent.object.type;
-            if(componentType === undefined || !(componentType in nodeTypes)){
-                return [];
+		for(let i = 0; i < componentTypeHierarchy.length; i++){
+            if(componentTypeHierarchy[i] === tcSymbol){
+                return true;
             }
-            const realComponent = nodeTypes[componentType].object;
-            return allViews.filter((view) => componentIncludes(realComponent, view.forComponents));
         }
-        else if(selectedComponent.type === "relationship"){
-            const componentType = selectedComponent.object.type;
-            if(componentType === undefined || !(componentType in relationshipTypes)){
-                return [];
-            }
-            const realComponent = relationshipTypes[componentType].object;
-            return allViews.filter((view) => view.forComponents.includes(realComponent));
-        }
-        return [];
-    }
-    const views = useMemo(() => getViews(), [selectedItem]);
-    const tabs = useMemo(() => createTabs(views), [views]);
-    const viewContent = useMemo(() => createTabContent(views), [views, activeTab]);
+        return false;
+	};
+	const componentIncludes = (
+		component: RegistryComponent,
+		forComponents: RegistryComponent[],
+	): boolean => {
+		for (let i = 0; i < forComponents.length; i++) {
+			const ref = forComponents[i];
+			if (isComponentOfType(component, ref)) {
+				return true;
+			}
+		}
+		return false;
+	};
+	const getViews = (): (IGCViewProps & RegistryComponent)[] => {
+		const selectedComponent = selectedItem?.item;
+		const allViews = Object.values(viewTypes).map((vt) => vt.object);
+		// General views
+		if (selectedComponent === undefined) {
+			return allViews.filter((view) => {
+				view.forComponents.length === 0;
+			});
+		} else if (selectedComponent.type === "node") {
+			const componentType = selectedComponent.object.type;
+			if (componentType === undefined || !(componentType in nodeTypes)) {
+				return [];
+			}
+			const realComponent: IGCNodeProps & RegistryComponent = nodeTypes[componentType].object;
+			return allViews.filter((view) =>
+				componentIncludes(realComponent, view.forComponents),
+			);
+		} else if (selectedComponent.type === "relationship") {
+			const componentType = selectedComponent.object.type;
+			if (
+				componentType === undefined ||
+				!(componentType in relationshipTypes)
+			) {
+				return [];
+			}
+			const realComponent = relationshipTypes[componentType].object;
+			return allViews.filter((view) =>
+				view.forComponents.includes(realComponent),
+			);
+		}
+		return [];
+	};
+	const views = useMemo(() => getViews(), [selectedItem]);
+	const tabs = useMemo(() => createTabs(views), [views]);
+	const viewContent = useMemo(
+		() => createTabContent(views),
+		[views, activeTab],
+	);
 
 	return (
 		<ResizableBox
@@ -1019,8 +1059,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 						}}
 					>
 						<div className={style.tabsContainer}>
-                            {tabs}
-                            {viewContent}
+							{tabs}
+							{viewContent}
 							<Tabs
 								value={activeTab}
 								onChange={handleTabChange}
@@ -1038,7 +1078,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								<Tab label="Output" />
 								<Tab label="Output" />
 								<Tab label="Output" />
-                                
+
 								{/* <Tab
 									label="Errors"
                                     sx={{ padding: "0px 10px"}}
@@ -1131,7 +1171,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					>
 						<SelectionPane />
 					</div> */}
-                    <SelectionPane />
+					<SelectionPane />
 				</div>
 			</div>
 		</ResizableBox>

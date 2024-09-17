@@ -1,7 +1,7 @@
 [
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes",
-    "last_updated": "2024-09-16T21:37:17.198Z",
+    "last_updated": "2024-09-17T22:48:31.308Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes/AbstractClassNode/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes/BaseNode/index.tsx",
@@ -21,7 +21,7 @@
   },
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships",
-    "last_updated": "2024-09-16T21:37:17.199Z",
+    "last_updated": "2024-09-17T22:48:31.309Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships/BaseRelationship/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships/CustomConnectionLine.tsx",
@@ -35,7 +35,7 @@
   },
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views",
-    "last_updated": "2024-09-16T21:37:17.199Z",
+    "last_updated": "2024-09-17T22:48:31.310Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/BaseView/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/NodeCodeView/index.tsx"

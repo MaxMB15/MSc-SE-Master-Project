@@ -1,18 +1,30 @@
 import "./ImportNode.css";
 import BaseNode, { IGCNodeProps } from "../BaseNode";
 import { STYLES } from "@/styles/constants";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-const ImportNode: IGCNodeProps = ( props ) => (
-	<BaseNode {...props} data={{
-        ...props.data,
-        children: <ImportNodeDisplay />,
-        backgroundColor: ImportNode.COLOR
-    }}/>
+const RawImportNode: IGCNodeProps = (props) => (
+	<BaseNode
+		{...props}
+		data={{
+			...props.data,
+			children: <ImportNodeDisplay />,
+			backgroundColor: ImportNode.color,
+		}}
+	/>
 );
-ImportNode.NAME = "ImportNode";
-ImportNode.COLOR = STYLES.importNodeColor;
-ImportNode.TYPE = "node";
-ImportNode.SETABLE = true;
+
+const ImportNode: IGCNodeProps & RegistryComponent = createComponent(
+	RawImportNode,
+	"ImportNode",
+	"Import Node",
+	{
+		color: STYLES.importNodeColor,
+		parentComponent: BaseNode,
+		settable: true,
+	},
+);
 
 const ImportNodeDisplay: React.FC = () => {
 	return (

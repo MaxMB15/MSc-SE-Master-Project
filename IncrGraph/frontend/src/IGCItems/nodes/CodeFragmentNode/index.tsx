@@ -1,16 +1,28 @@
 import "./CodeFragmentNode.css";
 import CodeNode, { IGCCodeNodeProps } from "../CodeNode";
 import { STYLES } from "@/styles/constants";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-const CodeFragmentNode: IGCCodeNodeProps = ( props ) => (
-	<CodeNode {...props} data={{
-        ...props.data,
-        backgroundColor: CodeFragmentNode.COLOR
-    }}/>
+const RawCodeFragmentNode: IGCCodeNodeProps = (props) => (
+	<CodeNode
+		{...props}
+		data={{
+			...props.data,
+			backgroundColor: CodeFragmentNode.color,
+		}}
+	/>
 );
-CodeFragmentNode.NAME = "CodeFragmentNode";
-CodeFragmentNode.COLOR = STYLES.codeFragmentNodeColor;
-CodeFragmentNode.TYPE = "node";
-CodeFragmentNode.SETABLE = true;
+
+const CodeFragmentNode: IGCCodeNodeProps & RegistryComponent = createComponent(
+	RawCodeFragmentNode,
+	"CodeFragmentNode",
+	"Code Fragment Node",
+	{
+		color: STYLES.codeFragmentNodeColor,
+		parentComponent: CodeNode,
+		settable: true,
+	},
+);
 
 export default CodeFragmentNode;

@@ -1,23 +1,30 @@
 import { STYLES } from "@/styles/constants";
 import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
+import { createComponent } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
 
-const InheritanceRelationship: IGCRelationshipProps = (
-	props,
-) => {
+const RawInheritanceRelationship: IGCRelationshipProps = (props) => {
 	return (
 		<BaseRelationship
 			{...props}
 			data={{
 				...props.data,
-				backgroundColor: InheritanceRelationship.COLOR,
-                labelRadius: 10
+				backgroundColor: InheritanceRelationship.color,
+				labelRadius: 10,
 			}}
 		/>
 	);
 };
-InheritanceRelationship.NAME = "InheritanceRelationship";
-InheritanceRelationship.COLOR = STYLES.inheritanceRelationshipColor;
-InheritanceRelationship.TYPE = "relationship";
-InheritanceRelationship.SETABLE = true;
+
+const InheritanceRelationship: IGCRelationshipProps & RegistryComponent =
+	createComponent(
+		RawInheritanceRelationship,
+		"InheritanceRelationship",
+		"InheritanceRelationship",
+		{
+			color: STYLES.inheritanceRelationshipColor,
+			parentComponent: BaseRelationship,
+		},
+	);
 
 export default InheritanceRelationship;

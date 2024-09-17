@@ -119,23 +119,29 @@ export interface TreeItemState {
 }
 
 export interface RegistryComponent {
-	NAME: string;
-	COLOR: string;
-	TYPE: "node" | "relationship" | "view";
-	SETABLE?: boolean; // Default is false
+	key: string;
+    displayName: string;
+	color: string;
+	type: "node" | "relationship" | "view";
+	settable: boolean; // Default is false
+    typeSymbol: string;
+    abstract?: boolean; // Default is false
+    typeHierarchy?: string[]; // Default is []
 }
 
-export type ModuleComponentValues<T extends RegistryComponent> = {
+export type ModuleComponentValues<T=RegistryComponent> = {
 	object: T;
 	modulePath: string;
 	enabled: boolean;
 };
-export type ModuleComponent<T extends RegistryComponent> = {
+export type ModuleComponent<T=RegistryComponent> = {
 	[key: string]: ModuleComponentValues<T>;
 };
 
-export interface ModuleComponentStored {
-	nodes: ModuleComponent<IGCNodeProps>;
-	relationships: ModuleComponent<IGCRelationshipProps>;
-	views: ModuleComponent<IGCViewProps>;
+export interface ModuleComponentStored<T={}> {
+	nodes: ModuleComponent<IGCNodeProps<T> & RegistryComponent>;
+	relationships: ModuleComponent<IGCRelationshipProps<T> & RegistryComponent>;
+	views: ModuleComponent<IGCViewProps<T> & RegistryComponent>;
 }
+
+export type IGCComponent<T={}> = IGCNodeProps<T> | IGCRelationshipProps<T> | IGCViewProps<T>;

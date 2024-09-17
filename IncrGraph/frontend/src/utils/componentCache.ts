@@ -1,29 +1,29 @@
-import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
-import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
 import { IGCViewProps } from "@/IGCItems/views/BaseView";
 import { callGetComponents } from "@/requests";
 import useStore from "@/store/store";
 import {
-	ModuleComponent,
 	ModuleComponentStored,
 	ModuleComponentValues,
+	RegistryComponent,
 } from "@/types/frontend";
 const CACHE_KEY = "component_cache1";
 
 interface CacheEntry {
-	name: string;
+	key: string;
 	modulePath: string;
 	enabled: boolean;
 }
 
 // Function to load cache from localStorage
-export const loadComponentCache = (): CacheEntry[] | null => {
+export const loadComponentCache = (): { [key: string]: CacheEntry} | null => {
 	const cache = localStorage.getItem(CACHE_KEY);
 	return cache ? JSON.parse(cache) : null;
 };
 
 // Function to update cache in localStorage
-export const updateComponentCache = (cache: CacheEntry[]): void => {
+export const updateComponentCache = (updateEntry: CacheEntry): void => {
+    const cache = loadComponentCache() ?? {};
+    cache[updateEntry.key] = updateEntry;
 	localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
 };
 
@@ -44,25 +44,28 @@ export const importAndCategorizeComponents = async (
 		const componentModule = await import(`${componentFilePath}`);
 
 		// Check all exports
-		Object.keys(componentModule).forEach((exportedKey) => {
+		const exportedKeys = Object.keys(componentModule);
+		for (let i = 0; i < exportedKeys.length; i++) {
+			const exportedKey = exportedKeys[i];
 			const exportedComponent = componentModule[exportedKey];
 
 			// Detect component type based on properties
 			if (
 				["node", "relationship", "view"].includes(
-					exportedComponent?.TYPE,
+					exportedComponent?.type,
 				)
 			) {
+				// Skip abstract components
+				if (exportedComponent.abstract) {
+					continue;
+				}
+
 				// See if cache has enable/disable status
 				let componentEnabled = true;
 				const webCache = loadComponentCache();
-				if (webCache !== null) {
-					const cacheEntry = webCache.find(
-						(entry) => entry.modulePath === moduleFilePath && entry.name === exportedComponent.NAME,
-					);
-					if (cacheEntry !== undefined) {
-						componentEnabled = cacheEntry.enabled;
-					}
+				if (webCache !== null && exportedComponent.key in webCache) {
+					const cacheEntry = webCache[exportedComponent.key];
+					componentEnabled = cacheEntry.enabled;
 				}
 
 				// Register the component
@@ -88,21 +91,17 @@ export const importAndCategorizeComponents = async (
 
 				// Update the cache
 				const entry: CacheEntry = {
-					name: exportedComponent.NAME,
+					key: exportedComponent.key,
 					modulePath: moduleFilePath,
 					enabled: componentEnabled,
 				};
-				if (webCache === null) {
-					updateComponentCache([entry]);
-				} else {
-					updateComponentCache([...webCache, entry]);
-				}
+				updateComponentCache(entry);
 			} else {
 				console.warn(
 					`Component in ${componentFilePath} with key ${exportedKey} does not match known types`,
 				);
 			}
-		});
+		}
 	} catch (error) {
 		console.error(
 			`Error importing components from ${componentFilePath}:`,
@@ -114,7 +113,9 @@ export const importAndCategorizeComponents = async (
 
 // Function to fetch components from backend and register them
 export const fetchAndRegisterComponents = async (
-	registerComponent: (component: ModuleComponentValues<any>) => ModuleComponentStored,
+	registerComponent: (
+		component: ModuleComponentValues<any>,
+	) => ModuleComponentStored,
 ) => {
 	const { setNodeTypes, setRelationshipTypes, setViewTypes, setModuleData } =
 		useStore.getState();
@@ -159,12 +160,112 @@ export const fetchAndRegisterComponents = async (
 			}
 		}
 
-        // Update the type stores
-        setNodeTypes(() => allModuleComponentStored.nodes);
-        setRelationshipTypes(() => allModuleComponentStored.relationships);
-        setViewTypes(() => allModuleComponentStored.views);
-
+		// Update the type stores
+		setNodeTypes(() => allModuleComponentStored.nodes);
+		setRelationshipTypes(() => allModuleComponentStored.relationships);
+		setViewTypes(() => allModuleComponentStored.views);
 	} catch (error) {
 		console.error("Error fetching components from backend:", error);
 	}
 };
+
+export interface CreateComponentOptions {
+	color?: string;
+	parentComponent?: RegistryComponent;
+	settable?: boolean;
+	abstract?: boolean;
+	type?: "node" | "relationship" | "view";
+}
+
+export const createComponent = <P={}>(
+	component: React.FC<P>,
+	key: string,
+    displayName: string,
+	options: CreateComponentOptions = {},
+): React.FC<P> & RegistryComponent => {
+	const {
+		color = "#ffffff",
+		parentComponent,
+		settable = false,
+		abstract = false,
+		type,
+	} = options;
+
+	const typeSymbol = key;
+
+	// Create a new function that wraps the original component
+	const registryComponent: React.FC<P> & RegistryComponent = (
+		props: P,
+	) => {
+		return component(props);
+	};
+
+	// Assign properties to the new function
+	registryComponent.key = key;
+    registryComponent.displayName = displayName;
+	registryComponent.color = color;
+
+	const t = type ?? parentComponent?.type;
+	if (!t) {
+		throw new Error(
+			"Type must be defined either from the parent component or as an argument",
+		);
+	}
+	registryComponent.type = t;
+	registryComponent.settable = settable;
+	registryComponent.typeSymbol = typeSymbol;
+	registryComponent.abstract = abstract;
+	registryComponent.typeHierarchy = parentComponent
+		? [
+				...(parentComponent.typeHierarchy || []),
+				parentComponent.typeSymbol!,
+		  ]
+		: [];
+	registryComponent.typeHierarchy.push(typeSymbol);
+
+	return registryComponent;
+};
+export interface CreateViewOptions {
+	parentComponent?: RegistryComponent;
+	abstract?: boolean;
+}
+export const createView = <T={}>(
+    component: React.FC<T>,
+	key: string,
+	displayName: string,
+    forComponents: RegistryComponent[],
+	options: CreateViewOptions = {}
+): IGCViewProps<T> & RegistryComponent => {
+    const {
+		parentComponent,
+		abstract = false,
+	} = options;
+
+	const typeSymbol = key;
+
+    // Create a new function that wraps the original component
+	const registryComponent: IGCViewProps<T> & RegistryComponent = (props: T
+	) =>{
+		return component(props);
+	};
+
+    // Assign properties to the new function
+	registryComponent.key = key;
+    registryComponent.displayName = displayName;
+	registryComponent.color = "#ffffff";
+	registryComponent.type = 'view';
+	registryComponent.settable = false;
+	registryComponent.typeSymbol = typeSymbol;
+	registryComponent.abstract = abstract;
+	registryComponent.typeHierarchy = parentComponent
+		? [
+				...(parentComponent.typeHierarchy || []),
+				parentComponent.typeSymbol!,
+		  ]
+		: [];
+	registryComponent.typeHierarchy.push(typeSymbol);
+
+    registryComponent.forComponents = forComponents;
+
+	return registryComponent;
+}

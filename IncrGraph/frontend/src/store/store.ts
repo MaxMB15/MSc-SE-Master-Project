@@ -3,6 +3,7 @@ import {
 	CodeRunData,
 	Item,
 	ModuleComponent,
+	RegistryComponent,
 	SessionData,
 } from "@/types/frontend";
 import { create } from "zustand";
@@ -19,6 +20,10 @@ interface FileHistory {
 type ThemeMode = "light" | "dark";
 
 type Callback = () => void;
+
+type RegisteredNode = IGCNodeProps & RegistryComponent;
+type RegisteredRelationship = IGCRelationshipProps & RegistryComponent;
+type RegisteredView = IGCViewProps & RegistryComponent;
 
 interface State {
 	// VARIABLES
@@ -76,23 +81,23 @@ interface State {
 	setMode: (updater: (prev: ThemeMode) => ThemeMode) => void;
 
 	// Registry for Node, Relationship, and View Components
-	nodeTypes: ModuleComponent<IGCNodeProps>;
+	nodeTypes: ModuleComponent<RegisteredNode>;
 	setNodeTypes: (
 		updater: (
-			prev: ModuleComponent<IGCNodeProps>,
-		) => ModuleComponent<IGCNodeProps>,
+			prev: ModuleComponent<RegisteredNode>,
+		) => ModuleComponent<RegisteredNode>,
 	) => void;
-	relationshipTypes: ModuleComponent<IGCRelationshipProps>;
+	relationshipTypes: ModuleComponent<RegisteredRelationship>;
 	setRelationshipTypes: (
 		updater: (
-			prev: ModuleComponent<IGCRelationshipProps>,
-		) => ModuleComponent<IGCRelationshipProps>,
+			prev: ModuleComponent<RegisteredRelationship>,
+		) => ModuleComponent<RegisteredRelationship>,
 	) => void;
-	viewTypes: ModuleComponent<IGCViewProps>;
+	viewTypes: ModuleComponent<RegisteredView>;
 	setViewTypes: (
 		updater: (
-			prev: ModuleComponent<IGCViewProps>,
-		) => ModuleComponent<IGCViewProps>,
+			prev: ModuleComponent<RegisteredView>,
+		) => ModuleComponent<RegisteredView>,
 	) => void;
 
 	moduleData: Cache;
@@ -204,14 +209,14 @@ const useStore = create<State>((set) => ({
 	nodeTypes: {},
 	setNodeTypes: (
 		updater: (
-			prev: ModuleComponent<IGCNodeProps>,
-		) => ModuleComponent<IGCNodeProps>,
+			prev: ModuleComponent<RegisteredNode>,
+		) => ModuleComponent<RegisteredNode>,
 	) => set((state) => ({ nodeTypes: updater(state.nodeTypes) })),
 	relationshipTypes: {},
 	setRelationshipTypes: (
 		updater: (
-			prev: ModuleComponent<IGCRelationshipProps>,
-		) => ModuleComponent<IGCRelationshipProps>,
+			prev: ModuleComponent<RegisteredRelationship>,
+		) => ModuleComponent<RegisteredRelationship>,
 	) =>
 		set((state) => ({
 			relationshipTypes: updater(state.relationshipTypes),
@@ -219,8 +224,8 @@ const useStore = create<State>((set) => ({
 	viewTypes: {},
 	setViewTypes: (
 		updater: (
-			prev: ModuleComponent<IGCViewProps>,
-		) => ModuleComponent<IGCViewProps>,
+			prev: ModuleComponent<RegisteredView>,
+		) => ModuleComponent<RegisteredView>,
 	) => set((state) => ({ viewTypes: updater(state.viewTypes) })),
 
 	moduleData: [],
