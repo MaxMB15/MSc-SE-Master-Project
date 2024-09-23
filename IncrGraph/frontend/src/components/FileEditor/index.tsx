@@ -28,12 +28,10 @@ import MarkdownDisplay from "../MarkdownDisplay";
 import { getIncomingNodes } from "../../IGCItems/utils/utils";
 import style from "./FileEditor.module.css";
 import { STYLES } from "@/styles/constants";
-import { IGCViewProps } from "@/IGCItems/views/BaseView";
+import { IGCViewProps, RegisteredView } from "@/IGCItems/views/BaseView";
 import { nodeTypes } from "@/IGCItems/utils/types";
 import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 import { RegistryComponent } from "@/types/frontend";
-import { selectFile } from "@/store/slices/selectedFile";
-import { RegisteredView } from "@/store/types/stateTypes";
 import _ from "lodash";
 import { serializeGraphData } from "@/IGCItems/utils/serialization";
 

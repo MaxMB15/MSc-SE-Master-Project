@@ -1,5 +1,9 @@
 import useStore from "@/store/store";
 import { ElementItem } from "@/types/frontend";
+import { IGCCodeNodeData } from "../nodes/CodeNode";
+import { Node } from "reactflow";
+import { runCode } from "@/utils/codeExecution";
+import { PlayArrow } from "@mui/icons-material";
 
 // Save Indicator
 const saveIndicatorKey = "saveIndicator";
@@ -21,7 +25,7 @@ export const useSaveIndicator = (status: SaveIndicatorProps) => {
 		weight: 0,
 		element: (
 			<span
-                key={saveIndicatorKey}
+				key={saveIndicatorKey}
 				className="navbar-circle-icon"
 				style={{
 					backgroundColor:
@@ -35,5 +39,38 @@ export const useSaveIndicator = (status: SaveIndicatorProps) => {
 		),
 	};
 
-	useStore.getState().setNavBarContainer((prev) => updateElementItem(saveIndicator, prev));
+	useStore
+		.getState()
+		.setNavBarContainer((prev) => updateElementItem(saveIndicator, prev));
+};
+
+const runButtonKey = "runButton";
+export const useRunButton = (node: Node<IGCCodeNodeData>) => {
+	const runButton: ElementItem = {
+		key: runButtonKey,
+		weight: 10,
+		element: (
+			<button
+				className="icon-button"
+				title="Run Code"
+				onClick={() =>
+					runCode(
+						node.data.codeData.code,
+						node.id,
+						node.data.codeData.scope,
+					)
+				}
+				disabled={
+					node.data.codeData.code === "" ||
+					useStore.getState().currentSessionId === null
+				}
+			>
+				<PlayArrow />
+			</button>
+		),
+	};
+
+	useStore
+		.getState()
+		.setNavBarContainer((prev) => updateElementItem(runButton, prev));
 };

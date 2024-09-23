@@ -22,10 +22,35 @@ const RawGeneralTextView: React.FC = () => {
 
 	const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
+    const getNodes = useStore((state) => state.getNodes);
+    const getEdges = useStore((state) => state.getEdges);
+	const nodes = selectedFile === null ? [] : getNodes(selectedFile);
+	const edges = selectedFile === null ? [] : getEdges(selectedFile);
+
 	// Save indicator
 	const onMount = (editor: editor.IStandaloneCodeEditor) => {
 		editorRef.current = editor;
-		setContent(editor.getModel()?.getValue());
+        const curModel = editor.getModel();
+        if (curModel === null) {
+            return;
+        }
+        if(useStore.getState().isIGCFile){
+            const rawGraphData = deserializeGraphData(nodes, edges);
+            if(curModel.getValue() !== rawGraphData){
+                curModel.pushEditOperations(
+                    [],
+                    [
+                        {
+                            range: curModel.getFullModelRange(),
+                            text: rawGraphData,
+                        },
+                    ],
+                    () => null,
+                );
+                editor.setModel(curModel);
+            }
+        }
+        setContent(curModel.getValue());
 
 		// Custom save handler for Command+S or Ctrl+S
 		editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, () => {
@@ -65,10 +90,6 @@ const RawGeneralTextView: React.FC = () => {
 		}
 	}, [fileChanged, content]);
 
-    const getNodes = useStore((state) => state.getNodes);
-    const getEdges = useStore((state) => state.getEdges);
-	const nodes = selectedFile === null ? [] : getNodes(selectedFile);
-	const edges = selectedFile === null ? [] : getEdges(selectedFile);
 	useEffect(() => {
 		// If IGC file, then whenever the node and edge data change, update the content
 		if (useStore.getState().isIGCFile && editorRef.current !== null) {
@@ -90,7 +111,7 @@ const RawGeneralTextView: React.FC = () => {
 			editorRef.current.setModel(curModel);
 			setContent(rawGraphData);
 		}
-	}, [nodes, edges, editorRef.current]);
+	}, [nodes, edges]);
 	useEffect(() => {
 		if (selectedFile !== null && editorRef.current !== null) {
 			// editorRef.current.layout(undefined, true);

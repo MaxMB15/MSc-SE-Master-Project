@@ -5,3 +5,5 @@ interface ViewData {
 }
 
 export type IGCViewProps<T={}> = React.FC<T> & ViewData;
+
+export type RegisteredView = IGCViewProps & RegistryComponent;

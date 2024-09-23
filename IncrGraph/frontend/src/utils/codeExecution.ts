@@ -15,11 +15,13 @@ import ExecutionRelationship from "@/IGCItems/relationships/ExecutionRelationshi
 
 // Run the code analysis on the node
 export const runAnalysis = (node: Node) => {
-	const { setNodes } = useStore.getState();
-
+	const selectedFile = useStore.getState().selectedFile;
+    if (selectedFile === null) {
+        return;
+    }
 	if (nodeHasCode(node)) {
 		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
-			setNodes((prevNodes) => {
+			useStore.getState().setNodes(selectedFile,(prevNodes) => {
 				return prevNodes.map((n) => {
 					if (node.id === n.id) {
 						if (
@@ -50,11 +52,14 @@ export const runAnalysis = (node: Node) => {
 };
 
 export const runAllAnalysis = async () => {
-	const { nodes, setNodes } = useStore.getState();
+    const selectedFile = useStore.getState().selectedFile;
+    if (selectedFile === null) {
+        return;
+    }
 
 	// Get all analysis data for all nodes
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
-	for (let node of nodes) {
+	for (let node of useStore.getState().getNodes(selectedFile)) {
 		if (nodeHasCode(node)) {
 			try {
 				const result = await callAnalyze(node.data.code);
@@ -69,7 +74,7 @@ export const runAllAnalysis = async () => {
 		}
 	}
 
-	setNodes((prevNodes) => {
+	useStore.getState().setNodes(selectedFile, (prevNodes) => {
 		return prevNodes.map((node) => {
 			if (node.id in nodeAnalysisData) {
 				if (node.data !== undefined && node.data.scope !== undefined) {
@@ -220,9 +225,11 @@ const applyCodeAnalysis = (
 	nodeId: string,
 	metaNodeData: CodeAnalysisResponse,
 ) => {
-	const { setNodes } = useStore.getState();
-
-	setNodes((prevNodes) => {
+    const selectedFile = useStore.getState().selectedFile;
+    if (selectedFile === null) {
+        return;
+    }
+	useStore.getState().setNodes(selectedFile, (prevNodes) => {
 		return prevNodes.map((node) => {
 			if (node.id === nodeId) {
 				return metaAnalysis(node, metaNodeData);
@@ -234,16 +241,15 @@ const applyCodeAnalysis = (
 
 export const runCode = (code: string, nodeId: string, scope?: string): void => {
 	// Data store variables
-	const {
-		projectDirectory,
-		setEdges,
-		currentSessionId,
-		setCurrentSessionId,
-		setSessions,
-		setCodeRunData,
-	} = useStore.getState();
+    const selectedFile = useStore.getState().selectedFile;
+    const currentSessionId = useStore.getState().currentSessionId;
+    if (selectedFile === null) {
+        return;
+    }
 
 	// Make sure projectDirectory is set
+    const projectDirectory = useStore.getState().projectDirectory;
+
 	if (projectDirectory === null) {
 		console.error("Project directory not set.");
 		return;
@@ -255,7 +261,7 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 
 	callExecute(code, "python", projectDirectory, currentSessionId).then(
 		(response: CodeExecutionResponse) => {
-			setCodeRunData((prevData) =>
+			useStore.getState().setCodeRunData((prevData) =>
 				prevData.set(nodeId, {
 					stdout: response.output,
 					stderr: response.error,
@@ -267,7 +273,7 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 				}),
 			);
 			applyCodeAnalysis(nodeId, response.metaNodeData);
-			setSessions((prevSessions) => {
+			useStore.getState().setSessions((prevSessions) => {
 				const prevSession:
 					| { configuration: any; executionPath: string[] }
 					| undefined = prevSessions.get(response.sessionId);
@@ -280,7 +286,7 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 					executionPath.push(nodeId);
 				}
 				// Create a new edge for the execution path
-				setEdges((eds) => {
+				useStore.getState().setEdges(selectedFile, (eds) => {
 					const params = {
 						source: executionPath[executionPath.length - 2],
 						target: nodeId,
@@ -306,7 +312,7 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 					executionPath: executionPath,
 				});
 			});
-			setCurrentSessionId(() => response.sessionId);
+			useStore.getState().setCurrentSessionId(() => response.sessionId);
 		},
 	);
 };

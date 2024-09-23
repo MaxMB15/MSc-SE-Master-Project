@@ -9,25 +9,25 @@ import {
 } from "../../IGCItems/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
-import { ModuleComponent, ModuleComponentValues, RegistryComponent } from "@/types/frontend";
+import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
 
 interface SelectionPaneProps {}
 
 const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	// VARIABLES
-	const {
-		isIGCFile,
-		selectedItems,
-		selectedItem,
-		setSelectedItem,
-		setNodes,
-		setEdges,
-		currentSessionId,
-		sessions,
-		setSessions,
-		nodeTypes,
-		relationshipTypes,
-	} = useStore();
+    const isIGCFile = useStore((state) => state.isIGCFile);
+    const selectedFile = useStore((state) => state.selectedFile);
+    const selectedItems = useStore((state) => state.selectedItems);
+    const selectedItem = useStore((state) => state.selectedItem);
+    const setSelectedItem = useStore((state) => state.setSelectedItem);
+    const setNodes = useStore((state) => state.setNodes);
+    const setEdges = useStore((state) => state.setEdges);
+    const currentSessionId = useStore((state) => state.currentSessionId);
+    const sessions = useStore((state) => state.sessions);
+    const setSessions = useStore((state) => state.setSessions);
+    const nodeTypes = useStore((state) => state.nodeTypes);
+    const relationshipTypes = useStore((state) => state.relationshipTypes);
+	
 	const triggerEdgeTypeUpdate = useTriggerEdgeTypeUpdate();
 
 	// STATE
@@ -44,12 +44,12 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	useEffect(() => {
 		if (selectedItems.length > 0) {
 			setSelectedItem(() => selectedItems[0]);
-			let optionType = selectedItems[0].item.type;
+			let optionType = selectedItems[0].item.object.type ?? "";
 			setSelectedOption(optionType);
 		}
 	}, [selectedItems]);
 
-	if (selectedItems.length === 0) {
+	if (selectedItems.length === 0 || selectedFile === null) {
 		return null;
 	}
 
@@ -57,7 +57,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		setSelectedOption(value);
 		if (selectedItem) {
 			if (selectedItem.item.type === "node") {
-				setNodes((prevNodes) =>
+				setNodes(selectedFile, (prevNodes) =>
 					prevNodes.map((node) => {
 						if (node.id === selectedItem.id) {
 							return {
@@ -69,7 +69,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 					}),
 				);
 			} else if (selectedItem.item.type === "relationship") {
-				setEdges((prevEdges) =>
+				setEdges(selectedFile, (prevEdges) =>
 					prevEdges.map((edge) => {
 						if (edge.id === selectedItem.id) {
 							return {
@@ -88,7 +88,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setName(event.target.value);
 		if (selectedItem) {
-			setNodes((prevNodes) =>
+			setNodes(selectedFile, (prevNodes) =>
 				prevNodes.map((node) => {
 					if (node.id === selectedItem.id) {
 						return {
@@ -113,7 +113,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 				if (currentSessionId !== null) {
 					const session = sessions.get(currentSessionId);
 					if (session !== undefined) {
-						setEdges((prevEdges) => {
+						setEdges(selectedFile, (prevEdges) => {
 							let vSession = _.cloneDeep(session);
 							let currentExecutionPath: string[] = _.cloneDeep(
 								vSession.executionPath,
@@ -151,11 +151,11 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 						});
 					}
 				}
-				setNodes((prevNodes) =>
+				setNodes(selectedFile, (prevNodes) =>
 					prevNodes.filter((node) => node.id !== selectedItem.id),
 				);
 			} else if (selectedItem.item.type === "relationship") {
-				setEdges((prevEdges) => {
+				setEdges(selectedFile, (prevEdges) => {
 					// Get current session data
 					if (currentSessionId !== null) {
 						const session = sessions.get(currentSessionId);

@@ -9,10 +9,9 @@ import { Node } from "reactflow";
 import React, { useEffect, useRef } from "react";
 import { Editor } from "@monaco-editor/react";
 import { editor, KeyCode, KeyMod } from "monaco-editor";
-import { useSaveIndicator } from "../viewUtils";
+import { useRunButton, useSaveIndicator } from "../viewUtils";
 import TabbedCodeOutput from "@/components/TabbedCodeOutput";
 import { FitAddon } from "@xterm/addon-fit";
-import { Height } from "@mui/icons-material";
 import { deserializeGraphData } from "@/IGCItems/utils/serialization";
 import { saveFileContent } from "@/requests";
 
@@ -30,11 +29,12 @@ const RawNodeCodeView: React.FC = () => {
 
 	const fitAddons = useRef<(FitAddon | null)[]>([]);
 
-    const calculateHeight = (bool: Boolean) => { // THIS NEEDS TO BE FIXED
-        const totalHeight = window.innerHeight;
-        const tabbedOutputHeight = bool ? 600 : 400;
-        return totalHeight - tabbedOutputHeight;
-      };
+	const calculateHeight = (bool: Boolean) => {
+		// THIS NEEDS TO BE FIXED
+		const totalHeight = window.innerHeight;
+		const tabbedOutputHeight = bool ? 600 : 400;
+		return totalHeight - tabbedOutputHeight;
+	};
 
 	const validItem =
 		selectedFile !== null &&
@@ -45,34 +45,49 @@ const RawNodeCodeView: React.FC = () => {
 	const onMount = (editor: editor.IStandaloneCodeEditor) => {
 		setContent(editor.getModel()?.getValue());
 
-        // Custom save handler for Command+S or Ctrl+S
+		// Custom save handler for Command+S or Ctrl+S
 		editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, () => {
-            const sFile = useStore.getState().selectedFile;
-            const curContent = editor.getModel()?.getValue();
-            const selectedItem = useStore.getState().selectedItem;
-            const savedNodes = useStore.getState().savedNodes;
-            if(sFile !== null && curContent !== undefined && selectedItem !== null){
-                savedNodes[sFile][selectedItem.id].data.codeData.code = curContent;
-                savedNodes[sFile][selectedItem.id].selected = true;
-                const rawGraphData = deserializeGraphData(Object.values(savedNodes[sFile]), Object.values(useStore.getState().savedEdges[sFile]));
-                saveFileContent(sFile, rawGraphData).then((_) => {
-                    useStore.getState().updateFileContent(()=> rawGraphData);
-                });
-
-            }
+			const sFile = useStore.getState().selectedFile;
+			const curContent = editor.getModel()?.getValue();
+			const selectedItem = useStore.getState().selectedItem;
+			const savedNodes = useStore.getState().savedNodes;
+			if (
+				sFile !== null &&
+				curContent !== undefined &&
+				selectedItem !== null
+			) {
+				savedNodes[sFile][selectedItem.id].data.codeData.code =
+					curContent;
+				savedNodes[sFile][selectedItem.id].selected = true;
+				const rawGraphData = deserializeGraphData(
+					Object.values(savedNodes[sFile]),
+					Object.values(useStore.getState().savedEdges[sFile]),
+				);
+				saveFileContent(sFile, rawGraphData).then((_) => {
+					useStore.getState().updateFileContent(() => rawGraphData);
+				});
+			}
 		});
 	};
 	useEffect(() => {
 		if (validItem) {
 			if (content !== undefined) {
 				useSaveIndicator(
-					content === savedNodes[selectedFile][selectedItem.id]?.data.codeData.code
+					content ===
+						savedNodes[selectedFile][selectedItem.id]?.data.codeData
+							.code
 						? "saved"
 						: "outdated",
 				);
 			}
 		}
 	}, [fileChanged, content]);
+	useEffect(() => {
+		const si = useStore.getState().selectedItem;
+		if (si !== null) {
+			useRunButton(si.item.object as Node<IGCCodeNodeData>);
+		}
+	}, [content, selectedItem?.id]);
 
 	if (!validItem) {
 		return <div className="text-display">No node selected</div>;
@@ -95,8 +110,8 @@ const RawNodeCodeView: React.FC = () => {
 			});
 		});
 	};
-    const editorPathKey = `${selectedFile}-${selectedItem.id}`
-    useStore.getState().setHasEditorCreated(editorPathKey);
+	const editorPathKey = `${selectedFile}-${selectedItem.id}`;
+	useStore.getState().setHasEditorCreated(editorPathKey);
 
 	return (
 		<>
@@ -107,7 +122,13 @@ const RawNodeCodeView: React.FC = () => {
 					height: "100%",
 				}}
 			>
-				<div style={{ height: `${calculateHeight(codeRunData.get(selectedItem.id) !== undefined)}px` }}>
+				<div
+					style={{
+						height: `${calculateHeight(
+							codeRunData.get(selectedItem.id) !== undefined,
+						)}px`,
+					}}
+				>
 					<Editor
 						path={editorPathKey}
 						defaultLanguage="python"
