@@ -14,8 +14,8 @@ body {
 .app-container {
 	display: flex;
 	flex-grow: 1;
-	height: calc(100vh - 64px); /* Adjust based on your navbar height */
-	overflow: hidden;
+	height: calc(100%);
+	/* overflow: hidden; */
 	width: 100%;
 	gap: 5px; /* Add a gap between the components */
 	margin-top: 5px;
@@ -89,7 +89,6 @@ body {
 
 .editor-pane-container {
 	display: flex;
-	height: 100vh; /* Full height */
 }
 
 .editor-pane {
@@ -105,7 +104,6 @@ body {
 
 .file-editor-container {
 	display: flex;
-	height: 100vh; /* Full height */
 }
 
 .file-editor {

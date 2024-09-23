@@ -3,10 +3,11 @@ import { STYLES } from "@/styles/constants";
 
 import BaseRelationship, { IGCRelationshipProps } from "../BaseRelationship";
 import { useStore as reactflowStore } from "reactflow";
-import useStore from "@/store/store";
+// import useStore from "@/store/store";
 import { callAnalyze } from "@/requests";
 import { RegistryComponent } from "@/types/frontend";
 import { createComponent } from "@/utils/componentCache";
+import useStore from "@/store/store";
 
 const RawMethodRelationship: IGCRelationshipProps = (props) => {
 	const { setNodes } = useStore();

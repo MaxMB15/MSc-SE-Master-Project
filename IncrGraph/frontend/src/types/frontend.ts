@@ -145,3 +145,10 @@ export interface ModuleComponentStored<T={}> {
 }
 
 export type IGCComponent<T={}> = IGCNodeProps<T> | IGCRelationshipProps<T> | IGCViewProps<T>;
+
+
+export interface ElementItem {
+    key: string;
+    weight: number;
+    element: JSX.Element;
+}

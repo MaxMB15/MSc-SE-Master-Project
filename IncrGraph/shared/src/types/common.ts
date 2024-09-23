@@ -4,7 +4,17 @@ export interface TokenResponse {
 	access: string;
 	refresh: string;
 }
-
+export interface GetFileContentRequest {
+	path: string;
+}
+export interface GetFileContentResponse {
+	content: string;
+    lastModified: number;
+}
+export interface SetFileContentRequest {
+    path: string;
+    content: string;
+}
 export interface FileNode {
 	name: string;
 	fullPath: string;

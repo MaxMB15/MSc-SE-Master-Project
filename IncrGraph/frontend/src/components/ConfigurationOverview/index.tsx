@@ -36,7 +36,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 		setCurrentSessionId(() => value);
 		setEdges((prevEdges) => {
 			let filteredEdges = prevEdges.filter(
-				(edge) => edge.type !== "executionRelationship",
+				(edge) => edge.type !== "ExecutionRelationship",
 			);
 
 			const session = sessions.get(value);
@@ -48,7 +48,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 						id: getEdgeId(source, target, filteredEdges),
 						source,
 						target,
-						type: "executionRelationship",
+						type: "ExecutionRelationship",
 						data: { label: `${i + 1}` },
 					});
 				}
@@ -83,7 +83,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 			setCurrentSessionId(() => sessionName);
 			setEdges((prevEdges) =>
 				prevEdges.filter(
-					(edge) => edge.type !== "executionRelationship",
+					(edge) => edge.type !== "ExecutionRelationship",
 				),
 			);
 		}

@@ -10,6 +10,9 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import useStore from "@/store/store";
 import styles from "./FilterPane.module.css"; // Import the CSS module
+import ExecutionRelationship from "@/IGCItems/relationships/ExecutionRelationship";
+import BaseRelationship from "@/IGCItems/relationships/BaseRelationship";
+import InheritanceRelationship from "@/IGCItems/relationships/InheritanceRelationship";
 
 const FilterPane: React.FC = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -35,11 +38,11 @@ const FilterPane: React.FC = () => {
 	};
 
 	const relationshipTypeMapping: { [key: string]: string } = {
-		Base: "baseRelationship",
-		Inheritance: "inheritanceRelationship",
+		Base: BaseRelationship.key,
+		Inheritance: InheritanceRelationship.key,
 		Overrides: "overridesRelationship",
 		Method: "methodRelationship",
-		Execution: "executionRelationship",
+		Execution: "ExecutionRelationship",
 		Dependency: "dependencyRelationship",
 	};
 

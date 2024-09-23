@@ -6,25 +6,61 @@ import {
 	ModuleComponentValues,
 	RegistryComponent,
 } from "@/types/frontend";
-const CACHE_KEY = "component_cache1";
+import React from "react";
+import BaseNode from "@/IGCItems/nodes/BaseNode";
+import BaseRelationship from "@/IGCItems/relationships/BaseRelationship";
 
-interface CacheEntry {
+
+const COMPONENT_CACHE_KEY = "component_cache";
+const FILE_HISTORY_CACHE_KEY = "file_history_cache";
+
+interface ComponentCacheEntry {
 	key: string;
 	modulePath: string;
 	enabled: boolean;
 }
+interface FileHistoryCacheEntry {
+	saved: boolean;
+	content: string;
+}
 
 // Function to load cache from localStorage
-export const loadComponentCache = (): { [key: string]: CacheEntry} | null => {
-	const cache = localStorage.getItem(CACHE_KEY);
+export const loadComponentCache = (): {
+	[key: string]: ComponentCacheEntry;
+} | null => {
+	const cache = localStorage.getItem(COMPONENT_CACHE_KEY);
 	return cache ? JSON.parse(cache) : null;
+};
+// Function to load cache from localStorage
+export const getFileHistoryKey = (
+	filePath: string,
+	componentId: string = "",
+): string => {
+	return `${filePath}${componentId === "" ? "" : "-" + componentId}`;
+};
+export const loadFileHistoryCache = (): {
+	[key: string]: FileHistoryCacheEntry[];
+} => {
+	const cache = localStorage.getItem(FILE_HISTORY_CACHE_KEY);
+	return cache ? JSON.parse(cache) : {};
 };
 
 // Function to update cache in localStorage
-export const updateComponentCache = (updateEntry: CacheEntry): void => {
-    const cache = loadComponentCache() ?? {};
-    cache[updateEntry.key] = updateEntry;
-	localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+export const updateComponentCache = (
+	updateEntry: ComponentCacheEntry,
+): void => {
+	const cache = loadComponentCache() ?? {};
+	cache[updateEntry.key] = updateEntry;
+	localStorage.setItem(COMPONENT_CACHE_KEY, JSON.stringify(cache));
+};
+// Function to update cache in localStorage
+export const updateFileHistoryCache = (
+	key: string,
+	updateEntry: FileHistoryCacheEntry[],
+): void => {
+	const cache = loadFileHistoryCache();
+	cache[key] = updateEntry;
+	localStorage.setItem(FILE_HISTORY_CACHE_KEY, JSON.stringify(cache));
 };
 
 // Function to dynamically import and check all exports
@@ -90,7 +126,7 @@ export const importAndCategorizeComponents = async (
 				};
 
 				// Update the cache
-				const entry: CacheEntry = {
+				const entry: ComponentCacheEntry = {
 					key: exportedComponent.key,
 					modulePath: moduleFilePath,
 					enabled: componentEnabled,
@@ -177,10 +213,10 @@ export interface CreateComponentOptions {
 	type?: "node" | "relationship" | "view";
 }
 
-export const createComponent = <P={}>(
+export const createComponent = <P = {}>(
 	component: React.FC<P>,
 	key: string,
-    displayName: string,
+	displayName: string,
 	options: CreateComponentOptions = {},
 ): React.FC<P> & RegistryComponent => {
 	const {
@@ -194,15 +230,13 @@ export const createComponent = <P={}>(
 	const typeSymbol = key;
 
 	// Create a new function that wraps the original component
-	const registryComponent: React.FC<P> & RegistryComponent = (
-		props: P,
-	) => {
+	const registryComponent: React.FC<P> & RegistryComponent = (props: P) => {
 		return component(props);
 	};
 
 	// Assign properties to the new function
 	registryComponent.key = key;
-    registryComponent.displayName = displayName;
+	registryComponent.displayName = displayName;
 	registryComponent.color = color;
 
 	const t = type ?? parentComponent?.type;
@@ -229,31 +263,30 @@ export interface CreateViewOptions {
 	parentComponent?: RegistryComponent;
 	abstract?: boolean;
 }
-export const createView = <T={}>(
-    component: React.FC<T>,
+export const createView = <T extends {} = {}>(
+	component: React.FC<T>,
 	key: string,
 	displayName: string,
-    forComponents: RegistryComponent[],
-	options: CreateViewOptions = {}
+	forComponents: RegistryComponent[],
+	options: CreateViewOptions = {},
 ): IGCViewProps<T> & RegistryComponent => {
-    const {
-		parentComponent,
-		abstract = false,
-	} = options;
+	const { parentComponent, abstract = false } = options;
 
 	const typeSymbol = key;
 
-    // Create a new function that wraps the original component
-	const registryComponent: IGCViewProps<T> & RegistryComponent = (props: T
-	) =>{
-		return component(props);
+	// Create a new function that wraps the original component
+	const registryComponent: IGCViewProps<T> & RegistryComponent = (
+		props: T,
+	) => {
+		// Ensure the component type matches React.FC with the generic type T
+		return React.createElement(component as React.FC<T>, props);
 	};
 
-    // Assign properties to the new function
+	// Assign properties to the new function
 	registryComponent.key = key;
-    registryComponent.displayName = displayName;
+	registryComponent.displayName = displayName;
 	registryComponent.color = "#ffffff";
-	registryComponent.type = 'view';
+	registryComponent.type = "view";
 	registryComponent.settable = false;
 	registryComponent.typeSymbol = typeSymbol;
 	registryComponent.abstract = abstract;
@@ -265,7 +298,7 @@ export const createView = <T={}>(
 		: [];
 	registryComponent.typeHierarchy.push(typeSymbol);
 
-    registryComponent.forComponents = forComponents;
+	registryComponent.forComponents = forComponents;
 
 	return registryComponent;
-}
+};

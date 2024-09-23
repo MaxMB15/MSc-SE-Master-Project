@@ -284,7 +284,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		return;
 	}
 	return (
-		<div className="selection-pane-formControl" style={{marginBottom: "100px"}}>
+		<div className="selection-pane-formControl">
 			{selectedItems.length !== 1 && (
 				<CustomSelect
 					id="item-select"

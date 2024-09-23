@@ -6,7 +6,6 @@ body {
 	color: var(--mui-palette-text-primary);
 	display: flex;
 	flex-direction: column;
-	height: 100vh;
 }
 html,
 body,
@@ -105,10 +104,3 @@ main {
 	flex-grow: 1;
 }
 
-.navbar-circle-icon {
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	margin-left: 8px;
-	display: inline-block;
-}

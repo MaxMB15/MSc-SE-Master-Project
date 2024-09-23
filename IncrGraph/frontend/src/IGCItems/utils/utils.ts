@@ -1,5 +1,6 @@
 import { Position, isEdge, Edge, Connection, Node } from "reactflow";
 import { Point, Rectangle, SessionData } from "@/types/frontend";
+import ExecutionRelationship from "../relationships/ExecutionRelationship";
 
 // this helper function returns the intersection point
 // of the line between the center of the intersectionNode and the target node
@@ -329,7 +330,7 @@ export const updateExecutionPathEdge = (
 	// If an execution relationship is removed, update the session data
 	const edgeObject = edges.find((edge) => edge.id === id);
 	if (
-		edgeObject?.type !== "executionRelationship" ||
+		edgeObject?.type !== "ExecutionRelationship" ||
 		edgeObject.data === undefined ||
 		edgeObject.data.label === undefined
 	) {
@@ -342,7 +343,7 @@ export const updateExecutionPathEdge = (
 	// Remove all execution relationship edges
 	let filteredEdges = edges.filter(
 		(edge) =>
-			edge.type !== "executionRelationship" ||
+			edge.type !== "ExecutionRelationship" ||
 			edge.data.will_delete === true,
 	);
 
@@ -354,7 +355,7 @@ export const updateExecutionPathEdge = (
 			id: getEdgeId(source, target, filteredEdges),
 			source,
 			target,
-			type: "executionRelationship",
+			type: "ExecutionRelationship",
 			data: { label: `${i + 1}` },
 		});
 	}
@@ -369,7 +370,7 @@ export const updateExecutionPath = (
 ): Edge[] => {
 	// Remove all execution relationship edges
 	let filteredEdges = edges.filter(
-		(edge) => edge.type !== "executionRelationship",
+		(edge) => edge.type !== "ExecutionRelationship",
 	);
 
 	// Add execution relationship edges
@@ -380,7 +381,7 @@ export const updateExecutionPath = (
 			id: getEdgeId(source, target, filteredEdges),
 			source,
 			target,
-			type: "executionRelationship",
+			type: "ExecutionRelationship",
 			data: { label: `${i + 1}` },
 		});
 	}

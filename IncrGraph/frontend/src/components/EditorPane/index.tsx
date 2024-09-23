@@ -32,27 +32,32 @@ import FilterPane from "../FilterPane";
 import { runAllAnalysis } from "@/utils/codeExecution";
 import { STYLES } from "@/styles/constants";
 import { createBaseNode, IGCNodeData } from "../../IGCItems/nodes/BaseNode";
-import { convertMapToTrueEdgeTypes, convertMapToTrueNodeTypes } from "@/IGCItems/utils/types";
+import {
+	convertMapToTrueEdgeTypes,
+	convertMapToTrueNodeTypes,
+} from "@/IGCItems/utils/types";
 
 interface EditorPaneProps {}
 
 const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	// VARIABLES
 	// Store variables
-	const {
-		fileContent,
-		isIGCFile,
-		setSelectedItems,
-		nodes,
-		setNodes,
-		edges,
-		setEdges,
-		sessions,
-		setSessions,
-		currentSessionId,
-        nodeTypes,
-        relationshipTypes
-	} = useStore();
+	const fileContent = useStore((state) => state.fileContent);
+	const selectedFile = useStore((state) => state.selectedFile);
+	const isIGCFile = useStore((state) => state.isIGCFile);
+	const setSelectedItems = useStore((state) => state.setSelectedItems);
+	const getNodes = useStore((state) => state.getNodes);
+	const setNodes = useStore((state) => state.setNodes);
+	const getEdges = useStore((state) => state.getEdges);
+	const setEdges = useStore((state) => state.setEdges);
+	const sessions = useStore((state) => state.sessions);
+	const setSessions = useStore((state) => state.setSessions);
+	const currentSessionId = useStore((state) => state.currentSessionId);
+	const nodeTypes = useStore((state) => state.nodeTypes);
+	const relationshipTypes = useStore((state) => state.relationshipTypes);
+
+	const nodes = selectedFile === null ? [] : getNodes(selectedFile);
+	const edges = selectedFile === null ? [] : getEdges(selectedFile);
 
 	// STATE
 	const [showGraph, setShowGraph] = useState(false); // If the graph should show up or not
@@ -74,32 +79,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		}
 	}, [fileContent]);
 
-	// Node Functions
-	const onNodesChange = (changes: NodeChange[]) => {
-        // Get current session data
-        if (currentSessionId !== null) {
-            const session = sessions.get(currentSessionId);
-            if (session !== undefined) {
-                let vSession = session;
-                let currentExecutionPath: string[] = vSession.executionPath;
-                // Go through each change and update eds accordingly
-                for (let change of changes) {
-                    if (change.type === "remove") {
-                        vSession.executionPath = vSession.executionPath.filter(node => node !== change.id);
-                    }
-                }
-                if (vSession.executionPath !== currentExecutionPath) {
-                    // Shallow is okay
-                    setSessions((prevSessions) => {
-                        return prevSessions.set(currentSessionId, vSession);
-                    });
-                    setEdges((prevEdges) => updateExecutionPath(prevEdges, vSession));
-                }
-            }
-        }
-		setNodes((nds) => applyNodeChanges(changes, nds));
-	};
-	// If a node is changed, check to see if there are any selection changes
+    // If a node is changed, check to see if there are any selection changes
 	useEffect(() => {
 		// Look at which nodes are selected
 		const newSelectedNodes: Node[] = nodes.filter((node) => node.selected);
@@ -107,21 +87,103 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedNodes(newSelectedNodes);
 	}, [nodes]);
 
+    // If an edge is changed, check to see if there are any selection changes
+	useEffect(() => {
+		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
+		setSelectedEdges(newSelectedEdges);
+	}, [edges]);
+
+    // When new selections are being made, update the selected items
+	useEffect(() => {
+		const items: Item[] = [];
+		selectedNodes.forEach((node) => {
+			items.push({
+				item: { type: "node", object: node },
+				id: node.id,
+				name: node.data.label,
+			});
+		});
+
+		selectedEdges.forEach((edge) => {
+			items.push({
+				item: { type: "relationship", object: edge },
+				id: edge.id,
+				name: edge.id,
+			});
+		});
+		setSelectedItems(() => items);
+	}, [selectedNodes, selectedEdges]);
+
+    const getNodeTypes = useMemo(() => {
+		return convertMapToTrueNodeTypes(nodeTypes);
+	}, [nodeTypes]);
+
+	const getEdgeTypes = useMemo(() => {
+		return convertMapToTrueEdgeTypes(relationshipTypes);
+	}, [nodeTypes]);
+
+	if (selectedFile === null) {
+		return (
+			<div className="editor-pane">
+				<div className="navbar-component">
+					<span className="navbar-component-title take-full-width">
+						Graph Editor
+					</span>
+				</div>
+				<div
+					style={{
+						margin: "10px",
+					}}
+				>
+					Not a valid IGC file
+				</div>
+			</div>
+		);
+	}
+
+	// Node Functions
+	const onNodesChange = (changes: NodeChange[]) => {
+		// Get current session data
+		if (currentSessionId !== null) {
+			const session = sessions.get(currentSessionId);
+			if (session !== undefined) {
+				let vSession = session;
+				let currentExecutionPath: string[] = vSession.executionPath;
+				// Go through each change and update eds accordingly
+				for (let change of changes) {
+					if (change.type === "remove") {
+						vSession.executionPath = vSession.executionPath.filter(
+							(node) => node !== change.id,
+						);
+					}
+				}
+				if (vSession.executionPath !== currentExecutionPath) {
+					// Shallow is okay
+					setSessions((prevSessions) => {
+						return prevSessions.set(currentSessionId, vSession);
+					});
+					setEdges(selectedFile, (prevEdges) =>
+						updateExecutionPath(prevEdges, vSession),
+					);
+				}
+			}
+		}
+		setNodes(selectedFile, (nds) => applyNodeChanges(changes, nds));
+	};
+
 	// Add a new node
 	const handleAddNode = () => {
 		// Select the new node and deselect all other nodes/edges
-		setNodes((nodes) => {
-			const newNode: Node<IGCNodeData> = createBaseNode(
-				nodes
-            );
-			
+		setNodes(selectedFile, (nodes) => {
+			const newNode: Node<IGCNodeData> = createBaseNode(nodes);
+
 			let newNodes = nodes.map((node) => {
 				node.selected = false;
 				return node;
 			});
 			return [...newNodes, newNode];
 		});
-		setEdges((edges) => {
+		setEdges(selectedFile, (edges) => {
 			let newEdges = edges.map((edge) => {
 				edge.selected = false;
 				return edge;
@@ -132,7 +194,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 
 	// Edge Functions
 	const onEdgesChange = (changes: EdgeChange[]) => {
-		setEdges((eds) => {
+		setEdges(selectedFile, (eds) => {
 			// Get current session data
 			if (currentSessionId !== null) {
 				const session = sessions.get(currentSessionId);
@@ -162,11 +224,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 			return applyEdgeChanges(changes, eds);
 		});
 	};
-	// If an edge is changed, check to see if there are any selection changes
-	useEffect(() => {
-		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
-		setSelectedEdges(newSelectedEdges);
-	}, [edges]);
 
 	// If a new edge is created
 	const onConnect = (params: Edge | Connection) => {
@@ -175,7 +232,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		// Custom logic to handle the connection
 		if (source !== null && target !== null) {
 			console.log(`Creating connection from ${source} to ${target}`);
-			setEdges((eds) =>
+			setEdges(selectedFile, (eds) =>
 				addEdge(
 					{
 						...params,
@@ -189,7 +246,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 					}),
 				),
 			);
-			setNodes((nodes) => {
+			setNodes(selectedFile, (nodes) => {
 				let newNodes = nodes.map((node) => {
 					node.selected = false;
 					return node;
@@ -210,39 +267,10 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		}
 	};
 
-	// When new selections are being made, update the selected items
-	useEffect(() => {
-		const items: Item[] = [];
-		selectedNodes.forEach((node) => {
-			items.push({
-				item: {type: 'node', object: node},
-				id: node.id,
-				name: node.data.label,
-			});
-		});
-
-		selectedEdges.forEach((edge) => {
-			items.push({
-				item: {type: 'relationship', object: edge},
-				id: edge.id,
-				name: edge.id,
-			});
-		});
-		setSelectedItems(() => items);
-	}, [selectedNodes, selectedEdges]);
-
 	const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
 		console.log("Node double clicked", node);
 		console.log("Event", event);
 	};
-
-    const getNodeTypes = useMemo(() => {
-        return convertMapToTrueNodeTypes(nodeTypes)
-    }, [nodeTypes]);
-
-    const getEdgeTypes = useMemo(() => {
-        return convertMapToTrueEdgeTypes(relationshipTypes)
-    }, [nodeTypes]);
 
 	return (
 		<div className="editor-pane">
@@ -255,7 +283,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<Button
 							startIcon={<AddCircle />}
 							onClick={handleAddNode}
-                            sx={{color: STYLES.primary}}
+							sx={{ color: STYLES.primary }}
 						>
 							Add Node
 						</Button>
@@ -269,7 +297,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Debug Current Execution"
-                            onClick={() => runAllAnalysis()}
+							onClick={() => runAllAnalysis()}
 						>
 							<BugReport />
 						</button>

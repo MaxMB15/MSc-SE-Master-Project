@@ -14,7 +14,37 @@ import {
 	NewFileRequest,
 	DeleteRequest,
     Cache,
+    GetFileContentRequest,
+    GetFileContentResponse,
+    SetFileContentRequest,
 } from "shared";
+
+export const getFileContent = (filePath: string) => {
+    const options: UseAxiosRequestOptions<GetFileContentRequest> = {
+		method: "GET",
+		route: "/api/file-explorer/file-content",
+		data: {
+			path: filePath,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<GetFileContentRequest, GetFileContentResponse>(options);
+}
+
+export const saveFileContent = (filePath: string, content: string) => {
+    const options: UseAxiosRequestOptions<SetFileContentRequest> = {
+		method: "POST",
+		route: "/api/file-explorer/file-content",
+		data: {
+			path: filePath,
+            content: content,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<SetFileContentRequest, Empty>(options);
+}
 
 export const callAnalyze = (code: string) => {
 	console.log("runAnalysis");

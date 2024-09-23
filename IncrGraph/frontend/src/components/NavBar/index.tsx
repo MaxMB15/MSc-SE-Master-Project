@@ -31,7 +31,10 @@ const Navbar: React.FC = () => {
 	const [isConnected, setIsConnected] = useState(false);
     const { showPopup } = usePopupContext();
 
-	const { nodes, mode } = useStore();
+    const selectedFile = useStore((state) => state.selectedFile);
+    const getNodes = useStore((state) => state.getNodes);
+    const mode = useStore((state) => state.mode);
+    const nodes = selectedFile === null ? [] : getNodes(selectedFile);
 
 	const { setProjectDirectory } = useStore(); // Variables from data store
 

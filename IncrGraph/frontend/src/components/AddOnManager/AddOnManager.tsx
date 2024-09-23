@@ -5,7 +5,10 @@ import { callAddModule, callRemoveModule } from "@/requests";
 import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
 import path from "path-browserify";
 import { useComponentRegistry } from "@/hooks/useComponentRegistry";
-import { fetchAndRegisterComponents, loadComponentCache } from "@/utils/componentCache";
+import {
+	fetchAndRegisterComponents,
+	loadComponentCache,
+} from "@/utils/componentCache";
 
 // MUI Icons
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -42,14 +45,13 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 	};
 
 	const toggleSelection = (moduleComponent: ModuleComponentValues<any>) => {
-
 		setSelectedItems((prevSelected) =>
 			moduleComponentExists(moduleComponent, prevSelected)
 				? prevSelected.filter(
 						(selectedItem) => selectedItem !== moduleComponent,
 				  )
 				: [...prevSelected, moduleComponent],
-		);        
+		);
 	};
 
 	const getListFromComponentTypes = (
@@ -64,7 +66,9 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 			.map((component: ModuleComponentValues<any>) => (
 				<li
 					key={`${component.modulePath}~${component.object.key}`}
-					className={`${styles.listItem} ${component.enabled ? "" : styles.disabled} ${
+					className={`${styles.listItem} ${
+						component.enabled ? "" : styles.disabled
+					} ${
 						selectedItems.includes(component) ? styles.selected : ""
 					}`}
 					onClick={() => toggleSelection(component)}
@@ -73,7 +77,7 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 				</li>
 			));
 	};
-
+	// (path: string) => handleImportAddon(path)
 	// Placeholder function for importing an add-on
 	const handleImportAddon = (modulePath: string): void => {
 		callAddModule(modulePath).then(() => {
@@ -93,8 +97,8 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 			selectedItem.enabled = toEnable;
 			updateComponent(selectedItem);
 		});
-        handleRefreshComponents();
-        setSelectedItems([]);
+		handleRefreshComponents();
+		setSelectedItems([]);
 	};
 
 	const deleteModule = (modulePath: string) => {
@@ -139,12 +143,17 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 					<button className="icon-button" title="Module Info">
 						<InfoIcon />
 					</button>
-                    <OpenDirectoryButton onClick={(path: string) => handleImportAddon(path)}
+					<OpenDirectoryButton
+						onClick={() =>
+							handleImportAddon(
+								"/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/temp_import",
+							)
+						}
 						className="icon-button"
 						title="Import AddOn"
-					>   
+					>
 						<AddBoxIcon />
-                    </OpenDirectoryButton>
+					</OpenDirectoryButton>
 					<button
 						className="icon-button"
 						title="Remove AddOn"
@@ -181,21 +190,21 @@ const AddOnManager: React.FC<AddOnManagerProps> = ({ onClose }) => {
 
 			<div className={styles.actionButtons}>
 				{/* Enable/Disable Selected */}
-                {selectedItems.length > 0 && (
-				<button
-					className={`${styles.toggleBtn} ${
-						selectedItems.length > 0 && selectedItems[0].enabled
-							? styles.disableBtn
-							: styles.enableBtn
-					}`}
-					onClick={toggleEnableDisable}
-					disabled={selectedItems.length === 0}
-				>
-					{selectedItems.length > 0 && selectedItems[0].enabled
-						? "Disable Selected"
-						: "Enable Selected"}
-				</button>
-                )}
+				{selectedItems.length > 0 && (
+					<button
+						className={`${styles.toggleBtn} ${
+							selectedItems.length > 0 && selectedItems[0].enabled
+								? styles.disableBtn
+								: styles.enableBtn
+						}`}
+						onClick={toggleEnableDisable}
+						disabled={selectedItems.length === 0}
+					>
+						{selectedItems.length > 0 && selectedItems[0].enabled
+							? "Disable Selected"
+							: "Enable Selected"}
+					</button>
+				)}
 			</div>
 		</div>
 	);

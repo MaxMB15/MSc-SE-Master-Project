@@ -1,0 +1,139 @@
+import { IGCViewProps } from "../BaseView";
+import { createView } from "@/utils/componentCache";
+import { RegistryComponent } from "@/types/frontend";
+
+import useStore from "@/store/store";
+
+import React, { useEffect, useRef } from "react";
+import { Editor } from "@monaco-editor/react";
+import { editor, KeyMod, KeyCode } from "monaco-editor";
+import { useSaveIndicator } from "../viewUtils";
+import { saveFileContent } from "@/requests";
+import { deserializeGraphData, isValidJSON, serializeGraphData } from "@/IGCItems/utils/serialization";
+import { Box } from "@mui/material";
+
+const RawGeneralTextView: React.FC = () => {
+	// const { selectedFile, fileContent, mode } = useStore();
+	const selectedFile = useStore((state) => state.selectedFile);
+	const fileContent = useStore((state) => state.fileContent);
+	const fileChanged = useStore((state) => state.fileChanged);
+	const mode = useStore((state) => state.mode);
+	const [content, setContent] = React.useState<string | undefined>(undefined);
+
+	const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+	// Save indicator
+	const onMount = (editor: editor.IStandaloneCodeEditor) => {
+		editorRef.current = editor;
+		setContent(editor.getModel()?.getValue());
+
+		// Custom save handler for Command+S or Ctrl+S
+		editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, () => {
+			const sFile = useStore.getState().selectedFile;
+			const curContent = editor.getModel()?.getValue();
+			if (sFile !== null && curContent !== undefined) {
+				saveFileContent(sFile, curContent).then((_) => {
+					useStore.getState().updateFileContent(() => curContent);
+				});
+			}
+		});
+	};
+
+    const onChange = (value: string | undefined) => {
+        setContent(value);
+        if(useStore.getState().isIGCFile && editorRef.current !== null){
+            const sFile = useStore.getState().selectedFile;
+			const curContent = editorRef.current.getModel()?.getValue();
+            if(curContent !== undefined && sFile !== null && isValidJSON(curContent)){
+                const serializedData = serializeGraphData(curContent)
+                useStore.getState().setNodes(sFile, () => serializedData.nodes);
+                useStore.getState().setEdges(sFile, () => serializedData.edges);
+            }
+        }
+    }
+	useEffect(() => {
+		if (selectedFile !== null) {
+			if (content !== undefined) {
+				const fileHistory = useStore.getState().fileHistory;
+
+				useSaveIndicator(
+					content === fileHistory[selectedFile]?.lastSavedContent
+						? "saved"
+						: "outdated",
+				);
+			}
+		}
+	}, [fileChanged, content]);
+
+    const getNodes = useStore((state) => state.getNodes);
+    const getEdges = useStore((state) => state.getEdges);
+	const nodes = selectedFile === null ? [] : getNodes(selectedFile);
+	const edges = selectedFile === null ? [] : getEdges(selectedFile);
+	useEffect(() => {
+		// If IGC file, then whenever the node and edge data change, update the content
+		if (useStore.getState().isIGCFile && editorRef.current !== null) {
+			const rawGraphData = deserializeGraphData(nodes, edges);
+			const curModel = editorRef.current.getModel();
+			if (curModel === null) {
+				return;
+			}
+			curModel.pushEditOperations(
+				[],
+				[
+					{
+						range: curModel.getFullModelRange(),
+						text: rawGraphData,
+					},
+				],
+				() => null,
+			);
+			editorRef.current.setModel(curModel);
+			setContent(rawGraphData);
+		}
+	}, [nodes, edges, editorRef.current]);
+	useEffect(() => {
+		if (selectedFile !== null && editorRef.current !== null) {
+			// editorRef.current.layout(undefined, true);
+		}
+	}, [selectedFile, useStore.getState().selectedItem]);
+
+    if (selectedFile !== null) {
+        useStore.getState().setHasEditorCreated(selectedFile);
+    }
+
+	if (fileContent === null || selectedFile === null) {
+		return <div className="text-display">No File Selected</div>;
+	}
+
+	return (
+		<Box
+			sx={{
+				position: "absolute",
+				top: 0,
+				left: 0,
+				right: 0,
+				bottom: 0,
+			}}
+		>
+			<Editor
+				path={selectedFile}
+				height="100%"
+				defaultLanguage="python"
+				defaultValue={fileContent}
+				theme={mode === "light" ? "light" : "vs-dark"}
+				onChange={onChange}
+				onMount={onMount}
+			/>
+		</Box>
+	);
+};
+
+const GeneralTextView: IGCViewProps & RegistryComponent = createView(
+	RawGeneralTextView,
+	"GeneralTextView",
+	"File Data",
+	[],
+	{},
+);
+
+export default GeneralTextView;

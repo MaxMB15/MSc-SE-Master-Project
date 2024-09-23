@@ -8,6 +8,7 @@ import { callAnalyze, callExecute } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/IGCItems/utils/edgeCreation";
 import { nodeHasCode } from "@/IGCItems/utils/types";
+import ExecutionRelationship from "@/IGCItems/relationships/ExecutionRelationship";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -289,7 +290,7 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 					return addEdge(
 						{
 							...params,
-							type: "executionRelationship",
+							type: "ExecutionRelationship",
 							id: getEdgeId(params.source, params.target, eds),
 							data: { label: executionPath.length - 1 },
 						},

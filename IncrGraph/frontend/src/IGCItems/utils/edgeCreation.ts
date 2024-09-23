@@ -2,6 +2,7 @@ import useStore from "@/store/store";
 import { getEdgeId, getIncomingNodes, getOutgoingNodes } from "./utils";
 import { Node, Edge } from "reactflow";
 import { isCodeContainingNode } from "./types";
+import InheritanceRelationship from "../relationships/InheritanceRelationship";
 
 interface DependencyEdge {
     source: string;
@@ -90,7 +91,7 @@ export const createDependencyGraph = () => {
     }
 
     setEdges((prevEdges) => {
-        let edges = [...prevEdges.filter((e) => e.type !== undefined && !(["dependencyRelationship", "inheritanceRelationship", "overridesRelationship"].includes(e.type))), ...newEdges];
+        let edges = [...prevEdges.filter((e) => e.type !== undefined && !(["dependencyRelationship", InheritanceRelationship.key, "overridesRelationship"].includes(e.type))), ...newEdges];
         for(let node of useStore.getState().nodes) {
             edges = detectRelationships(node, edges);
         }
@@ -147,7 +148,7 @@ const detectOverrideRelationships = (node: Node, edges: Edge[]): Edge[] => {
                     const edgeType = e.type;
                     return edgeType === undefined
                         ? false
-                        : edgeType === "inheritanceRelationship";
+                        : edgeType === InheritanceRelationship.key;
                 },
             );
 
@@ -230,7 +231,7 @@ const detectInheritanceRelationships = (node: Node, edges: Edge[]): Edge[] => {
                                     id: getEdgeId(node.id, cn.id, edges),
                                     source: node.id,
                                     target: cn.id,
-                                    type: "inheritanceRelationship",
+                                    type: InheritanceRelationship.key,
                                     data: {label: cdep},
                                 });
                             }

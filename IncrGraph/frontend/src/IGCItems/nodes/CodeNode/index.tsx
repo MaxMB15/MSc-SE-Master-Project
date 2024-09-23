@@ -12,13 +12,15 @@ type CodeData = {
 	new_definitions?: Definitions;
 };
 
-type IGCCodeNodeData<T = {}> = T & {
+export type IGCCodeNodeData<T = {}> = T & {
 	codeData: CodeData;
 };
 
 export type IGCCodeNodeProps<T = {}> = IGCNodeProps<IGCCodeNodeData & T>;
 
 export const RawCodeNode: IGCCodeNodeProps = (props) => {
+    // Set initial codeData if not yet set
+    props.data.codeData = props.data.codeData || { code: "test" };
 	const { projectDirectory } = useStore();
 
 	const handleRun = () => {
@@ -47,6 +49,7 @@ export const RawCodeNode: IGCCodeNodeProps = (props) => {
 		// 	});
 		// });
 	};
+
 	return (
 		<BaseNode
 			{...props}

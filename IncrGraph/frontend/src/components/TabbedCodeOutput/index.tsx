@@ -10,12 +10,12 @@ import { STYLES } from "@/styles/constants";
 
 interface TabbedCodeOutputProps {
 	codeRunData: CodeRunData | undefined;
-	fitAddons: React.MutableRefObject<(FitAddon | null)[]>;
+	// fitAddons: React.MutableRefObject<(FitAddon | null)[]>;
 }
 
 const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 	codeRunData,
-	fitAddons,
+	// fitAddons,
 }) => {
 	const [activeTab, setActiveTab] = useState(0);
 	const terminalRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -34,8 +34,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 					cursorBlink: false,
 				});
 
-				fitAddons.current[index] = new FitAddon();
-				terminals.current[index]?.loadAddon(fitAddons.current[index]!);
+				// fitAddons.current[index] = new FitAddon();
+				// terminals.current[index]?.loadAddon(fitAddons.current[index]!);
 				terminals.current[index]?.open(ref);
 
 				const terminalElement: HTMLElement | null =
@@ -48,7 +48,7 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				if (terminal) {
 					terminal.style.paddingRight = "20px";
 				}
-				fitAddons.current[index]?.fit();
+				// fitAddons.current[index]?.fit();
 			}
 		});
 
