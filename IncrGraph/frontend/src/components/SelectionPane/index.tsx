@@ -10,24 +10,24 @@ import {
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
 import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
+import { deleteNodeInSession } from "@/requests";
+import { removeExecutionInSession } from "@/utils/sessionHandler";
 
 interface SelectionPaneProps {}
 
 const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	// VARIABLES
-    const isIGCFile = useStore((state) => state.isIGCFile);
-    const selectedFile = useStore((state) => state.selectedFile);
-    const selectedItems = useStore((state) => state.selectedItems);
-    const selectedItem = useStore((state) => state.selectedItem);
-    const setSelectedItem = useStore((state) => state.setSelectedItem);
-    const setNodes = useStore((state) => state.setNodes);
-    const setEdges = useStore((state) => state.setEdges);
-    const currentSessionId = useStore((state) => state.currentSessionId);
-    const sessions = useStore((state) => state.sessions);
-    const setSessions = useStore((state) => state.setSessions);
-    const nodeTypes = useStore((state) => state.nodeTypes);
-    const relationshipTypes = useStore((state) => state.relationshipTypes);
-	
+	const isIGCFile = useStore((state) => state.isIGCFile);
+	const selectedFile = useStore((state) => state.selectedFile);
+	const selectedItems = useStore((state) => state.selectedItems);
+	const selectedItem = useStore((state) => state.selectedItem);
+	const setSelectedItem = useStore((state) => state.setSelectedItem);
+	const setNodes = useStore((state) => state.setNodes);
+	const setEdges = useStore((state) => state.setEdges);
+	const currentSessionId = useStore((state) => state.currentSessionId);
+	const nodeTypes = useStore((state) => state.nodeTypes);
+	const relationshipTypes = useStore((state) => state.relationshipTypes);
+
 	const triggerEdgeTypeUpdate = useTriggerEdgeTypeUpdate();
 
 	// STATE
@@ -109,87 +109,26 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
 			if (selectedItem.item.type === "node") {
-				// Get current session data
-				if (currentSessionId !== null) {
-					const session = sessions.get(currentSessionId);
-					if (session !== undefined) {
-						setEdges(selectedFile, (prevEdges) => {
-							let vSession = _.cloneDeep(session);
-							let currentExecutionPath: string[] = _.cloneDeep(
-								vSession.executionPath,
-							);
-							vSession.executionPath;
-							let edgesConnectedToNode = prevEdges.filter(
-								(edge) =>
-									edge.source === selectedItem.id ||
-									edge.target === selectedItem.id,
-							);
-
-							for (let edge of edgesConnectedToNode.reverse()) {
-								let edgeId = edge.id;
-								let changes = updateExecutionPathEdge(
-									edgeId,
-									prevEdges,
-									vSession,
-								);
-								prevEdges = changes.edges;
-								vSession = changes.session;
-							}
-							if (
-								vSession.executionPath !== currentExecutionPath
-							) {
-								// Shallow is okay
-								setSessions((prevSessions) => {
-									return prevSessions.set(
-										currentSessionId,
-										vSession,
-									);
-								});
-							}
-
-							return updateExecutionPath(prevEdges, vSession);
-						});
-					}
-				}
+				deleteNodeInSession(selectedFile, selectedItem.id);
 				setNodes(selectedFile, (prevNodes) =>
 					prevNodes.filter((node) => node.id !== selectedItem.id),
 				);
-			} else if (selectedItem.item.type === "relationship") {
-				setEdges(selectedFile, (prevEdges) => {
-					// Get current session data
-					if (currentSessionId !== null) {
-						const session = sessions.get(currentSessionId);
-						if (session !== undefined) {
-							let vSession = session;
-							let currentExecutionPath: string[] = _.cloneDeep(
-								vSession.executionPath,
-							);
-
-							const uepData = updateExecutionPathEdge(
-								selectedItem.id,
-								prevEdges,
-								vSession,
-							);
-							prevEdges = uepData.edges;
-							vSession = uepData.session;
-							if (
-								vSession.executionPath !== currentExecutionPath
-							) {
-								// Shallow is okay
-								setSessions((prevSessions) => {
-									return prevSessions.set(
-										currentSessionId,
-										vSession,
-									);
-								});
-							}
-						}
-					}
-					return applyEdgeChanges(
-						[{ type: "remove", id: selectedItem.id }],
-						prevEdges,
+			} else if (
+				selectedItem.item.type === "relationship" &&
+				selectedItem.item.object.type === "ExecutionRelationship"
+			) {
+				const currentSessionId = useStore.getState().currentSessionId;
+				if (
+					currentSessionId !== null &&
+					selectedItem.item.object.data.label !== undefined &&
+					!isNaN(parseInt(selectedItem.item.object.data.label))
+				) {
+					removeExecutionInSession(
+						selectedFile,
+						currentSessionId,
+						parseInt(selectedItem.item.object.data.label),
 					);
-				});
+				}
 			}
 		}
 	};
@@ -352,7 +291,8 @@ export const createSelectionList = (
 	const mappedArray = Object.values(componentTypes)
 		.filter(
 			(component: ModuleComponentValues<any>) =>
-				component.object.settable !== undefined && component.object.settable === true,
+				component.object.settable !== undefined &&
+				component.object.settable === true,
 		)
 		.map((component: ModuleComponentValues<any>) => {
 			return {

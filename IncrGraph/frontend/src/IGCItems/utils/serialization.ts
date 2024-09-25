@@ -5,8 +5,8 @@ import { Node, Edge } from "reactflow";
 export const serializeGraphData = (
     content: string,
 ): { nodes: Node[]; edges: Edge[] } => {
-    console.log("Serializing graph data");
-    console.log("content\n", content);
+    // console.log("Serializing graph data");
+    // console.log("content\n", content);
     try {
         const data = JSON.parse(content);
         console.log("Done parsing, data\n", data);

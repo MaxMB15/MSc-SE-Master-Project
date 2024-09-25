@@ -1,5 +1,5 @@
 import { Position, isEdge, Edge, Connection, Node } from "reactflow";
-import { Point, Rectangle, SessionData } from "@/types/frontend";
+import { Point, Rectangle } from "@/types/frontend";
 import ExecutionRelationship from "../relationships/ExecutionRelationship";
 
 // this helper function returns the intersection point

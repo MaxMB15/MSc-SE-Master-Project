@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./CustomSelect.css";
+import styles from "./CustomSelect.module.css";
 
 export interface SelectOption {
 	value: string;
@@ -12,8 +12,10 @@ interface CustomSelectProps {
 	options: SelectOption[];
 	value: string;
 	onChange: (value: string) => void;
-    className?: string;
+	className?: string;
 	label?: string;
+	style?: React.CSSProperties;
+	disabled?: boolean;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -21,16 +23,20 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 	options,
 	value,
 	onChange,
-    className = "",
+	className = "",
 	label,
+	style,
+	disabled = false,
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const selectRef = useRef<HTMLDivElement>(null);
 	const optionsRef = useRef<HTMLUListElement>(null);
 
 	const handleSelect = (optionValue: string) => {
-		onChange(optionValue);
-		setIsOpen(false);
+		if (!disabled) {
+			onChange(optionValue);
+			setIsOpen(false);
+		}
 	};
 
 	const handleOutsideClick = (event: MouseEvent) => {
@@ -65,31 +71,38 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 	}, [isOpen]);
 
 	return (
-		<div className={`custom-select-container ${className}`} ref={selectRef}>
-			{label !== undefined && (
-				<label htmlFor={id} className="custom-select-label">
+		<div
+			className={`${styles.customSelectContainer} ${className}`}
+			ref={selectRef}
+			style={style}
+		>
+			{label && (
+				<label htmlFor={id} className={styles.customSelectLabel}>
 					{label}
 				</label>
 			)}
 
 			<div
 				id={id}
-				className="custom-select"
-				onClick={() => setIsOpen(!isOpen)}
+				className={`${styles.customSelect} ${
+					disabled ? styles.disabled : ""
+				}`}
+				onClick={() => !disabled && setIsOpen(!isOpen)}
 			>
 				{options.find((option) => option.value === value)?.label ||
 					"Select"}
 			</div>
-			{isOpen && (
-				<ul className="custom-select-options" ref={optionsRef}>
+
+			{isOpen && !disabled && (
+				<ul className={styles.customSelectOptions} ref={optionsRef}>
 					{options.map((option) => (
 						<li
 							key={option.value}
-							className="custom-select-option"
+							className={styles.customSelectOption}
 							onClick={() => handleSelect(option.value)}
 						>
 							<span
-								className={`custom-select-color`}
+								className={styles.customSelectColor}
 								style={option.style}
 							/>
 							{option.label}

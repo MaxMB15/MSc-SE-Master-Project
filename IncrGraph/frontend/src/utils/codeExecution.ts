@@ -8,7 +8,7 @@ import { callAnalyze, callExecute } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/IGCItems/utils/edgeCreation";
 import { nodeHasCode } from "@/IGCItems/utils/types";
-import ExecutionRelationship from "@/IGCItems/relationships/ExecutionRelationship";
+import { loadSessionData } from "./sessionHandler";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -247,72 +247,62 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
         return;
     }
 
-	// Make sure projectDirectory is set
-    const projectDirectory = useStore.getState().projectDirectory;
-
-	if (projectDirectory === null) {
-		console.error("Project directory not set.");
-		return;
-	}
-
 	if (scope !== undefined) {
 		code = injectCode(code, scope);
 	}
 
-	callExecute(code, "python", projectDirectory, currentSessionId).then(
+	callExecute(code, "python", selectedFile, nodeId, currentSessionId).then(
 		(response: CodeExecutionResponse) => {
-			useStore.getState().setCodeRunData((prevData) =>
-				prevData.set(nodeId, {
-					stdout: response.output,
-					stderr: response.error,
-					configuration: response.configuration,
-					metrics: {
-						executionTime: response.executionTime,
-						sessionId: response.sessionId,
-					},
-				}),
-			);
-			applyCodeAnalysis(nodeId, response.metaNodeData);
-			useStore.getState().setSessions((prevSessions) => {
-				const prevSession:
-					| { configuration: any; executionPath: string[] }
-					| undefined = prevSessions.get(response.sessionId);
-				let executionPath: string[] | undefined =
-					prevSession?.executionPath;
-				// Add the node to the execution path
-				if (executionPath === undefined) {
-					executionPath = ["start", nodeId];
-				} else {
-					executionPath.push(nodeId);
-				}
-				// Create a new edge for the execution path
-				useStore.getState().setEdges(selectedFile, (eds) => {
-					const params = {
-						source: executionPath[executionPath.length - 2],
-						target: nodeId,
-						sourceHandle: null,
-						targetHandle: null,
-					};
-					return addEdge(
-						{
-							...params,
-							type: "ExecutionRelationship",
-							id: getEdgeId(params.source, params.target, eds),
-							data: { label: executionPath.length - 1 },
-						},
-						eds.map((e) => {
-							e.selected = false;
-							return e;
-						}),
-					);
-				});
+            loadSessionData(selectedFile);
+			// useStore.getState().setCodeRunData((prevData) =>
+			// 	prevData.set(nodeId, {
+			// 		stdout: response.output,
+			// 		stderr: response.error,
+			// 		configuration: response.configuration,
+			// 		metrics: response.metrics,
+			// 	}),
+			// );
+			// applyCodeAnalysis(nodeId, response.metaNodeData);
+			// useStore.getState().setSessions((prevSessions) => {
+			// 	const prevSession:
+			// 		| { configuration: any; executionPath: string[] }
+			// 		| undefined = prevSessions.get(response.metrics.sessionId);
+			// 	let executionPath: string[] | undefined =
+			// 		prevSession?.executionPath;
+			// 	// Add the node to the execution path
+			// 	if (executionPath === undefined) {
+			// 		executionPath = ["start", nodeId];
+			// 	} else {
+			// 		executionPath.push(nodeId);
+			// 	}
+			// 	// Create a new edge for the execution path
+			// 	useStore.getState().setEdges(selectedFile, (eds) => {
+			// 		const params = {
+			// 			source: executionPath[executionPath.length - 2],
+			// 			target: nodeId,
+			// 			sourceHandle: null,
+			// 			targetHandle: null,
+			// 		};
+			// 		return addEdge(
+			// 			{
+			// 				...params,
+			// 				type: "ExecutionRelationship",
+			// 				id: getEdgeId(params.source, params.target, eds),
+			// 				data: { label: executionPath.length - 1 },
+			// 			},
+			// 			eds.map((e) => {
+			// 				e.selected = false;
+			// 				return e;
+			// 			}),
+			// 		);
+			// 	});
 
-				return prevSessions.set(response.sessionId, {
-					configuration: response.configuration,
-					executionPath: executionPath,
-				});
-			});
-			useStore.getState().setCurrentSessionId(() => response.sessionId);
+			// 	return prevSessions.set(response.metrics.sessionId, {
+			// 		configuration: response.configuration,
+			// 		executionPath: executionPath,
+			// 	});
+			// });
+			// useStore.getState().setCurrentSessionId(() => response.metrics.sessionId);
 		},
 	);
 };

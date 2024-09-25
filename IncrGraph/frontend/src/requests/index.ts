@@ -13,14 +13,20 @@ import {
 	NewDirectoryRequest,
 	NewFileRequest,
 	DeleteRequest,
-    Cache,
-    GetFileContentRequest,
-    GetFileContentResponse,
-    SetFileContentRequest,
+	Cache,
+	GetFileContentRequest,
+	GetFileContentResponse,
+	SetFileContentRequest,
+	IGCFileSessionData,
+	SessionDataGetRequest,
+	SessionDataDeleteExecutionRequest,
+	SessionDataDeleteNodeRequest,
+	CodeManyExecutionRequest,
+	FileIdCodeList,
 } from "shared";
 
 export const getFileContent = (filePath: string) => {
-    const options: UseAxiosRequestOptions<GetFileContentRequest> = {
+	const options: UseAxiosRequestOptions<GetFileContentRequest> = {
 		method: "GET",
 		route: "/api/file-explorer/file-content",
 		data: {
@@ -29,22 +35,43 @@ export const getFileContent = (filePath: string) => {
 		useJWT: false,
 	};
 
-	return sendAxiosRequest<GetFileContentRequest, GetFileContentResponse>(options);
-}
+	return sendAxiosRequest<GetFileContentRequest, GetFileContentResponse>(
+		options,
+	);
+};
+export const fileExists = async (filePath: string): Promise<boolean> => {
+	const options: UseAxiosRequestOptions<GetFileContentRequest> = {
+		method: "GET",
+		route: "/api/file-explorer/file-exists",
+		data: {
+			path: filePath,
+		},
+		useJWT: false,
+	};
+	try {
+		const fileExists = await sendAxiosRequest<
+			GetFileContentRequest,
+			{ exists: boolean }
+		>(options);
+		return fileExists.exists;
+	} catch (error) {
+		return false;
+	}
+};
 
 export const saveFileContent = (filePath: string, content: string) => {
-    const options: UseAxiosRequestOptions<SetFileContentRequest> = {
+	const options: UseAxiosRequestOptions<SetFileContentRequest> = {
 		method: "POST",
 		route: "/api/file-explorer/file-content",
 		data: {
 			path: filePath,
-            content: content,
+			content: content,
 		},
 		useJWT: false,
 	};
 
 	return sendAxiosRequest<SetFileContentRequest, Empty>(options);
-}
+};
 
 export const callAnalyze = (code: string) => {
 	console.log("runAnalysis");
@@ -64,7 +91,8 @@ export const callAnalyze = (code: string) => {
 export const callExecute = (
 	code: string,
 	language: string,
-	projectPath: string,
+	filePath: string,
+	nodeId: string,
 	sessionId: string | null,
 ) => {
 	const options: UseAxiosRequestOptions<CodeExecutionRequest> = {
@@ -72,7 +100,8 @@ export const callExecute = (
 		data: {
 			code,
 			language: language,
-			projectPath: projectPath,
+			filePath: filePath,
+			nodeId: nodeId,
 			sessionId: sessionId ? sessionId : undefined,
 		},
 		route: "/api/code-handler/execute",
@@ -82,6 +111,27 @@ export const callExecute = (
 	return sendAxiosRequest<CodeExecutionRequest, CodeExecutionResponse>(
 		options,
 	);
+};
+
+export const callExecuteMany = (
+	fileIdCodeList: FileIdCodeList,
+	language: string,
+	filePath: string,
+	sessionId?: string,
+) => {
+	const options: UseAxiosRequestOptions<CodeManyExecutionRequest> = {
+		method: "POST",
+		data: {
+			fileIdCodeList: fileIdCodeList,
+			language: language,
+			filePath: filePath,
+			sessionId: sessionId,
+		},
+		route: "/api/code-handler/execute-many",
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<CodeManyExecutionRequest, Empty>(options);
 };
 
 export const getFileTree = (projectDirectory: string) => {
@@ -177,7 +227,7 @@ export const callGetComponents = () => {
 	return sendAxiosRequest<Empty, Cache>(options);
 };
 interface ModuleChangeRequest {
-    directory: string
+	directory: string;
 }
 
 export const callAddModule = (directoryPath: string) => {
@@ -185,25 +235,77 @@ export const callAddModule = (directoryPath: string) => {
 		method: "POST",
 		route: "/api/file-explorer/add-module",
 		useJWT: false,
-        data: {
-            directory: directoryPath
-        }
+		data: {
+			directory: directoryPath,
+		},
 	};
 
 	return sendAxiosRequest<ModuleChangeRequest, any>(options);
 };
-
 
 export const callRemoveModule = (directoryPath: string) => {
 	const options: UseAxiosRequestOptions<ModuleChangeRequest> = {
 		method: "DELETE",
 		route: "/api/file-explorer/remove-module",
 		useJWT: false,
-        data: {
-            directory: directoryPath
-        }
+		data: {
+			directory: directoryPath,
+		},
 	};
 
 	return sendAxiosRequest<ModuleChangeRequest, any>(options);
 };
 
+export const getSessionData = async (
+	filePath: string,
+): Promise<IGCFileSessionData> => {
+	const options: UseAxiosRequestOptions<SessionDataGetRequest> = {
+		method: "GET",
+		route: "/api/file-explorer/session-data",
+		data: {
+			filePath: filePath,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<SessionDataGetRequest, IGCFileSessionData>(options);
+};
+
+export const deleteNodeInSession = async (
+	filePath: string,
+	nodeId: string,
+): Promise<string[]> => {
+	const options: UseAxiosRequestOptions<SessionDataDeleteNodeRequest> = {
+		method: "DELETE",
+		route: "/api/file-explorer/session-data-node",
+		data: {
+			filePath: filePath,
+			nodeId: nodeId,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<SessionDataDeleteNodeRequest, string[]>(options);
+};
+
+// Needs to create the session data again using the returned paths
+export const deleteExecutionInSession = async (
+	filePath: string,
+	sessionId: string,
+	executionNumber: number,
+): Promise<string[]> => {
+	const options: UseAxiosRequestOptions<SessionDataDeleteExecutionRequest> = {
+		method: "DELETE",
+		route: "/api/file-explorer/session-data-execution",
+		data: {
+			filePath: filePath,
+			sessionId: sessionId,
+			executionNumber: executionNumber,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<SessionDataDeleteExecutionRequest, string[]>(
+		options,
+	);
+};

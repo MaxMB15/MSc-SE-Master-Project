@@ -1,0 +1,65 @@
+.customSelectContainer {
+    position: relative;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.customSelectLabel {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--mui-palette-text-secondary);
+}
+
+.customSelect {
+    padding: 8px;
+    background-color: var(--mui-palette-background-default);
+    border: 1px solid #555555;
+    color: var(--mui-palette-text-primary);
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+}
+
+.disabled {
+    background-color: var(--mui-palette-background-hover);
+    color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.customSelectOptions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--mui-palette-background-default);
+    border: 1px solid #555555;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.customSelectOption {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.customSelectOption:hover {
+    background-color: #555555;
+}
+
+.customSelectColor {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 8px;
+}

@@ -3,18 +3,18 @@ import { Box, Tabs, Tab } from "@mui/material";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import ConfigurationDisplay from "../ConfigurationDisplay";
-import { CodeRunData } from "@/types/frontend";
 import "@xterm/xterm/css/xterm.css";
 import "./TabbedCodeOutput.css";
 import { STYLES } from "@/styles/constants";
+import { IGCCodeNodeExecution } from "shared";
 
 interface TabbedCodeOutputProps {
-	codeRunData: CodeRunData | undefined;
+	executionData: IGCCodeNodeExecution | undefined;
 	// fitAddons: React.MutableRefObject<(FitAddon | null)[]>;
 }
 
 const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
-	codeRunData,
+	executionData,
 	// fitAddons,
 }) => {
 	const [activeTab, setActiveTab] = useState(0);
@@ -63,15 +63,15 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
             terminal?.clear();
             if (index === 0) {
                 terminal?.writeln(
-                    codeRunData && codeRunData.stdout ? `\x1b[30m${codeRunData.stdout}` : "\x1b[30m<No output>",
+                    executionData !== undefined ? `\x1b[30m${executionData.stdout}` : "\x1b[30m<No output>",
                 );
             } else if (index === 1) {
                 terminal?.writeln(
-                    codeRunData && codeRunData.stderr ? `\x1b[30m${codeRunData.stderr}` : "\x1b[30m<No errors>",
+                    executionData !== undefined ? `\x1b[30m${executionData.stderr}` : "\x1b[30m<No errors>",
                 );
             }
         });
-    }, [codeRunData]);
+    }, [executionData]);
 
 	// useEffect(() => {
 	// 	fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
@@ -116,8 +116,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				{activeTab === 2 && (
 					<ConfigurationDisplay
 						data={
-							codeRunData
-								? codeRunData.configuration
+							executionData !== undefined
+								? executionData.configuration
 								: "No Configuration Available"
 						}
 					/>
@@ -125,8 +125,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				{activeTab === 3 && (
 					<ConfigurationDisplay
 						data={
-							codeRunData
-								? codeRunData.metrics
+							executionData !== undefined
+								? executionData.metrics
 								: "No Metrics Available"
 						}
 					/>

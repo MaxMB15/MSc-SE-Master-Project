@@ -17,7 +17,6 @@ import MethodNode from "../nodes/MethodNode";
 import StartNode from "../nodes/StartNode";
 import DocumentationNode from "../nodes/DocumentationNode";
 import DocumentationRelationship from "../relationships/DocumentationRelationship";
-import ImportNode from "../nodes/ImportNode";
 import { ModuleComponent } from "@/types/frontend";
 
 //Base, Class, Abstract Class, Interface, Library, Method, Code Fragment
@@ -31,7 +30,7 @@ export const nodeTypes: NodeTypes = {
 	methodNode: MethodNode,
 	codeFragmentNode: CodeFragmentNode,
 	documentationNode: DocumentationNode,
-	importNode: ImportNode,
+	// importNode: ImportNode,
 };
 export const convertMapToTrueNodeTypes = (
 	componentMap: ModuleComponent<IGCNodeProps>,

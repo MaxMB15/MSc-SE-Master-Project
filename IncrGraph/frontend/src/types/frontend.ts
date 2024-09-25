@@ -91,21 +91,6 @@ export class Rectangle {
 	}
 }
 
-export interface CodeRunData {
-	stdout: string;
-	stderr: string;
-	configuration: any;
-	metrics: {
-		executionTime: number;
-		sessionId: string;
-	};
-}
-
-export interface SessionData {
-	configuration: any;
-	executionPath: string[];
-}
-
 export interface TreeItemActionHandlers {
 	onSelect?: (node: FileNode) => void;
 	onRename?: (node: FileNode, newName: string) => void;

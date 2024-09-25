@@ -1,8 +1,19 @@
+import { exec } from "child_process";
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
-import { FileNode, Cache, CacheEntry, createCustomLogger, ModuleConfigurationData } from "shared";
-// import { Project } from "ts-morph";
+import {
+	FileNode,
+	Cache,
+	CacheEntry,
+	createCustomLogger,
+	ModuleConfigurationData,
+	IGCFileSessionData,
+	SessionConfig,
+	IGCSession,
+	IGCCodeNodeExecution,
+    SessionDataDeleteExecutionRequest,
+} from "shared";
 
 const router = Router();
 
@@ -54,6 +65,19 @@ router.get("/file-tree", (req: Request, res: Response) => {
 		res.json(directoryStructure);
 	} catch (error) {
 		logger.error("Failed to get directory structure", { error });
+		res.status(500).send("Internal Server Error");
+	}
+});
+// Get if a file exists
+router.get("/file-exists", (req: Request, res: Response) => {
+	const filePath = req.query.path as string;
+
+	try {
+		if (!validatePath(filePath, res)) return;
+
+		res.json({ exists: fs.existsSync(filePath) });
+	} catch (error) {
+		logger.error("Failed to check if file exists", { error });
 		res.status(500).send("Internal Server Error");
 	}
 });
@@ -230,10 +254,6 @@ router.post("/new-directory", async (req: Request, res: Response) => {
 // 		[filePath: string]: ComponentType[];
 // 	};
 // }
-
-
-
-
 
 // const componentTypesToSearchFor: string[] = ["IGCNodeProps"];
 
@@ -423,43 +443,274 @@ const updateCacheForDirectory = (
 	// 	missingOrExtraFiles.extra.length > 0 ||
 	// 	isCacheEntryOutdated(cacheEntry)
 	// ) {
-		// tsxFiles.forEach((file) => {
-		// 	const filePath = path.join(directoryPath, file);
-		// 	const components = findComponentsByType(
-		// 		filePath,
-		// 		componentTypesToSearchFor,
-		// 	);
-		// 	cacheEntry.files[filePath] = components;
-		// });
-    cacheEntry.files = tsxFiles;
-    cacheEntry.last_updated = new Date().toISOString();
+	// tsxFiles.forEach((file) => {
+	// 	const filePath = path.join(directoryPath, file);
+	// 	const components = findComponentsByType(
+	// 		filePath,
+	// 		componentTypesToSearchFor,
+	// 	);
+	// 	cacheEntry.files[filePath] = components;
+	// });
+	cacheEntry.files = tsxFiles;
+	cacheEntry.last_updated = new Date().toISOString();
 	// }
 
 	return cacheEntry;
 };
 
-const checkModuleConfig = (modulePath: string): ModuleConfigurationData | undefined => {
-    const configPath = path.join(modulePath, IGC_MODULE_CONFIG_FILE);
-    if (fs.existsSync(configPath)) {
-        const rawData = fs.readFileSync(configPath, "utf-8");
-        return JSON.parse(rawData) as ModuleConfigurationData;
-    }
-    return undefined;
-}
+const checkModuleConfig = (
+	modulePath: string,
+): ModuleConfigurationData | undefined => {
+	const configPath = path.join(modulePath, IGC_MODULE_CONFIG_FILE);
+	if (fs.existsSync(configPath)) {
+		const rawData = fs.readFileSync(configPath, "utf-8");
+		return JSON.parse(rawData) as ModuleConfigurationData;
+	}
+	return undefined;
+};
 
 router.get("/find-components", async (_, res: Response) => {
 	let cache = await readCache();
 
 	cache.forEach((entry) => {
-        const moduleConfig = checkModuleConfig(entry.search_path);
-        if (moduleConfig){
-            entry.meta = moduleConfig;
-        }
+		const moduleConfig = checkModuleConfig(entry.search_path);
+		if (moduleConfig) {
+			entry.meta = moduleConfig;
+		}
 		updateCacheForDirectory(entry.search_path, cache);
 	});
 
 	writeCache(cache); // Update cache after processing
 	res.json(cache);
+});
+
+export const getSubDirectories = async (dirPath: string): Promise<string[]> => {
+	try {
+		const files = await fs.readdir(dirPath);
+		const subdirectories = [];
+
+		for (const file of files) {
+			const fullPath = path.join(dirPath, file);
+			const stats = await fs.stat(fullPath);
+			if (stats.isDirectory()) {
+				subdirectories.push(file);
+			}
+		}
+
+		return subdirectories;
+	} catch (err) {
+		console.error("Error reading the directory:", err);
+		return [];
+	}
+};
+
+const getExecutionData = async (
+	executionDir: string,
+): Promise<Omit<IGCCodeNodeExecution, "nodeId">> => {
+	try {
+		const configurationPath = path.join(executionDir, "configuration.json");
+		const metricsPath = path.join(executionDir, "metrics.json");
+		const stderrPath = path.join(executionDir, "std.err");
+		const stdoutPath = path.join(executionDir, "std.out");
+
+		// Use fs-extra's readJSON and readFile methods
+		const [configuration, metrics, stderr, stdout] = await Promise.all([
+			fs.readJSON(configurationPath), // Read and parse JSON file
+			fs.readJSON(metricsPath), // Read and parse JSON file
+			fs.readFile(stderrPath, "utf8"), // Read plain text file
+			fs.readFile(stdoutPath, "utf8"), // Read plain text file
+		]);
+
+		// Return the IGCCodeNodeExecution object
+		return {
+			configuration,
+			metrics,
+			stderr,
+			stdout,
+		};
+	} catch (error) {
+		console.error("Error reading execution data:", error);
+		throw new Error("Failed to load execution data");
+	}
+};
+
+router.get("/session-data", async (req: Request, res: Response) => {
+	const filePath = req.query.filePath as string;
+	if (!filePath) {
+		return res.status(400).json({ error: "File path is required" });
+	}
+
+	const returnData: IGCFileSessionData = { primarySession: "", sessions: {} };
+
+	// Get session directory
+	const sessionDir = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+	);
+
+	// Get the primary session info inside the session.config.json file
+	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
+	if (!fs.existsSync(sessionsConfigPath)) {
+		return res.status(404).json({ error: "Session config file not found" });
+	}
+	// Read the session config file and get the current primary session data
+	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
+	const primarySession: string = sessionConfigData.current;
+	returnData.primarySession = primarySession;
+
+	// Get all session data
+	const sessionDirs = await getSubDirectories(sessionDir);
+	for (const session of sessionDirs) {
+		const sessionConfigPath = path.join(sessionDir, session, "executions", "config.json");
+		const sessionConfigData: SessionConfig = await fs.readJSON(
+			sessionConfigPath,
+		);
+
+		// Create a new session data object
+		const sessionData: IGCSession = {
+			lastUpdate: sessionConfigData.timestamp,
+			overallConfiguration: {},
+			executions: [],
+		};
+		// Update the execution data
+		const executionsDir = path.join(sessionDir, session, "executions");
+		for (let i = 0; i < sessionConfigData.path.length; i++) {
+			const nodeId = sessionConfigData.path[i];
+			const executionDir = path.join(executionsDir, `${i + 1}`);
+			const executionData: IGCCodeNodeExecution = {
+				...(await getExecutionData(executionDir)),
+				nodeId: nodeId,
+			};
+			sessionData.executions.push(executionData);
+		}
+		// Update the overall configuration to the most recent one
+		// Get the most recent configuration file
+		const lastExecution =
+			sessionData.executions[sessionData.executions.length - 1];
+		sessionData.overallConfiguration = lastExecution.configuration;
+
+		// Add the session data to the return object
+		returnData.sessions[session] = sessionData;
+	}
+
+	return res.json(returnData);
+});
+
+router.delete("/session-data-node", async (req: Request, res: Response) => {
+	const filePath = req.query.filePath as string;
+	const nodeId = req.query.nodeId as string;
+	if (!filePath || !nodeId) {
+		return res
+			.status(400)
+			.json({ error: "File path and node ID are required" });
+	}
+
+	// Keep track of the affected sessions
+	const affectedSessions: string[] = [];
+
+	// Go through every session of the file and check if the node is present in the execution path
+	const sessionDir = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+	);
+	const sessionDirs = await getSubDirectories(sessionDir);
+	for (const session of sessionDirs) {
+		const sessionPath = path.join(sessionDir, session);
+		const sessionConfigPath = path.join(sessionPath, "executions", "config.json");
+		const sessionConfigData: SessionConfig = await fs.readJSON(
+			sessionConfigPath,
+		);
+
+		// If the node is present in the execution path, remove it
+		if (sessionConfigData.path.includes(nodeId)) {
+			affectedSessions.push(session);
+
+			// Remove the session
+			fs.removeSync(sessionPath);
+		}
+	}
+
+	// Check if the primary session is affected
+	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
+	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
+	if (affectedSessions.includes(sessionConfigData.current)) {
+		// Find the most current session
+		// Go through each session config file and fine the one with the most recent timestamp
+		let mostRecentSession = "";
+		let mostRecentTimestamp = 0;
+		const sessionDirs = await getSubDirectories(sessionDir);
+		for (const session of sessionDirs) {
+			const sessionConfigPath = path.join(
+				sessionDir,
+				session,
+                "executions",
+				"config.json",
+			);
+			const sessionConfigData: SessionConfig = await fs.readJSON(
+				sessionConfigPath,
+			);
+			if (sessionConfigData.timestamp > mostRecentTimestamp) {
+				mostRecentTimestamp = sessionConfigData.timestamp;
+				mostRecentSession = session;
+			}
+		}
+		sessionConfigData.current = mostRecentSession;
+		await fs.writeJSON(sessionsConfigPath, sessionConfigData);
+	}
+
+	return res.json(affectedSessions);
+});
+
+router.delete("/session-data-execution", async (req: Request, res: Response) => {
+	const {
+        filePath,
+		sessionId,
+		executionNumber,
+	}: SessionDataDeleteExecutionRequest = req.body;
+
+	if (filePath === undefined) {
+		return res
+			.status(400)
+			.json({ error: "File path is required" });
+	}
+    if (sessionId === undefined) {
+		return res
+			.status(400)
+			.json({ error: "Session Id is required" });
+	}
+    if (executionNumber === undefined) {
+        return res
+            .status(400)
+            .json({ error: "Execution Number is required" });
+    }
+
+    // Get the session directory
+    const sessionDir = path.join(
+        path.dirname(filePath),
+        ".sessions",
+        path.basename(filePath),
+        sessionId,
+    );
+    // Make sure session exists
+    if (!fs.existsSync(sessionDir)) {
+        return res
+            .status(404)
+            .json({ error: "Session not found" });
+    }
+    // Read the session config file
+    const sessionConfigPath = path.join(sessionDir, "executions", "config.json");
+    const sessionConfigData: SessionConfig = await fs.readJSON(sessionConfigPath);
+    // Remove the execution from the path
+    const newPath = sessionConfigData.path.splice(executionNumber, 1);
+
+    // Remove all execution data (need to run this again afterwards)
+    const executionsDir = path.join(sessionDir, "executions");
+    // Remove the execution directory
+    await fs.remove(executionsDir);
+
+    return newPath
 });
 
 export default router;

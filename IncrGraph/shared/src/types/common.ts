@@ -9,11 +9,11 @@ export interface GetFileContentRequest {
 }
 export interface GetFileContentResponse {
 	content: string;
-    lastModified: number;
+	lastModified: number;
 }
 export interface SetFileContentRequest {
-    path: string;
-    content: string;
+	path: string;
+	content: string;
 }
 export interface FileNode {
 	name: string;
@@ -57,21 +57,41 @@ export interface NewDirectoryRequest {
 export interface CodeExecutionRequest {
 	code: string;
 	language: string;
-	projectPath: string;
+	filePath: string;
+	nodeId: string;
 	sessionId?: string;
+}
+export interface CodeExecutionMetrics {
+	executionTime: number;
+	sessionId: string;
 }
 export interface CodeExecutionResponse {
 	output: string;
 	error: string;
+	metrics: CodeExecutionMetrics;
 	configuration: any;
-	executionTime: number;
-	sessionId: string;
 	metaNodeData?: any;
 }
 
 export interface CodeAnalysisRequest {
 	code: string;
 	language: string;
+}
+export interface IdCodeTuple {
+	id: string;
+	data: string | FileIdCodeList;
+}
+
+export interface FileIdCodeList {
+	filePath: string;
+	elements: IdCodeTuple[];
+}
+
+export interface CodeManyExecutionRequest {
+	fileIdCodeList: FileIdCodeList;
+	language: string;
+	filePath: string;
+	sessionId?: string;
 }
 
 export interface Dependencies {
@@ -95,8 +115,50 @@ export interface CacheEntry {
 	search_path: string;
 	last_updated: string;
 	files: string[];
-    meta?: ModuleConfigurationData;
+	meta?: ModuleConfigurationData;
 }
 export interface ModuleConfigurationData {
-    name: string;
+	name: string;
+}
+export interface SessionDataGetRequest {
+	filePath: string;
+}
+export interface SessionDataDeleteNodeRequest {
+	filePath: string;
+	nodeId: string;
+}
+export interface SessionDataDeleteExecutionRequest {
+	filePath: string;
+	sessionId: string;
+	executionNumber: number;
+}
+
+// Session/Run data
+export interface IGCFileSessionData {
+	primarySession: string;
+	sessions: IGCSessionData;
+}
+
+// Session/Run data
+export type IGCFileSession = { [filePath: string]: IGCFileSessionData };
+
+export type IGCSessionData = { [sessionId: string]: IGCSession };
+
+export interface IGCSession {
+	lastUpdate: number;
+	overallConfiguration: any;
+	executions: IGCCodeNodeExecution[];
+}
+export interface IGCCodeNodeExecution {
+	nodeId: string;
+	stdout: string;
+	stderr: string;
+	metrics: CodeExecutionMetrics;
+	configuration: any;
+}
+
+export interface SessionConfig {
+	path: string[];
+	timestamp: number;
+	filePath: string;
 }

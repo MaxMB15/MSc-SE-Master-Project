@@ -50,8 +50,6 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const setNodes = useStore((state) => state.setNodes);
 	const getEdges = useStore((state) => state.getEdges);
 	const setEdges = useStore((state) => state.setEdges);
-	const sessions = useStore((state) => state.sessions);
-	const setSessions = useStore((state) => state.setSessions);
 	const currentSessionId = useStore((state) => state.currentSessionId);
 	const nodeTypes = useStore((state) => state.nodeTypes);
 	const relationshipTypes = useStore((state) => state.relationshipTypes);

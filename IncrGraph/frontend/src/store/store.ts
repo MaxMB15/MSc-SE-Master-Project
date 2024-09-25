@@ -1,17 +1,15 @@
 import { Node, Edge } from "reactflow";
 import {
-	CodeRunData,
 	ElementItem,
 	Item,
 	ModuleComponent,
 	RegistryComponent,
-	SessionData,
 } from "@/types/frontend";
 import { createWithEqualityFn } from "zustand/traditional";
 import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
 import { IGCViewProps } from "@/IGCItems/views/BaseView";
-import { Cache, GetFileContentResponse } from "shared";
+import { Cache, GetFileContentResponse, IGCFileSession, IGCFileSessionData, IGCSessionData } from "shared";
 import { getFileContent } from "@/requests";
 
 interface FileHistory {
@@ -89,15 +87,9 @@ interface State {
 		updater: (prev: string | null) => string | null,
 	) => void;
 
-	sessions: Map<string, SessionData>;
-	setSessions: (
-		updater: (prev: Map<string, SessionData>) => Map<string, SessionData>,
-	) => void;
-
-	codeRunData: Map<string, CodeRunData>;
-	setCodeRunData: (
-		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
-	) => void;
+	sessionData: IGCFileSession;
+    getSessionData: (file: string) => IGCFileSessionData | undefined;
+    setSessionData: (file: string, updater: (prev: IGCFileSessionData) => IGCFileSessionData) => void;
 
 	mode: ThemeMode;
 	setMode: (updater: (prev: ThemeMode) => ThemeMode) => void;
@@ -299,15 +291,15 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 	setCurrentSessionId: (updater: (prev: string | null) => string | null) =>
 		set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
 
-	sessions: new Map<string, SessionData>(),
-	setSessions: (
-		updater: (prev: Map<string, SessionData>) => Map<string, SessionData>,
-	) => set((state) => ({ sessions: updater(state.sessions) })),
-
-	codeRunData: new Map<string, CodeRunData>(),
-	setCodeRunData: (
-		updater: (prev: Map<string, CodeRunData>) => Map<string, CodeRunData>,
-	) => set((state) => ({ codeRunData: updater(state.codeRunData) })),
+	sessionData: {},
+    getSessionData: (file) => get().sessionData[file],
+    setSessionData: (file, updater) => set((state) => ({
+        sessionData: {
+            ...state.sessionData,
+            [file]: updater(state.sessionData[file]),
+        },
+    })),
+    
 
 	// Registry for Node, Relationship, and View Components
 	nodeTypes: {},

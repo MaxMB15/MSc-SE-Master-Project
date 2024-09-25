@@ -364,7 +364,7 @@
         },
         {
             "id": "10",
-            "type": "ImportNode",
+            "type": "GraphNode",
             "data": {
                 "label": "Node 18",
                 "codeData": {
@@ -376,8 +376,8 @@
                 "y": -363.4387839275788
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 150,
+            "height": 37,
             "positionAbsolute": {
                 "x": -54.92316552752732,
                 "y": -363.4387839275788

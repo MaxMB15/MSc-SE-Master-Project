@@ -23,7 +23,7 @@ const RawNodeCodeView: React.FC = () => {
 	const nodes = useStore((state) => state.nodes);
 	const setNodes = useStore((state) => state.setNodes);
 	const savedNodes = useStore((state) => state.savedNodes);
-	const codeRunData = useStore((state) => state.codeRunData);
+	const getSessionData = useStore((state) => state.getSessionData);
 
 	const [content, setContent] = React.useState<string | undefined>(undefined);
 
@@ -113,6 +113,18 @@ const RawNodeCodeView: React.FC = () => {
 	const editorPathKey = `${selectedFile}-${selectedItem.id}`;
 	useStore.getState().setHasEditorCreated(editorPathKey);
 
+    const sessionsData = getSessionData(selectedFile);
+    const currentSessionId = useStore.getState().currentSessionId;
+    let lastExecutionData = null; 
+    if (currentSessionId !== null && sessionsData !== undefined && sessionsData.sessions[currentSessionId] !== undefined){
+        const sessionData = sessionsData.sessions[currentSessionId];
+        for(let i = sessionData.executions.length - 1; i >= 0; i--){
+            if (sessionData.executions[i].nodeId === selectedItem.id){
+                lastExecutionData = sessionData.executions[i];
+                break;
+            }
+        }
+    }
 	return (
 		<>
 			<div
@@ -125,7 +137,7 @@ const RawNodeCodeView: React.FC = () => {
 				<div
 					style={{
 						height: `${calculateHeight(
-							codeRunData.get(selectedItem.id) !== undefined,
+							lastExecutionData !== null,
 						)}px`,
 					}}
 				>
@@ -139,10 +151,10 @@ const RawNodeCodeView: React.FC = () => {
 						height="100%"
 					/>
 				</div>
-				{codeRunData.get(selectedItem.id) !== undefined && (
+				{lastExecutionData !== null && (
 					<div style={{ flexShrink: 0, transition: "all 0.3s ease" }}>
 						<TabbedCodeOutput
-							codeRunData={codeRunData.get(selectedItem.id)}
+							executionData={lastExecutionData}
 							// fitAddons={fitAddons}
 						/>
 					</div>

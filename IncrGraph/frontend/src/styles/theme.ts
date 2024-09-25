@@ -32,6 +32,13 @@ const defaultTheme: ThemeOptions = {
                 },
             },
         },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    color: "var(--mui-text-primary)",
+                },
+            },
+        }
 	},
 };
 

@@ -12,7 +12,7 @@ export const STYLES = {
     methodNodeColor: "#ff0000",
 	codeFragmentNodeColor: "#0077ff",
     documentationNodeColor: "#ff00ff",
-    importNodeColor: "#454545",
+    graphNodeColor: "#454545",
 
     baseRelationshipColor: "#ffffff",
     inheritanceRelationshipColor: "#00ff00",
