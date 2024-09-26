@@ -19,6 +19,11 @@ import {
 import GraphNode, { GraphNodeData } from "@/IGCItems/nodes/GraphNode";
 import path from "path-browserify";
 import CustomSelect from "@/components/CustomSelect";
+import { loadSessionData } from "@/utils/sessionHandler";
+import { useRunButton } from "../viewUtils";
+import TabbedCodeOutput from "@/components/TabbedCodeOutput";
+import SessionInfo from "./SessionInfo";
+import { IGCSession } from "shared";
 
 interface Session {
 	id: string;
@@ -32,8 +37,20 @@ const RawGraphNodeView: React.FC = () => {
 	const [sessions, setSessions] = useState<Session[]>([]);
 	const [selectedSession, setSelectedSession] = useState<string>("");
 	const [isFocused, setIsFocused] = useState(false);
+	const [lastExecutionData, setLastExecutionData] = useState<any>(null);
+    const [loadedSession, setLoadedSession] = useState<IGCSession | null>(null);
 
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const sessionUpdate = useStore((state) => state.sessionUpdate);
+
+    const selectedItem = useStore.getState().selectedItem;
+	const curFile = useStore.getState().selectedFile;
+	const sessionsData =
+		curFile !== null
+			? useStore.getState().getSessionData(curFile) ?? null
+			: null;
+	const currentSessionId = useStore.getState().currentSessionId;
 
 	const handleFileInputChange = (
 		event: React.ChangeEvent<HTMLInputElement>,
@@ -51,6 +68,20 @@ const RawGraphNodeView: React.FC = () => {
 
 	const handleSessionChange = (sessionId: string) => {
 		setSelectedSession(sessionId);
+		const curFile = useStore.getState().selectedFile;
+		const selectedItem = useStore.getState().selectedItem;
+		if (curFile === null || selectedItem === null) {
+			return;
+		}
+		useStore.getState().setNodes(curFile, (prevNodes) =>
+			prevNodes.map((node) => {
+				if (node.id === selectedItem.id) {
+					(node as Node<GraphNodeData>).data.selectedSession =
+						sessionId;
+				}
+				return node;
+			}),
+		);
 		// onSessionChange(sessionId); // Trigger the session change logic
 	};
 	const handlePathChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,135 +89,244 @@ const RawGraphNodeView: React.FC = () => {
 		// handleFilePathChange(event); // Propagate the change
 	};
 
-    const loadFileData = async () => {
-        const curFile = useStore.getState().selectedFile;
-        const selectedItem = useStore.getState().selectedItem;
-        if(curFile !== null && selectedItem !== null){
-            const igcFile = path.join(curFile, filePath);
-            if(igcFile.endsWith(".igc")){
-                // Check if the file exists
-                const fileExistsPromise = await fileExists(igcFile);
-                if(fileExistsPromise){
-                    console.log("Debounced action triggered with path:", igcFile);
-                    useStore.getState().setNodes(curFile, (prevNodes) => prevNodes.map((node) => {
-                        if(node.id === selectedItem.id){
-                            (node as Node<GraphNodeData>).data.filePath = path.basename(igcFile);
-                        }
-                        return node;
-                    }));
-                    setGoodIGCFile(igcFile);
-                }
-            }
-        }
+	const loadFileData = async () => {
+		const curFile = useStore.getState().selectedFile;
+		const selectedItem = useStore.getState().selectedItem;
+		if (curFile !== null && selectedItem !== null) {
+			const igcFile = path.isAbsolute(filePath)
+				? filePath
+				: path.join(path.dirname(curFile), filePath);
+			if (igcFile.endsWith(".igc")) {
+				// Check if the file exists
+				const fileExistsPromise = await fileExists(igcFile);
+				if (fileExistsPromise) {
+					console.log(
+						"Debounced action triggered with path:",
+						igcFile,
+					);
+					useStore.getState().setNodes(curFile, (prevNodes) =>
+						prevNodes.map((node) => {
+							if (node.id === selectedItem.id) {
+								(node as Node<GraphNodeData>).data.filePath =
+									path.basename(igcFile);
+							}
+							return node;
+						}),
+					);
+					setGoodIGCFile(igcFile);
+					useStore.getState().setNodes(curFile, (prevNodes) =>
+						prevNodes.map((node) => {
+							if (node.id === selectedItem.id) {
+								(node as Node<GraphNodeData>).data.filePath =
+									igcFile;
+							}
+							return node;
+						}),
+					);
+				}
+			}
+		}
+	};
+	useEffect(() => {
+		const selectedItem = useStore.getState().selectedItem;
+		const selectedFile = useStore.getState().selectedFile;
+		if (selectedItem !== null && selectedFile !== null) {
+			const graphNode = selectedItem.item.object as Node<GraphNodeData>;
+			const filePath = graphNode.data.filePath;
+			if (filePath === undefined) {
+				return;
+			}
+			setFilePath(filePath);
+			if (graphNode.data.selectedSession !== undefined) {
+				loadSessionData(filePath).then((data) => {
+					const sessionKeys = Object.keys(data.sessions);
+					if (sessionKeys.includes(graphNode.data.selectedSession)) {
+						setSelectedSession(graphNode.data.selectedSession);
+					}
+					setSessions(
+						sessionKeys.map((key) => {
+							return {
+								id: key,
+								name: key,
+							};
+						}),
+					);
+				});
+			}
+			// setSelectedSession(sessionId);
+		}
+	}, []);
 
-    };
     useEffect(() => {
-        setSessions([
-            { id: "1", name: "Session 1" },
-            { id: "2", name: "Session 2" },
-            { id: "3", name: "Session 3" },
-        ]);
-    }, [goodIGCFile]);
-
-    useEffect(() => {
-        setGoodIGCFile(null);
-        if(filePath === ""){
+        // Get session info from the selected file and session
+        if (filePath === "" || selectedSession === "") {
+            setLoadedSession(null);
             return;
         }
-        // Clear the previous timeout if any
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
+        const sessionData = useStore.getState().getSessionData(filePath);
+        if (sessionData === undefined) {
+            setLoadedSession(null);
+            return;
         }
-    
-        // Set a new timeout
-        timeoutRef.current = setTimeout(() => {
-            loadFileData(); // Trigger the function after 2 seconds
-        }, 1000);
-        
-        // Clean up the timeout when the component unmounts or the value changes
-        return () => {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-        };
-      }, [filePath]); // Re-run the effect whenever `value` changes
+        const session = sessionData.sessions[selectedSession];
+        if (session === undefined) {
+            setLoadedSession(null);
+            return;
+        }
+        setLoadedSession(session);
+
+    }, [filePath, selectedSession]);
+	useEffect(() => {
+		if (goodIGCFile === null) {
+			return;
+		}
+		loadSessionData(goodIGCFile).then((data) => {
+			const sessionKeys = Object.keys(data.sessions);
+			setSessions(
+				sessionKeys.map((key) => {
+					return {
+						id: key,
+						name: key,
+					};
+				}),
+			);
+		});
+	}, [goodIGCFile]);
+
+	useEffect(() => {
+		setGoodIGCFile(null);
+		if (filePath === "") {
+			return;
+		}
+		// Clear the previous timeout if any
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+		}
+
+		// Set a new timeout
+		timeoutRef.current = setTimeout(() => {
+			loadFileData(); // Trigger the function after 2 seconds
+		}, 1000);
+
+		// Clean up the timeout when the component unmounts or the value changes
+		return () => {
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
+		};
+	}, [filePath]); // Re-run the effect whenever `value` changes
+
+	useEffect(() => {
+		const si = useStore.getState().selectedItem;
+		if (si !== null) {
+			useRunButton(si.item.object as Node<GraphNodeData>);
+		}
+	}, [useStore.getState().selectedItem?.id]);
+
+	useEffect(() => {
+		if (
+			sessionsData !== null &&
+			currentSessionId !== null &&
+			currentSessionId in sessionsData.sessions &&
+			selectedItem !== null
+		) {
+			const sessionData = sessionsData.sessions[currentSessionId];
+			for (let i = sessionData.executions.length - 1; i >= 0; i--) {
+				if (sessionData.executions[i].nodeId === selectedItem.id) {
+					setLastExecutionData(sessionData.executions[i]);
+					break;
+				}
+			}
+		}
+	}, [sessionUpdate]);
 
 	return (
-		<Box sx={{ padding: "20px" }}>
-			{/* File Input */}
-			<Box sx={{ mb: 2 }}>
-				<Typography variant="h6" gutterBottom>
-					File
-				</Typography>
-				<TextField
-					value={selectedFile ? selectedFile.name : filePath}
-					onChange={handlePathChange}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
-					fullWidth
-					placeholder="Enter relative/absolute path or select a file"
-					slotProps={{
-						input: {
-							endAdornment: (
-								<InputAdornment position="end"             >
-									<Tooltip
-										title={
-											selectedFile
-												? selectedFile.name
-												: "Select a .igc file"
-										}
-									>
-										<IconButton
-											component="label"
-											className="icon-button"
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+			}}
+		>
+			<div style={{ flexGrow: 1, padding: "20px" }}>
+				{/* File Input */}
+				<Box>
+					<Typography variant="h6" gutterBottom>
+						File
+					</Typography>
+					<TextField
+						value={selectedFile ? selectedFile.name : filePath}
+						onChange={handlePathChange}
+						onFocus={() => setIsFocused(true)}
+						onBlur={() => setIsFocused(false)}
+						fullWidth
+						placeholder="Enter relative/absolute path or select a file"
+						slotProps={{
+							input: {
+								endAdornment: (
+									<InputAdornment position="end">
+										<Tooltip
+											title={
+												selectedFile
+													? selectedFile.name
+													: "Select a .igc file"
+											}
 										>
-											<input
-												type="file"
-												accept=".igc"
-												hidden
-												onChange={handleFileInputChange}
-											/>
-											<AttachFileIcon />
-										</IconButton>
-									</Tooltip>
-								</InputAdornment>
-							),
-						},
-					}}
-					sx={{
-						"& .MuiOutlinedInput-root": {
-							border: isFocused
-								? (goodIGCFile ? "1px solid var(--primary)" : "1px solid red")
-								: "none",
-							backgroundColor:
-								"var(--mui-palette-background-default)",
-						},
-						"& .MuiOutlinedInput-input": {
-							padding: "10px",
-						},
-					}}
-				/>
-			</Box>
+											<IconButton
+												component="label"
+												className="icon-button"
+											>
+												<input
+													type="file"
+													accept=".igc"
+													hidden
+													onChange={
+														handleFileInputChange
+													}
+												/>
+												<AttachFileIcon />
+											</IconButton>
+										</Tooltip>
+									</InputAdornment>
+								),
+							},
+						}}
+						sx={{
+							"& .MuiOutlinedInput-root": {
+								border: isFocused
+									? goodIGCFile
+										? "1px solid var(--primary)"
+										: "1px solid red"
+									: "none",
+								backgroundColor:
+									"var(--mui-palette-background-default)",
+							},
+							"& .MuiOutlinedInput-input": {
+								padding: "10px",
+							},
+						}}
+					/>
+				</Box>
 
-			{/* Session Selection */}
-			<Box sx={{ mb: 2 }}>
-				<Typography variant="h6" gutterBottom>
-					Session
-				</Typography>
-				<CustomSelect
-					id={""}
-					options={sessions.map((session) => {
-						return {
-							value: session.id,
-							label: session.name,
-							style: {},
-						};
-					})}
-					value={selectedSession}
-					onChange={handleSessionChange}
-					disabled={goodIGCFile === null}
-				/>
-				{/* <TextField
+				{/* Session Selection */}
+				<Box sx={{ mb: 2 }}>
+					<Typography variant="h6" gutterBottom>
+						Session
+					</Typography>
+					<CustomSelect
+						id={""}
+						options={sessions.map((session) => {
+							return {
+								value: session.id,
+								label: session.name,
+								style: {},
+							};
+						})}
+						value={selectedSession}
+						onChange={handleSessionChange}
+						disabled={goodIGCFile === null}
+					/>
+					{/* <TextField
 					select
 					fullWidth
 					label="Select Session"
@@ -200,30 +340,40 @@ const RawGraphNodeView: React.FC = () => {
 						</MenuItem>
 					))}
 				</TextField> */}
-			</Box>
+				</Box>
 
-			{/* Basic Info Box */}
-			<Box
-				sx={{
-					mt: 2,
-					p: 2,
-					border: "1px solid gray",
-					borderRadius: 2,
-					bgcolor: selectedSession ? "inherit" : "gray",
-				}}
-			>
-				<Typography
-					variant="body1"
-					color={selectedSession ? "textPrimary" : "textSecondary"}
+				{/* Basic Info Box */}
+				<Box
+					sx={{
+						mt: 2,
+						p: 2,
+						border: "1px solid gray",
+						borderRadius: 2,
+						bgcolor: selectedSession ? "inherit" : "gray",
+					}}
 				>
-					Selected Session ID: {selectedSession || "None Selected"}
-				</Typography>
-				<Typography variant="body2" color="textSecondary">
-					{/* Customize this area to display specific session information */}
-					This is where the basic info related to the session will go.
-				</Typography>
-			</Box>
-		</Box>
+					<Typography
+						variant="body1"
+						color={
+							selectedSession ? "textPrimary" : "textSecondary"
+						}
+					>
+						Selected Session ID:{" "}
+						{selectedSession || "None Selected"}
+					</Typography>
+                    {loadedSession && (
+					<SessionInfo executionOrder={loadedSession.executions.map((e) => e.nodeId)} lastUpdated={loadedSession.lastUpdate} variables={loadedSession.overallConfiguration}/>)}
+				</Box>
+			</div>
+			{lastExecutionData !== null && (
+				<div style={{ flexShrink: 0, transition: "all 0.3s ease" }}>
+					<TabbedCodeOutput
+						executionData={lastExecutionData}
+						// fitAddons={fitAddons}
+					/>
+				</div>
+			)}
+		</div>
 	);
 };
 

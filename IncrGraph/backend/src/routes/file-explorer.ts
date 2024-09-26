@@ -1,4 +1,3 @@
-import { exec } from "child_process";
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
@@ -12,7 +11,7 @@ import {
 	SessionConfig,
 	IGCSession,
 	IGCCodeNodeExecution,
-    SessionDataDeleteExecutionRequest,
+	SessionDataDeleteExecutionRequest,
 } from "shared";
 
 const router = Router();
@@ -562,7 +561,15 @@ router.get("/session-data", async (req: Request, res: Response) => {
 	// Get all session data
 	const sessionDirs = await getSubDirectories(sessionDir);
 	for (const session of sessionDirs) {
-		const sessionConfigPath = path.join(sessionDir, session, "executions", "config.json");
+		const sessionConfigPath = path.join(
+			sessionDir,
+			session,
+			"executions",
+			"config.json",
+		);
+		if (!fs.existsSync(sessionConfigPath)) {
+			continue;
+		}
 		const sessionConfigData: SessionConfig = await fs.readJSON(
 			sessionConfigPath,
 		);
@@ -588,7 +595,9 @@ router.get("/session-data", async (req: Request, res: Response) => {
 		// Get the most recent configuration file
 		const lastExecution =
 			sessionData.executions[sessionData.executions.length - 1];
-		sessionData.overallConfiguration = lastExecution.configuration;
+		if (lastExecution !== undefined) {
+			sessionData.overallConfiguration = lastExecution.configuration;
+		}
 
 		// Add the session data to the return object
 		returnData.sessions[session] = sessionData;
@@ -618,7 +627,14 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 	const sessionDirs = await getSubDirectories(sessionDir);
 	for (const session of sessionDirs) {
 		const sessionPath = path.join(sessionDir, session);
-		const sessionConfigPath = path.join(sessionPath, "executions", "config.json");
+		const sessionConfigPath = path.join(
+			sessionPath,
+			"executions",
+			"config.json",
+		);
+		if (!fs.existsSync(sessionConfigPath)) {
+			continue;
+		}
 		const sessionConfigData: SessionConfig = await fs.readJSON(
 			sessionConfigPath,
 		);
@@ -634,8 +650,8 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 
 	// Check if the primary session is affected
 	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
-	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
-	if (affectedSessions.includes(sessionConfigData.current)) {
+	const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
+	if (affectedSessions.includes(sessionsConfigData.current)) {
 		// Find the most current session
 		// Go through each session config file and fine the one with the most recent timestamp
 		let mostRecentSession = "";
@@ -645,9 +661,12 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 			const sessionConfigPath = path.join(
 				sessionDir,
 				session,
-                "executions",
+				"executions",
 				"config.json",
 			);
+			if (!fs.existsSync(sessionConfigPath)) {
+				continue;
+			}
 			const sessionConfigData: SessionConfig = await fs.readJSON(
 				sessionConfigPath,
 			);
@@ -656,61 +675,152 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 				mostRecentSession = session;
 			}
 		}
-		sessionConfigData.current = mostRecentSession;
-		await fs.writeJSON(sessionsConfigPath, sessionConfigData);
+		sessionsConfigData.current = mostRecentSession;
+		await fs.writeJSON(sessionsConfigPath, sessionsConfigData);
 	}
 
 	return res.json(affectedSessions);
 });
 
-router.delete("/session-data-execution", async (req: Request, res: Response) => {
-	const {
-        filePath,
-		sessionId,
-		executionNumber,
-	}: SessionDataDeleteExecutionRequest = req.body;
+router.delete(
+	"/session-data-execution",
+	async (req: Request, res: Response) => {
+		const {
+			filePath,
+			sessionId,
+			executionNumber,
+		}: SessionDataDeleteExecutionRequest = req.body;
 
-	if (filePath === undefined) {
+		if (filePath === undefined) {
+			return res.status(400).json({ error: "File path is required" });
+		}
+		if (sessionId === undefined) {
+			return res.status(400).json({ error: "Session Id is required" });
+		}
+		if (executionNumber === undefined) {
+			return res
+				.status(400)
+				.json({ error: "Execution Number is required" });
+		}
+
+		// Get the session directory
+		const sessionDir = path.join(
+			path.dirname(filePath),
+			".sessions",
+			path.basename(filePath),
+			sessionId,
+		);
+		// Make sure session exists
+		if (!fs.existsSync(sessionDir)) {
+			return res.status(404).json({ error: "Session not found" });
+		}
+		// Read the session config file
+		const sessionConfigPath = path.join(
+			sessionDir,
+			"executions",
+			"config.json",
+		);
+		if (!fs.existsSync(sessionConfigPath)) {
+			// Error that the session has not been initialized
+			return res.status(400).json({ error: "Session not initialized" });
+		}
+		const sessionConfigData: SessionConfig = await fs.readJSON(
+			sessionConfigPath,
+		);
+
+		// Do a check to make sure the index is valid
+		if (
+			executionNumber < 1 ||
+			executionNumber > sessionConfigData.path.length
+		) {
+			return res.status(400).json({ error: "Invalid execution number" });
+		}
+		// Remove the execution from the path
+		sessionConfigData.path.splice(executionNumber - 1, 1);
+
+		// Remove all execution data (need to run this again afterwards)
+		const executionsDir = path.join(sessionDir, "executions");
+		// Remove the execution directory
+		await fs.remove(executionsDir);
+
+		// Create the config so it remains a valid session
+		await fs.ensureDir(executionsDir);
+		await fs.writeJSON(sessionConfigPath, {
+			path: [],
+			timestamp: Date.now(),
+			filePath: filePath,
+		});
+
+		return res.json(sessionConfigData.path);
+	},
+);
+router.post("/primary-session", async (req: Request, res: Response) => {
+	const filePath = req.body.filePath as string;
+	const sessionId = req.body.sessionId as string;
+
+	if (!filePath || !sessionId) {
 		return res
 			.status(400)
-			.json({ error: "File path is required" });
+			.json({ error: "File path and session ID are required" });
 	}
-    if (sessionId === undefined) {
+
+	const sessionDir = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+	);
+
+	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
+	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
+
+	if (sessionConfigData.current === sessionId) {
+		return res.status(400).json({ error: "Session already active" });
+	}
+
+	sessionConfigData.current = sessionId;
+	await fs.writeJSON(sessionsConfigPath, sessionConfigData);
+
+	return res.json({ message: "Primary session updated" });
+});
+
+// Create a new session
+router.post("/session", async (req: Request, res: Response) => {
+	const filePath = req.body.filePath as string;
+	const sessionId = req.body.sessionId as string;
+
+	if (!filePath || !sessionId) {
 		return res
 			.status(400)
-			.json({ error: "Session Id is required" });
+			.json({ error: "File path and session ID are required" });
 	}
-    if (executionNumber === undefined) {
-        return res
-            .status(400)
-            .json({ error: "Execution Number is required" });
-    }
 
-    // Get the session directory
-    const sessionDir = path.join(
-        path.dirname(filePath),
-        ".sessions",
-        path.basename(filePath),
-        sessionId,
-    );
-    // Make sure session exists
-    if (!fs.existsSync(sessionDir)) {
-        return res
-            .status(404)
-            .json({ error: "Session not found" });
-    }
-    // Read the session config file
-    const sessionConfigPath = path.join(sessionDir, "executions", "config.json");
-    const sessionConfigData: SessionConfig = await fs.readJSON(sessionConfigPath);
-    // Remove the execution from the path
-    const newPath = sessionConfigData.path.splice(executionNumber, 1);
+	// Create the session directory
+	const fileSessionDir = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+	);
+	const sessionDir = path.join(fileSessionDir, sessionId);
+	await fs.ensureDir(sessionDir);
 
-    // Remove all execution data (need to run this again afterwards)
-    const executionsDir = path.join(sessionDir, "executions");
-    // Remove the execution directory
-    await fs.remove(executionsDir);
+	// Create the executions directory
+	const executionsDir = path.join(sessionDir, "executions");
+	await fs.ensureDir(executionsDir);
 
-    return newPath
+	// Create the session execution config file
+	await fs.writeJSON(path.join(executionsDir, "config.json"), {
+		path: [],
+		timestamp: Date.now(),
+		filePath: filePath,
+	});
+
+	// Update the primary session
+	// Get session directory
+
+	const sessionsConfigPath = path.join(fileSessionDir, "session.config.json");
+	await fs.writeJSON(sessionsConfigPath, { current: sessionId });
+
+	return res.json({ message: "Session created" });
 });
 
 export default router;

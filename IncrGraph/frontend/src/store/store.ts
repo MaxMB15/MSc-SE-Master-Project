@@ -9,8 +9,14 @@ import { createWithEqualityFn } from "zustand/traditional";
 import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 import { IGCRelationshipProps } from "@/IGCItems/relationships/BaseRelationship";
 import { IGCViewProps } from "@/IGCItems/views/BaseView";
-import { Cache, GetFileContentResponse, IGCFileSession, IGCFileSessionData, IGCSessionData } from "shared";
-import { getFileContent } from "@/requests";
+import {
+	Cache,
+	GetFileContentResponse,
+	IGCFileSession,
+	IGCFileSessionData,
+	IGCSessionData,
+} from "shared";
+import { getFileContent, setPrimarySession } from "@/requests";
 
 interface FileHistory {
 	lastSavedTimestamp: number;
@@ -66,7 +72,7 @@ interface State {
 
 	nodes: { [file: string]: Node[] };
 	setNodes: (file: string, updater: (prev: Node[]) => Node[]) => void;
-    getNodes: (file: string) => Node[];
+	getNodes: (file: string) => Node[];
 	savedNodes: { [file: string]: { [id: string]: Node } };
 	setSavedNodes: (
 		file: string,
@@ -75,7 +81,7 @@ interface State {
 
 	edges: { [file: string]: Edge[] };
 	setEdges: (file: string, updater: (prev: Edge[]) => Edge[]) => void;
-    getEdges: (file: string) => Edge[];
+	getEdges: (file: string) => Edge[];
 	savedEdges: { [file: string]: { [id: string]: Edge } };
 	setSavedEdges: (
 		file: string,
@@ -88,8 +94,12 @@ interface State {
 	) => void;
 
 	sessionData: IGCFileSession;
-    getSessionData: (file: string) => IGCFileSessionData | undefined;
-    setSessionData: (file: string, updater: (prev: IGCFileSessionData) => IGCFileSessionData) => void;
+	sessionUpdate: number;
+	getSessionData: (file: string) => IGCFileSessionData | undefined;
+	setSessionData: (
+		file: string,
+		updater: (prev: IGCFileSessionData) => IGCFileSessionData,
+	) => void;
 
 	mode: ThemeMode;
 	setMode: (updater: (prev: ThemeMode) => ThemeMode) => void;
@@ -257,7 +267,7 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 				[file]: updater(state.nodes[file] || []),
 			},
 		})),
-    getNodes: (file) => get().nodes[file] || [],
+	getNodes: (file) => get().nodes[file] || [],
 
 	savedNodes: {}, // Initial state for saved nodes
 	setSavedNodes: (file, updater) =>
@@ -276,8 +286,8 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 				[file]: updater(state.edges[file] || []),
 			},
 		})),
-    getEdges: (file) => get().edges[file] || [],
-    
+	getEdges: (file) => get().edges[file] || [],
+
 	savedEdges: {},
 	setSavedEdges: (file, updater) =>
 		set((state) => ({
@@ -289,17 +299,28 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 
 	currentSessionId: null,
 	setCurrentSessionId: (updater: (prev: string | null) => string | null) =>
-		set((state) => ({ currentSessionId: updater(state.currentSessionId) })),
+		set((state) => {
+			if (state.selectedFile !== null) {
+				const newSessionId = updater(state.currentSessionId);
+				if (newSessionId !== null) {
+					setPrimarySession(state.selectedFile, newSessionId);
+				}
+				return { currentSessionId: newSessionId };
+			}
+			return {};
+		}),
 
 	sessionData: {},
-    getSessionData: (file) => get().sessionData[file],
-    setSessionData: (file, updater) => set((state) => ({
-        sessionData: {
-            ...state.sessionData,
-            [file]: updater(state.sessionData[file]),
-        },
-    })),
-    
+	sessionUpdate: Date.now(),
+	getSessionData: (file) => get().sessionData[file],
+	setSessionData: (file, updater) =>
+		set((state) => ({
+			sessionData: {
+				...state.sessionData,
+				[file]: updater(state.sessionData[file]),
+			},
+			sessionUpdate: Date.now(),
+		})),
 
 	// Registry for Node, Relationship, and View Components
 	nodeTypes: {},

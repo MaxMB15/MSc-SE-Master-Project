@@ -1,9 +1,10 @@
 import useStore from "@/store/store";
 import { ElementItem } from "@/types/frontend";
-import { IGCCodeNodeData } from "../nodes/CodeNode";
+import { IGCCodeNodeData, isCodeNode } from "../nodes/CodeNode";
 import { Node } from "reactflow";
-import { runCode } from "@/utils/codeExecution";
+import { runCode, runGraph } from "@/utils/codeExecution";
 import { PlayArrow } from "@mui/icons-material";
+import { GraphNodeData, isGraphNode } from "../nodes/GraphNode";
 
 // Save Indicator
 const saveIndicatorKey = "saveIndicator";
@@ -45,7 +46,9 @@ export const useSaveIndicator = (status: SaveIndicatorProps) => {
 };
 
 const runButtonKey = "runButton";
-export const useRunButton = (node: Node<IGCCodeNodeData>) => {
+export const useRunButton = (
+	node: Node,
+) => {
 	const runButton: ElementItem = {
 		key: runButtonKey,
 		weight: 10,
@@ -53,15 +56,28 @@ export const useRunButton = (node: Node<IGCCodeNodeData>) => {
 			<button
 				className="icon-button"
 				title="Run Code"
-				onClick={() =>
-					runCode(
-						node.data.codeData.code,
-						node.id,
-						node.data.codeData.scope,
-					)
-				}
+				onClick={() => {
+					if (isGraphNode(node)) {
+						runGraph(node.id);
+					} else if (isCodeNode(node)) {
+						runCode(
+							node.data.codeData.code,
+							node.id,
+							node.data.codeData.scope,
+						);
+					}
+				}}
 				disabled={
-					node.data.codeData.code === "" ||
+					(node.type === "GraphNode" &&
+						"filePath" in node.data &&
+						"selectedSession" in node.data &&
+						(node.data.filePath === undefined ||
+							node.data.filePath === "" ||
+							node.data.selectedSession === undefined ||
+							node.data.selectedSession === "")) ||
+					("codeData" in node.data &&
+						node.type !== "GraphNode" &&
+						node.data.codeData.code === "") ||
 					useStore.getState().currentSessionId === null
 				}
 			>

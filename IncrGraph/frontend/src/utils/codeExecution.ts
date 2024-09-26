@@ -1,14 +1,16 @@
 import { CodeAnalysisResponse, CodeExecutionResponse } from "shared";
 import { Node } from "reactflow";
-import {
-	addEdge,
-	getEdgeId,
-} from "@/IGCItems/utils/utils";
-import { callAnalyze, callExecute } from "@/requests";
+import { addEdge, getEdgeId } from "@/IGCItems/utils/utils";
+import { callAnalyze, callExecute, callExecuteMany } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/IGCItems/utils/edgeCreation";
 import { nodeHasCode } from "@/IGCItems/utils/types";
-import { loadSessionData } from "./sessionHandler";
+import {
+	createExecutionData,
+	loadSessionData,
+	updateExecutionRelationships,
+} from "./sessionHandler";
+import { GraphNodeData } from "@/IGCItems/nodes/GraphNode";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -16,12 +18,12 @@ import { loadSessionData } from "./sessionHandler";
 // Run the code analysis on the node
 export const runAnalysis = (node: Node) => {
 	const selectedFile = useStore.getState().selectedFile;
-    if (selectedFile === null) {
-        return;
-    }
+	if (selectedFile === null) {
+		return;
+	}
 	if (nodeHasCode(node)) {
 		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
-			useStore.getState().setNodes(selectedFile,(prevNodes) => {
+			useStore.getState().setNodes(selectedFile, (prevNodes) => {
 				return prevNodes.map((n) => {
 					if (node.id === n.id) {
 						if (
@@ -52,10 +54,10 @@ export const runAnalysis = (node: Node) => {
 };
 
 export const runAllAnalysis = async () => {
-    const selectedFile = useStore.getState().selectedFile;
-    if (selectedFile === null) {
-        return;
-    }
+	const selectedFile = useStore.getState().selectedFile;
+	if (selectedFile === null) {
+		return;
+	}
 
 	// Get all analysis data for all nodes
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
@@ -103,7 +105,6 @@ export const runAllAnalysis = async () => {
 	createDependencyGraph();
 };
 
-
 // Convert python code to space first instead of tabs
 const replaceTabsWithSpaces = (input: string, indent: number = 0): string => {
 	const additionalIndent = " ".repeat(4 * indent);
@@ -125,7 +126,7 @@ const replaceTabsWithSpaces = (input: string, indent: number = 0): string => {
 };
 
 // Inject code into scope
-const injectCode = (code: string, cls: string): string => {
+export const injectCode = (code: string, cls: string): string => {
 	return `def add_code_to_class(cls):
     # START CODE INJECTION
 ${replaceTabsWithSpaces(code, 1)}
@@ -225,10 +226,10 @@ const applyCodeAnalysis = (
 	nodeId: string,
 	metaNodeData: CodeAnalysisResponse,
 ) => {
-    const selectedFile = useStore.getState().selectedFile;
-    if (selectedFile === null) {
-        return;
-    }
+	const selectedFile = useStore.getState().selectedFile;
+	if (selectedFile === null) {
+		return;
+	}
 	useStore.getState().setNodes(selectedFile, (prevNodes) => {
 		return prevNodes.map((node) => {
 			if (node.id === nodeId) {
@@ -241,11 +242,11 @@ const applyCodeAnalysis = (
 
 export const runCode = (code: string, nodeId: string, scope?: string): void => {
 	// Data store variables
-    const selectedFile = useStore.getState().selectedFile;
-    const currentSessionId = useStore.getState().currentSessionId;
-    if (selectedFile === null) {
-        return;
-    }
+	const selectedFile = useStore.getState().selectedFile;
+	const currentSessionId = useStore.getState().currentSessionId;
+	if (selectedFile === null) {
+		return;
+	}
 
 	if (scope !== undefined) {
 		code = injectCode(code, scope);
@@ -253,7 +254,9 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 
 	callExecute(code, "python", selectedFile, nodeId, currentSessionId).then(
 		(response: CodeExecutionResponse) => {
-            loadSessionData(selectedFile);
+			loadSessionData(selectedFile).then((data) => {
+				updateExecutionRelationships(selectedFile, data);
+			});
 			// useStore.getState().setCodeRunData((prevData) =>
 			// 	prevData.set(nodeId, {
 			// 		stdout: response.output,
@@ -305,4 +308,22 @@ export const runCode = (code: string, nodeId: string, scope?: string): void => {
 			// useStore.getState().setCurrentSessionId(() => response.metrics.sessionId);
 		},
 	);
+};
+
+export const runGraph = async (nodeId: string) => {
+	const selectedFile = useStore.getState().selectedFile;
+	const currentSessionId = useStore.getState().currentSessionId;
+	if (selectedFile === null || currentSessionId === null) {
+		return;
+	}
+	const executionData = await createExecutionData(selectedFile, [nodeId]);
+	await callExecuteMany(
+		executionData,
+		"python",
+		selectedFile,
+		currentSessionId,
+	);
+	loadSessionData(selectedFile).then((data) => {
+		updateExecutionRelationships(selectedFile, data);
+	});
 };

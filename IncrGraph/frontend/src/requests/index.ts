@@ -23,6 +23,7 @@ import {
 	SessionDataDeleteNodeRequest,
 	CodeManyExecutionRequest,
 	FileIdCodeList,
+    PrimarySessionRequest,
 } from "shared";
 
 export const getFileContent = (filePath: string) => {
@@ -309,3 +310,34 @@ export const deleteExecutionInSession = async (
 		options,
 	);
 };
+
+export const setPrimarySession = async (
+    filePath: string,
+    sessionId: string,
+): Promise<Empty> => {
+    const options: UseAxiosRequestOptions<PrimarySessionRequest> = {
+        method: "POST",
+        route: "/api/file-explorer/primary-session",
+        data: {
+            filePath: filePath,
+            sessionId: sessionId,
+        },
+        useJWT: false,
+    };
+
+    return sendAxiosRequest<PrimarySessionRequest, Empty>(options);
+}
+
+export const createSession = async (filePath: string, sessionId: string) => {
+    const options: UseAxiosRequestOptions<PrimarySessionRequest> = {
+        method: "POST",
+        route: "/api/file-explorer/session",
+        data: {
+            filePath: filePath,
+            sessionId: sessionId,
+        },
+        useJWT: false,
+    };
+
+    return sendAxiosRequest<PrimarySessionRequest, Empty>(options);
+}

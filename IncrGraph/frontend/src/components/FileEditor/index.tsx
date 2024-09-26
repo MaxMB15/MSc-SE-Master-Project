@@ -25,7 +25,7 @@ import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
-import { getIncomingNodes } from "../../IGCItems/utils/utils";
+import { getIncomingNodes, isComponentOfType } from "../../IGCItems/utils/utils";
 import style from "./FileEditor.module.css";
 import { STYLES } from "@/styles/constants";
 import { IGCViewProps, RegisteredView } from "@/IGCItems/views/BaseView";
@@ -34,6 +34,7 @@ import { IGCNodeProps } from "@/IGCItems/nodes/BaseNode";
 import { RegistryComponent } from "@/types/frontend";
 import _ from "lodash";
 import { serializeGraphData } from "@/IGCItems/utils/serialization";
+import { loadSessionData } from "@/utils/sessionHandler";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -761,6 +762,8 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 					{},
 				),
 			);
+
+            loadSessionData(selectedFile);
 		}
 	}, [fileChanged]);
 
@@ -914,22 +917,6 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		}
 		const Component = view[activeTab];
 		return <Component />;
-	};
-	const isComponentOfType = (
-		component: RegistryComponent,
-		typeComponent: RegistryComponent,
-	): boolean => {
-		const componentTypeHierarchy = component.typeHierarchy;
-		const tcSymbol = typeComponent.typeSymbol;
-		if (componentTypeHierarchy === undefined) {
-			return false;
-		}
-		for (let i = 0; i < componentTypeHierarchy.length; i++) {
-			if (componentTypeHierarchy[i] === tcSymbol) {
-				return true;
-			}
-		}
-		return false;
 	};
 	const componentIncludes = (
 		component: RegistryComponent,

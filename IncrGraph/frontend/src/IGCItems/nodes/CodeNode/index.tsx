@@ -4,6 +4,8 @@ import { runCode } from "@/utils/codeExecution";
 import useStore from "@/store/store";
 import { RegistryComponent } from "@/types/frontend";
 import { createComponent } from "@/utils/componentCache";
+import { isComponentOfType } from "@/IGCItems/utils/utils";
+import { Node } from "reactflow";
 
 type CodeData = {
 	code: string;
@@ -70,5 +72,19 @@ const CodeNode: IGCCodeNodeProps & RegistryComponent = createComponent(
 		abstract: true,
 	},
 );
+export const isCodeNode = (node: Node): node is Node<IGCCodeNodeData> => {
+    const nodeTypes = useStore.getState().nodeTypes;
+    if(node.type !== undefined && node.type in nodeTypes) {
+        return isComponentOfType(nodeTypes[node.type].object, CodeNode);
+    }
+    return false;
+}
+export const isCodeNodeType = (type: string): boolean => {
+    const nodeTypes = useStore.getState().nodeTypes;
+    if(type !== undefined && type in nodeTypes) {
+        return isComponentOfType(nodeTypes[type].object, CodeNode);
+    }
+    return false;
+}
 
 export default CodeNode;

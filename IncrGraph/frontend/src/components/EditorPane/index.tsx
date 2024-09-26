@@ -20,8 +20,8 @@ import "./EditorPane.css";
 import {
 	addEdge,
 	getEdgeId,
-	updateExecutionPath,
-	updateExecutionPathEdge,
+	// updateExecutionPath,
+	// updateExecutionPathEdge,
 } from "../../IGCItems/utils/utils";
 import CustomConnectionLine, {
 	connectionLineStyle,
@@ -36,6 +36,7 @@ import {
 	convertMapToTrueEdgeTypes,
 	convertMapToTrueNodeTypes,
 } from "@/IGCItems/utils/types";
+import { loadSessionData, removeExecutionInSession, removeNodeInSession } from "@/utils/sessionHandler";
 
 interface EditorPaneProps {}
 
@@ -143,28 +144,12 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const onNodesChange = (changes: NodeChange[]) => {
 		// Get current session data
 		if (currentSessionId !== null) {
-			const session = sessions.get(currentSessionId);
-			if (session !== undefined) {
-				let vSession = session;
-				let currentExecutionPath: string[] = vSession.executionPath;
-				// Go through each change and update eds accordingly
-				for (let change of changes) {
-					if (change.type === "remove") {
-						vSession.executionPath = vSession.executionPath.filter(
-							(node) => node !== change.id,
-						);
-					}
-				}
-				if (vSession.executionPath !== currentExecutionPath) {
-					// Shallow is okay
-					setSessions((prevSessions) => {
-						return prevSessions.set(currentSessionId, vSession);
-					});
-					setEdges(selectedFile, (prevEdges) =>
-						updateExecutionPath(prevEdges, vSession),
-					);
-				}
-			}
+            // Go through each change and update eds accordingly
+            for (let change of changes) {
+                if (change.type === "remove") {
+                    removeNodeInSession(selectedFile, change.id);
+                }
+            }
 		}
 		setNodes(selectedFile, (nds) => applyNodeChanges(changes, nds));
 	};
@@ -191,36 +176,77 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 
 	// Edge Functions
-	const onEdgesChange = (changes: EdgeChange[]) => {
+	const onEdgesChange = async (changes: EdgeChange[]) => {
 		setEdges(selectedFile, (eds) => {
-			// Get current session data
-			if (currentSessionId !== null) {
-				const session = sessions.get(currentSessionId);
-				if (session !== undefined) {
-					let vSession = session;
-					let currentExecutionPath: string[] = vSession.executionPath;
-					// Go through each change and update eds accordingly
-					for (let change of changes) {
-						if (change.type === "remove") {
-							const uepData = updateExecutionPathEdge(
-								change.id,
-								eds,
-								vSession,
-							);
-							eds = uepData.edges;
-							vSession = uepData.session;
-						}
-					}
-					if (vSession.executionPath !== currentExecutionPath) {
-						// Shallow is okay
-						setSessions((prevSessions) => {
-							return prevSessions.set(currentSessionId, vSession);
-						});
-					}
-				}
-			}
+            for(let change of changes){
+                if(change.type === "remove"){
+                    const edge = eds.find((e) => e.id === change.id);
+                    if(edge !== undefined && edge.type === "ExecutionRelationship"){
+                        console.log("Removing execution relationship:", edge.id);
+                        const currentSessionId = useStore.getState().currentSessionId;
+                        if (
+                            currentSessionId !== null &&
+                            edge.data.label !== undefined &&
+                            !isNaN(parseInt(edge.data.label))
+                        ) {
+                            removeExecutionInSession(
+                                selectedFile,
+                                currentSessionId,
+                                parseInt(edge.data.label),
+                            );
+                        }
+                        
+                    }
+                    //removeNodeInSession(selectedFile, change.id);
+                //     const currentSessionId = useStore.getState().currentSessionId;
+				// if (
+				// 	currentSessionId !== null &&
+				// 	selectedItem.item.object.data.label !== undefined &&
+				// 	!isNaN(parseInt(selectedItem.item.object.data.label))
+				// ) {
+				// 	removeExecutionInSession(
+				// 		selectedFile,
+				// 		currentSessionId,
+				// 		parseInt(selectedItem.item.object.data.label),
+				// 	);
+				// }
+                }
+            }
+			// // Get current session data
+			// if (currentSessionId !== null) {
+			// 	const session = sessions.get(currentSessionId);
+			// 	if (session !== undefined) {
+			// 		let vSession = session;
+			// 		let currentExecutionPath: string[] = vSession.executionPath;
+			// 		// Go through each change and update eds accordingly
+			// 		for (let change of changes) {
+			// 			if (change.type === "remove") {
+			// 				const uepData = updateExecutionPathEdge(
+			// 					change.id,
+			// 					eds,
+			// 					vSession,
+			// 				);
+			// 				eds = uepData.edges;
+			// 				vSession = uepData.session;
+			// 			}
+			// 		}
+			// 		if (vSession.executionPath !== currentExecutionPath) {
+			// 			// Shallow is okay
+			// 			setSessions((prevSessions) => {
+			// 				return prevSessions.set(currentSessionId, vSession);
+			// 			});
+			// 		}
+			// 	}
+			// }
+            // for (let change of changes) {
+            //     if (change.type === "remove") {
+            //         removeNodeInSession(selectedFile, change.id);
+            //     }
+            // }
 			return applyEdgeChanges(changes, eds);
 		});
+        // // Update session data
+        // loadSessionData(selectedFile);
 	};
 
 	// If a new edge is created
@@ -289,6 +315,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Play Current Execution"
+                            onClick={() => loadSessionData(selectedFile)}
 						>
 							<PlayArrow />
 						</button>

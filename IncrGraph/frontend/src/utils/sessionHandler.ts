@@ -4,17 +4,49 @@ import {
 	deleteNodeInSession,
 	deleteExecutionInSession,
 	getFileContent,
-    callExecuteMany,
+	callExecuteMany,
+	createSession,
 } from "@/requests";
 import useStore from "@/store/store";
-import { FileIdCodeList } from "shared";
+import { FileIdCodeList, IGCFileSessionData, IGCSessionData } from "shared";
 import { Node } from "reactflow";
-import { IGCCodeNodeData } from "@/IGCItems/nodes/CodeNode";
+import { updateExecutionPath } from "@/IGCItems/utils/utils";
+import { isCodeNode } from "@/IGCItems/nodes/CodeNode";
+import { isGraphNode } from "@/IGCItems/nodes/GraphNode";
+import { injectCode } from "./codeExecution";
 
 // This should update all the session and run data associated with the IGC file
 export const loadSessionData = async (filePath: string) => {
 	const sessionData = await getSessionData(filePath);
 	useStore.getState().setSessionData(filePath, () => sessionData);
+	return sessionData;
+};
+export const updateExecutionRelationships = async (
+	filePath: string,
+	sessionData: IGCFileSessionData,
+) => {
+	// Update edges for the current session
+	const newExecutionData = await getExecutionPathFromSession(
+		filePath,
+		useStore.getState().currentSessionId ?? sessionData.primarySession,
+		sessionData,
+	);
+	useStore
+		.getState()
+		.setEdges(filePath, (prevEdges) => [
+			...prevEdges.filter((e) => e.type !== "ExecutionRelationship"),
+			...updateExecutionPath(newExecutionData),
+		]);
+
+	if (useStore.getState().currentSessionId === null) {
+		useStore
+			.getState()
+			.setCurrentSessionId(() => sessionData.primarySession);
+	}
+};
+export const createNewSession = async (filePath: string, sessionId: string) => {
+	return createSession(filePath, sessionId);
+	// await loadSessionData(filePath);
 };
 
 export const removeNodeInSession = async (filePath: string, nodeId: string) => {
@@ -28,6 +60,19 @@ export const removeNodeInSession = async (filePath: string, nodeId: string) => {
 		useStore.getState().setCurrentSessionId(() => null);
 	}
 	useStore.getState().setSessionData(filePath, () => sessionData);
+
+	// Update edges for the current session
+	const newExecutionData = await getExecutionPathFromSession(
+		filePath,
+		useStore.getState().currentSessionId ?? sessionData.primarySession,
+		sessionData,
+	);
+	useStore
+		.getState()
+		.setEdges(filePath, (prevEdges) => [
+			...prevEdges.filter((e) => e.type !== "ExecutionRelationship"),
+			...updateExecutionPath(newExecutionData),
+		]);
 };
 
 export const removeExecutionInSession = async (
@@ -43,21 +88,30 @@ export const removeExecutionInSession = async (
 	);
 
 	// Update the session data
-    const newExecutionData = await createExecutionData(filePath, newExecutionPath);
-    callExecuteMany(newExecutionData, "python", filePath, sessionId);
+	const newExecutionData = await createExecutionData(
+		filePath,
+		newExecutionPath,
+	);
+	await callExecuteMany(newExecutionData, "python", filePath, sessionId);
 
-    // Update session data
-    loadSessionData(filePath);
+	// Update session data
+	loadSessionData(filePath).then((sessionData) => {
+        updateExecutionRelationships(filePath, sessionData);
+    });
 };
-export const getExecutionPathFromSession = (
+export const getExecutionPathFromSession = async (
 	filePath: string,
 	sessionId: string,
-): string[] => {
-	const sessionData = useStore.getState().getSessionData(filePath);
-	if (sessionData === undefined || !(sessionId in sessionData.sessions)) {
+	sessionData?: IGCFileSessionData,
+): Promise<string[]> => {
+	const sd =
+		sessionData !== undefined
+			? sessionData
+			: await loadSessionData(filePath);
+	if (sd === undefined || !(sessionId in sd.sessions)) {
 		return [];
 	}
-	const executionPaths = sessionData.sessions[sessionId].executions.map(
+	const executionPaths = sd.sessions[sessionId].executions.map(
 		(execution) => {
 			// Make sure this is in order
 			return execution.nodeId;
@@ -78,19 +132,25 @@ export const createExecutionData = async (
 	const fileContent = await getFileContent(filePath);
 	const serializedGraphData = serializeGraphData(fileContent.content);
 	const nodes = serializedGraphData.nodes;
-	for (const nodeId in executionPath) {
+	for (let j = 0; j < executionPath.length; j++) {
+		const nodeId = executionPath[j];
 		for (let i = 0; i < nodes.length; i++) {
 			// Check which type of node
 			let node: Node = nodes[i];
 			if (node.id === nodeId) {
 				// Code node
-				if (node.data.codeData !== undefined) {
+				if (isCodeNode(node)) {
+                    let code = node.data.codeData.code;
+                    if (node.data.codeData.scope !== undefined) {
+                        code = injectCode(code, node.data.codeData.scope);
+                    }
 					returnData.elements.push({
 						id: nodeId,
 						data: node.data.codeData.code,
 					});
-				} else if (node.data.filePath !== undefined) {
-					const newExecutionData = getExecutionPathFromSession(
+
+				} else if (isGraphNode(node)) {
+					const newExecutionData = await getExecutionPathFromSession(
 						node.data.filePath,
 						node.data.selectedSession,
 					);

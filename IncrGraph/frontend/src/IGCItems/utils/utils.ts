@@ -1,5 +1,5 @@
 import { Position, isEdge, Edge, Connection, Node } from "reactflow";
-import { Point, Rectangle } from "@/types/frontend";
+import { Point, Rectangle, RegistryComponent } from "@/types/frontend";
 import ExecutionRelationship from "../relationships/ExecutionRelationship";
 
 // this helper function returns the intersection point
@@ -321,64 +321,60 @@ export const addEdge = (
 };
 
 // Logic for whenever an edge gets removed
-export const updateExecutionPathEdge = (
-	id: string,
-	edges: Edge[],
-	session: SessionData,
-): { edges: Edge[]; session: SessionData } => {
-	// Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
-	// If an execution relationship is removed, update the session data
-	const edgeObject = edges.find((edge) => edge.id === id);
-	if (
-		edgeObject?.type !== "ExecutionRelationship" ||
-		edgeObject.data === undefined ||
-		edgeObject.data.label === undefined
-	) {
-		return { edges, session };
-	}
-	edgeObject.data.will_delete = true;
-	const label: string = edgeObject.data.label;
-	session.executionPath.splice(parseInt(label), 1);
+// export const updateExecutionPathEdge = (
+// 	id: string,
+// 	edges: Edge[],
+// 	session: SessionData,
+// ): { edges: Edge[]; session: SessionData } => {
+// 	// Remove execution from executionPath. Note this might cause inconsistencies when running everything at once...
+// 	// If an execution relationship is removed, update the session data
+// 	const edgeObject = edges.find((edge) => edge.id === id);
+// 	if (
+// 		edgeObject?.type !== "ExecutionRelationship" ||
+// 		edgeObject.data === undefined ||
+// 		edgeObject.data.label === undefined
+// 	) {
+// 		return { edges, session };
+// 	}
+// 	edgeObject.data.will_delete = true;
+// 	const label: string = edgeObject.data.label;
+// 	session.executionPath.splice(parseInt(label), 1);
 
-	// Remove all execution relationship edges
-	let filteredEdges = edges.filter(
-		(edge) =>
-			edge.type !== "ExecutionRelationship" ||
-			edge.data.will_delete === true,
-	);
+// 	// Remove all execution relationship edges
+// 	let filteredEdges = edges.filter(
+// 		(edge) =>
+// 			edge.type !== "ExecutionRelationship" ||
+// 			edge.data.will_delete === true,
+// 	);
 
-	// Add execution relationship edges
-	for (let i = 0; i < session.executionPath.length - 1; i++) {
-		const source = session.executionPath[i];
-		const target = session.executionPath[i + 1];
-		filteredEdges.push({
-			id: getEdgeId(source, target, filteredEdges),
-			source,
-			target,
-			type: "ExecutionRelationship",
-			data: { label: `${i + 1}` },
-		});
-	}
+// 	// Add execution relationship edges
+// 	for (let i = 0; i < session.executionPath.length - 1; i++) {
+// 		const source = session.executionPath[i];
+// 		const target = session.executionPath[i + 1];
+// 		filteredEdges.push({
+// 			id: getEdgeId(source, target, filteredEdges),
+// 			source,
+// 			target,
+// 			type: "ExecutionRelationship",
+// 			data: { label: `${i + 1}` },
+// 		});
+// 	}
 
-	return { edges: filteredEdges, session };
-};
+// 	return { edges: filteredEdges, session };
+// };
 
 // Refresh the execution path edges
 export const updateExecutionPath = (
-	edges: Edge[],
-	session: SessionData,
+	executionPath: string[],
 ): Edge[] => {
-	// Remove all execution relationship edges
-	let filteredEdges = edges.filter(
-		(edge) => edge.type !== "ExecutionRelationship",
-	);
-
+    executionPath = ["start", ...executionPath];
+    let filteredEdges: Edge[] = [];
 	// Add execution relationship edges
-	for (let i = 0; i < session.executionPath.length - 1; i++) {
-		const source = session.executionPath[i];
-		const target = session.executionPath[i + 1];
+	for (let i = 0; i < executionPath.length - 1; i++) {
+		const source = executionPath[i];
+		const target = executionPath[i + 1];
 		filteredEdges.push({
-			id: getEdgeId(source, target, filteredEdges),
+			id: getEdgeId(source, target, filteredEdges, "execution-"),
 			source,
 			target,
 			type: "ExecutionRelationship",
@@ -433,4 +429,22 @@ export const getOutgoingNodes = (
 			node.type !== undefined &&
 			nodeTypeFilter(node),
 	);
+};
+
+
+export const isComponentOfType = (
+    component: RegistryComponent,
+    typeComponent: RegistryComponent,
+): boolean => {
+    const componentTypeHierarchy = component.typeHierarchy;
+    const tcSymbol = typeComponent.typeSymbol;
+    if (componentTypeHierarchy === undefined) {
+        return false;
+    }
+    for (let i = 0; i < componentTypeHierarchy.length; i++) {
+        if (componentTypeHierarchy[i] === tcSymbol) {
+            return true;
+        }
+    }
+    return false;
 };

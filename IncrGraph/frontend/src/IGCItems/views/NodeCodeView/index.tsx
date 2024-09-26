@@ -14,6 +14,7 @@ import TabbedCodeOutput from "@/components/TabbedCodeOutput";
 import { FitAddon } from "@xterm/addon-fit";
 import { deserializeGraphData } from "@/IGCItems/utils/serialization";
 import { saveFileContent } from "@/requests";
+import { Box } from "@mui/material";
 
 const RawNodeCodeView: React.FC = () => {
 	const selectedFile = useStore((state) => state.selectedFile);
@@ -113,18 +114,22 @@ const RawNodeCodeView: React.FC = () => {
 	const editorPathKey = `${selectedFile}-${selectedItem.id}`;
 	useStore.getState().setHasEditorCreated(editorPathKey);
 
-    const sessionsData = getSessionData(selectedFile);
-    const currentSessionId = useStore.getState().currentSessionId;
-    let lastExecutionData = null; 
-    if (currentSessionId !== null && sessionsData !== undefined && sessionsData.sessions[currentSessionId] !== undefined){
-        const sessionData = sessionsData.sessions[currentSessionId];
-        for(let i = sessionData.executions.length - 1; i >= 0; i--){
-            if (sessionData.executions[i].nodeId === selectedItem.id){
-                lastExecutionData = sessionData.executions[i];
-                break;
-            }
-        }
-    }
+	const sessionsData = getSessionData(selectedFile);
+	const currentSessionId = useStore.getState().currentSessionId;
+	let lastExecutionData = null;
+	if (
+		currentSessionId !== null &&
+		sessionsData !== undefined &&
+		sessionsData.sessions[currentSessionId] !== undefined
+	) {
+		const sessionData = sessionsData.sessions[currentSessionId];
+		for (let i = sessionData.executions.length - 1; i >= 0; i--) {
+			if (sessionData.executions[i].nodeId === selectedItem.id) {
+				lastExecutionData = sessionData.executions[i];
+				break;
+			}
+		}
+	}
 	return (
 		<>
 			<div
@@ -136,20 +141,28 @@ const RawNodeCodeView: React.FC = () => {
 			>
 				<div
 					style={{
-						height: `${calculateHeight(
-							lastExecutionData !== null,
-						)}px`,
+						flexGrow: 1,
 					}}
 				>
-					<Editor
-						path={editorPathKey}
-						defaultLanguage="python"
-						defaultValue={currentNode.data.codeData.code}
-						theme={mode === "light" ? "light" : "vs-dark"}
-						onChange={onChange}
-						onMount={onMount}
-						height="100%"
-					/>
+					<Box
+						sx={{
+							position: "absolute",
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
+						}}
+					>
+						<Editor
+							path={editorPathKey}
+							height="100%"
+							defaultLanguage="python"
+							defaultValue={currentNode.data.codeData.code}
+							theme={mode === "light" ? "light" : "vs-dark"}
+							onChange={onChange}
+							onMount={onMount}
+						/>
+					</Box>
 				</div>
 				{lastExecutionData !== null && (
 					<div style={{ flexShrink: 0, transition: "all 0.3s ease" }}>

@@ -6,14 +6,14 @@
             "data": {
                 "label": "Vars",
                 "codeData": {
-                    "code": "a = 5\nb = 10\n\nprint(c)"
+                    "code": "a = 5\nb = 10\nc = 20\nprint(c)"
                 }
             },
             "position": {
                 "x": -348.15624781133954,
                 "y": -61.91765426091547
             },
-            "selected": false,
+            "selected": true,
             "width": 154,
             "height": 84,
             "positionAbsolute": {
@@ -367,20 +367,19 @@
             "type": "GraphNode",
             "data": {
                 "label": "Node 18",
-                "codeData": {
-                    "code": ""
-                }
+                "filePath": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/content/testGraph2.igc",
+                "selectedSession": "testing"
             },
             "position": {
-                "x": -54.92316552752732,
-                "y": -363.4387839275788
+                "x": -29.52316552752734,
+                "y": -328.4387839275788
             },
             "selected": false,
-            "width": 150,
-            "height": 37,
+            "width": 154,
+            "height": 84,
             "positionAbsolute": {
-                "x": -54.92316552752732,
-                "y": -363.4387839275788
+                "x": -29.52316552752734,
+                "y": -328.4387839275788
             },
             "dragging": false
         },
@@ -640,54 +639,6 @@
             "selected": false
         },
         {
-            "source": "start",
-            "target": "3",
-            "sourceHandle": null,
-            "targetHandle": null,
-            "type": "ExecutionRelationship",
-            "id": "0-start>3",
-            "data": {
-                "label": 1
-            },
-            "selected": false
-        },
-        {
-            "source": "3",
-            "target": "5",
-            "sourceHandle": null,
-            "targetHandle": null,
-            "type": "ExecutionRelationship",
-            "id": "0-3>5",
-            "data": {
-                "label": 2
-            },
-            "selected": false
-        },
-        {
-            "source": "5",
-            "target": "4",
-            "sourceHandle": null,
-            "targetHandle": null,
-            "type": "ExecutionRelationship",
-            "id": "0-5>4",
-            "data": {
-                "label": 3
-            },
-            "selected": false
-        },
-        {
-            "source": "4",
-            "target": "6",
-            "sourceHandle": null,
-            "targetHandle": null,
-            "type": "ExecutionRelationship",
-            "id": "0-4>6",
-            "data": {
-                "label": 4
-            },
-            "selected": false
-        },
-        {
             "source": "2",
             "sourceHandle": null,
             "target": "0",
@@ -804,6 +755,24 @@
             "type": "OverridesRelationship",
             "data": {
                 "label": "getName"
+            }
+        },
+        {
+            "id": "execution-0-start>0",
+            "source": "start",
+            "target": "0",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "1"
+            }
+        },
+        {
+            "id": "execution-0-0>1",
+            "source": "0",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "2"
             }
         }
     ]

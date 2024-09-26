@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import CustomSelect, { SelectOption } from "../CustomSelect";
 import "./SelectionPane.css";
 import useStore from "@/store/store";
-import { applyEdgeChanges } from "reactflow";
-import {
-	updateExecutionPath,
-	updateExecutionPathEdge,
-} from "../../IGCItems/utils/utils";
+// import { applyEdgeChanges } from "reactflow";
+// import {
+// 	updateExecutionPath,
+// 	updateExecutionPathEdge,
+// } from "../../IGCItems/utils/utils";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
 import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
@@ -24,7 +24,6 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 	const setSelectedItem = useStore((state) => state.setSelectedItem);
 	const setNodes = useStore((state) => state.setNodes);
 	const setEdges = useStore((state) => state.setEdges);
-	const currentSessionId = useStore((state) => state.currentSessionId);
 	const nodeTypes = useStore((state) => state.nodeTypes);
 	const relationshipTypes = useStore((state) => state.relationshipTypes);
 

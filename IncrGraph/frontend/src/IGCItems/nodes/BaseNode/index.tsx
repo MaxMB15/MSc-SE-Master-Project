@@ -51,7 +51,12 @@ const RawBaseNode: IGCNodeProps = ({ id, data }) => {
 
 	const handleDelete = () => {
 		console.log("Delete action triggered for node:", id);
-		setNodes((prevNodes) => prevNodes.filter((node) => node.id !== id));
+		const curFile = useStore.getState().selectedFile;
+		if (curFile !== null) {
+			setNodes(curFile, (prevNodes) =>
+				prevNodes.filter((node) => node.id !== id),
+			);
+		}
 		handleClose();
 	};
 	const contextMenuAction = (action: (() => void) | undefined) => {
@@ -136,8 +141,13 @@ const RawBaseNode: IGCNodeProps = ({ id, data }) => {
 				anchorEl={anchorEl}
 				handleClose={handleClose}
 				position={contextMenu}
-				onRun={() => contextMenuAction(data.handleRun)}
 				onDelete={handleDelete}
+				onRun={
+					data.handleRun !== undefined &&
+					useStore.getState().currentSessionId !== null
+						? () => contextMenuAction(data.handleRun)
+						: undefined
+				}
 			/>
 		</div>
 	);

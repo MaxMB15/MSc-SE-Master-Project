@@ -20,12 +20,14 @@ const TextDialog: React.FC<TextDialogProps> = ({
 	onClose,
 	defaultSessionName,
 }) => {
-	const { sessions } = useStore();
-	const [sessionName, setSessionName] = useState(defaultSessionName);
+    const getSessionData = useStore((state) => state.getSessionData);
+    const selectedFile = useStore((state) => state.selectedFile);
+    const sessions = selectedFile !== null ? getSessionData(selectedFile)?.sessions ?? {} : {};
+    const [sessionName, setSessionName] = useState(defaultSessionName);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
-		if (sessions.has(sessionName)) {
+		if (sessionName in sessions) {
 			setError("Session name already exists.");
 		} else {
 			setError("");

@@ -132,6 +132,10 @@ export interface SessionDataDeleteExecutionRequest {
 	sessionId: string;
 	executionNumber: number;
 }
+export interface PrimarySessionRequest {
+    filePath: string;
+    sessionId: string;
+}
 
 // Session/Run data
 export interface IGCFileSessionData {

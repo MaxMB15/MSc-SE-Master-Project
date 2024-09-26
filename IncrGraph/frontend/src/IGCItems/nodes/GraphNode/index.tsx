@@ -3,6 +3,11 @@ import BaseNode, { IGCNodeProps } from "../BaseNode";
 import { STYLES } from "@/styles/constants";
 import { createComponent } from "@/utils/componentCache";
 import { RegistryComponent } from "@/types/frontend";
+import path from "path-browserify";
+import { isComponentOfType } from "@/IGCItems/utils/utils";
+import useStore from "@/store/store";
+import { Node } from "reactflow";
+import { runGraph } from "@/utils/codeExecution";
 
 export type GraphNodeData = {
 	filePath: string;
@@ -21,6 +26,7 @@ const RawGraphNode: IGCNodeProps<GraphNodeData> = (props) => (
 				/>
 			),
 			backgroundColor: GraphNode.color,
+            handleRun: () => runGraph(props.id),
 		}}
 	/>
 );
@@ -72,11 +78,21 @@ const GraphNodeDisplay: React.FC<GraphNodeDisplayProps> = ({
 					flexDirection: "column",
 				}}
 			>
-				<div style={{ marginBottom: "5px" }}>{filePath}</div>
+				<div style={{ marginBottom: "5px" }}>{path.basename(filePath)}</div>
 				<div style={{ fontWeight: "lighter" }}>{selectedSession}</div>
 			</div>
 		</div>
 	);
+};
+
+export const isGraphNode = (node: Node): node is Node<GraphNodeData> => {
+    const nodeTypes = useStore.getState().nodeTypes;
+
+    if (node.type !== undefined && node.type in nodeTypes) {
+        return isComponentOfType(nodeTypes[node.type].object, GraphNode);
+    }
+
+    return false;
 };
 
 export default GraphNode;

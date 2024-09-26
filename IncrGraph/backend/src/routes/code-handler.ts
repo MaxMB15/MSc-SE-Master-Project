@@ -14,7 +14,6 @@ import {
 } from "shared";
 import { spawn, execFile } from "child_process";
 import { v4 as uuidv4 } from "uuid";
-import { get } from "http";
 import { getSubDirectories } from "./file-explorer";
 
 const router = Router();
@@ -364,7 +363,7 @@ router.post("/execute", async (req: Request, res: Response) => {
 	);
 
 	return res.send({
-		...executeCode(code, pythonPath, sessionKey, executionDir, prevExecutionDir),
+		...(await executeCode(code, pythonPath, sessionKey, executionDir, prevExecutionDir)),
 		metaNodeData: metaNodeData,
 	});
 });
@@ -426,7 +425,9 @@ router.post("/execute-many", async (req: Request, res: Response) => {
 	const executionsDir = path.join(sessionDir, "executions");
 
     // Run all of the code snippets
-    executeMultiple(fileIdCodeList, pythonPath, sessionKey, executionsDir);
+    await executeMultiple(fileIdCodeList, pythonPath, sessionKey, executionsDir);
+
+    return res.status(200).send({ message: "All code snippets executed successfully" });
 });
 
 export const executeMultiple = async (fileIdCodeList: FileIdCodeList, languageBinPath: string, sessionId: string, executionsDir: string, prevExecutionDir?: string) => {
@@ -434,30 +435,40 @@ export const executeMultiple = async (fileIdCodeList: FileIdCodeList, languageBi
     if (!fs.existsSync(executionsDir)) {
 		await fs.mkdir(executionsDir, { recursive: true });
 	}
+    
     // Recursively execute all the code snippets
     for (const element of fileIdCodeList.elements) {
+        // Update the specific session path file
+        const currentRunNumber = await addPathToSession(element.id, executionsDir, fileIdCodeList.filePath);
+
+        // Create the run directory
+        const executionDir = path.join(executionsDir, `${currentRunNumber}`);
+        const pExecutionDir = prevExecutionDir !== undefined && currentRunNumber === 1 ? prevExecutionDir : path.join(
+            executionsDir,
+            `${currentRunNumber - 1}`,
+        );
+        fs.ensureDir(executionDir);
+
         if (typeof element.data === 'string') {
             // It's a code snippet, execute it
-            // Update the specific session path file
-            const currentRunNumber = await addPathToSession(element.id, executionsDir, fileIdCodeList.filePath);
-
-            // Create the run directory
-            const executionDir = path.join(executionsDir, `${currentRunNumber}`);
-            const pExecutionDir = prevExecutionDir !== undefined && currentRunNumber === 1 ? prevExecutionDir : path.join(
-                executionsDir,
-                `${currentRunNumber - 1}`,
-            );
             await executeCode(element.data, languageBinPath, sessionId, executionDir, pExecutionDir);
         } else {
             // It's a nested FileIdCodeList, recursively execute it
-            const currentRunNumber = await addPathToSession(element.id, executionsDir, fileIdCodeList.filePath);
-            const executionDir = path.join(executionsDir, `${currentRunNumber}`);
-            executeMultiple(element.data as FileIdCodeList, languageBinPath, sessionId, path.join(executionsDir, `${currentRunNumber}`, "executions"), path.join(executionsDir, `${currentRunNumber-1}`));
+            const fileIdList = element.data as FileIdCodeList
+            const subExecutionDir = path.join(executionDir, "executions");
+            await fs.ensureDir(subExecutionDir);
+            // const subExecutionConfig: SessionConfig  = {
+                //     path: fileIdList.elements.map((element) => element.id),
+                //     timestamp: Date.now(),
+                //     filePath: fileIdList.filePath,
+                // };
+                // await fs.writeJSON(subExecutionConfigPath, subExecutionConfig);
+            await executeMultiple(fileIdList, languageBinPath, sessionId, path.join(executionsDir, `${currentRunNumber}`, "executions"), path.join(executionsDir, `${currentRunNumber-1}`));
+            const subExecutionConfigPath = path.join(subExecutionDir, "config.json");
+            const subExecutionConfig: SessionConfig = await fs.readJSON(subExecutionConfigPath);
+
             // Aggregate all the files and configurations from the sub-executions
             // Configurations file (take from the most recent sub execution)
-            const subExecutionDir = path.join(executionDir, "executions");
-            const subExecutionConfigPath = path.join(subExecutionDir, "config.json");
-            const subExecutionConfig: SessionConfig  = await fs.readJSON(subExecutionConfigPath);
             const lastSubExecutionDir = path.join(subExecutionDir, `${subExecutionConfig.path.length}`);
             await fs.copyFile(path.join(lastSubExecutionDir, "configuration.json"), path.join(executionDir, "configuration.json"));
             // State file (take from the most recent sub execution)
@@ -469,15 +480,15 @@ export const executeMultiple = async (fileIdCodeList: FileIdCodeList, languageBi
             let totalExecutionTime = 0;
             for (const subExecution of allSubExecutionDirs.sort()) {
                 // Metrics
-                const subExecutionMetricsPath = path.join(subExecution, "metrics.json");
+                const subExecutionMetricsPath = path.join(subExecutionDir, subExecution, "metrics.json");
                 const subExecutionMetrics: CodeExecutionMetrics = await fs.readJSON(subExecutionMetricsPath);
                 totalExecutionTime += subExecutionMetrics.executionTime;
                 // Stdout
-                const subExecutionStdoutPath = path.join(subExecution, "std.out");
+                const subExecutionStdoutPath = path.join(subExecutionDir, subExecution, "std.out");
                 const subExecutionStdout = await fs.readFile(subExecutionStdoutPath, "utf8");
                 stdout += subExecutionStdout;
                 // Stderr
-                const subExecutionStderrPath = path.join(subExecution, "std.err");
+                const subExecutionStderrPath = path.join(subExecutionDir, subExecution, "std.err");
                 const subExecutionStderr = await fs.readFile(subExecutionStderrPath, "utf8");
                 stderr += subExecutionStderr;
             }
@@ -580,7 +591,5 @@ router.post("/analyze", async (req: Request, res: Response) => {
 		res.status(500).send({ error: error });
 	}
 });
-
-router.post("/execute-multiple", async (req: Request, res: Response) => {});
 
 export default router;

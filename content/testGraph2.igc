@@ -2,7 +2,7 @@
     "nodes": [
         {
             "id": "start",
-            "type": "startNode",
+            "type": "StartNode",
             "data": {
                 "label": "Start"
             },
@@ -21,7 +21,70 @@
             "height": 23,
             "selected": false,
             "draggable": false
+        },
+        {
+            "id": "0",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "a Set",
+                "codeData": {
+                    "code": "a = 15"
+                }
+            },
+            "position": {
+                "x": -170.8049366446976,
+                "y": -327.5895177602833
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": -170.8049366446976,
+                "y": -327.5895177602833
+            },
+            "dragging": false
+        },
+        {
+            "id": "1",
+            "type": "CodeFragmentNode",
+            "data": {
+                "label": "b Set",
+                "codeData": {
+                    "code": "b = 55"
+                }
+            },
+            "position": {
+                "x": 51.36735904561465,
+                "y": -305.61622374456385
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": 51.36735904561465,
+                "y": -305.61622374456385
+            },
+            "dragging": false
         }
     ],
-    "edges": []
+    "edges": [
+        {
+            "id": "execution-0-start>0",
+            "source": "start",
+            "target": "0",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "1"
+            }
+        },
+        {
+            "id": "execution-0-0>1",
+            "source": "0",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "2"
+            }
+        }
+    ]
 }

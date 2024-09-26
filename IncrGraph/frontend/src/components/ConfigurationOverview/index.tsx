@@ -4,8 +4,12 @@ import ConfigurationDisplay from "../ConfigurationDisplay";
 import CustomSelect from "../CustomSelect";
 import styles from "./ConfigurationOverview.module.css";
 import useStore from "@/store/store";
-import { getEdgeId } from "../../IGCItems/utils/utils";
 import { STYLES } from "@/styles/constants";
+import {
+	createNewSession,
+	loadSessionData,
+	updateExecutionRelationships,
+} from "@/utils/sessionHandler";
 
 interface ConfigurationOverviewProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
@@ -14,14 +18,22 @@ interface ConfigurationOverviewProps {
 const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 	openTextDialog,
 }) => {
-	const {
-		isIGCFile,
-		setEdges,
-		currentSessionId,
-		setCurrentSessionId,
-		sessions,
-		setSessions,
-	} = useStore();
+	const isIGCFile = useStore((state) => state.isIGCFile);
+	const setEdges = useStore((state) => state.setEdges);
+	const currentSessionId = useStore((state) => state.currentSessionId);
+	const setCurrentSessionId = useStore((state) => state.setCurrentSessionId);
+	const getSessionData = useStore((state) => state.getSessionData);
+	const selectedFile = useStore((state) => state.selectedFile);
+
+	const currSessionData =
+		selectedFile !== null ? getSessionData(selectedFile) : undefined;
+	const sessionKeys =
+		currSessionData !== undefined
+			? Object.keys(currSessionData.sessions)
+			: [];
+	const sessionData =
+		currSessionData !== undefined ? currSessionData.sessions : {};
+
 	const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
 		null,
 	);
@@ -30,30 +42,18 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 		if (isIGCFile) {
 			setSelectedSessionId(currentSessionId);
 		}
+        else{
+            setSelectedSessionId(null);
+        }
 	}, [currentSessionId, isIGCFile]);
 
 	const handleSessionChange = (value: string) => {
+		if (selectedFile === null) {
+			return;
+		}
 		setCurrentSessionId(() => value);
-		setEdges((prevEdges) => {
-			let filteredEdges = prevEdges.filter(
-				(edge) => edge.type !== "ExecutionRelationship",
-			);
-
-			const session = sessions.get(value);
-			if (session) {
-				for (let i = 0; i < session.executionPath.length - 1; i++) {
-					const source = session.executionPath[i];
-					const target = session.executionPath[i + 1];
-					filteredEdges.push({
-						id: getEdgeId(source, target, filteredEdges),
-						source,
-						target,
-						type: "ExecutionRelationship",
-						data: { label: `${i + 1}` },
-					});
-				}
-			}
-			return filteredEdges;
+		loadSessionData(selectedFile).then((data) => {
+			updateExecutionRelationships(selectedFile, data);
 		});
 	};
 
@@ -73,21 +73,29 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 			.replace(" ", "_")}`;
 
 		const sessionName = await openTextDialog(defaultSessionName);
-		if (sessionName) {
-			setSessions((prevSessions) =>
-				new Map(prevSessions).set(sessionName, {
-					configuration: {},
-					executionPath: ["start"],
-				}),
-			);
-			setCurrentSessionId(() => sessionName);
-			setEdges((prevEdges) =>
-				prevEdges.filter(
-					(edge) => edge.type !== "ExecutionRelationship",
-				),
-			);
+		if (sessionName && selectedFile !== null) {
+			createNewSession(selectedFile, sessionName).then(() => {
+                loadSessionData(selectedFile).then(() => {
+                    setCurrentSessionId(() => sessionName);
+                    setEdges(selectedFile, (prevEdges) =>
+                        prevEdges.filter(
+                            (edge) => edge.type !== "ExecutionRelationship",
+                        ),
+                    );
+                });
+            });
 		}
 	};
+
+	useEffect(() => {
+		if (selectedFile === null) {
+			return;
+		}
+		loadSessionData(selectedFile).then((data) => {
+			setCurrentSessionId(() => data.primarySession);
+			updateExecutionRelationships(selectedFile, data);
+		});
+	}, [selectedFile]);
 
 	return (
 		<Box className={styles.configurationOverview}>
@@ -102,8 +110,8 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 					variant="contained"
 					onClick={handleStartNewSession}
 					className={styles.configurationOverviewButton}
-                    sx={{ backgroundColor: STYLES.primary }}
-					// disabled={selectedSessionId === null}
+					sx={{ backgroundColor: STYLES.primary }}
+					disabled={selectedFile === null}
 				>
 					{/* {selectedSessionId === null
                             ? "New Session Active"
@@ -113,10 +121,10 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 				<CustomSelect
 					id="session-select"
 					label="Select Session"
-					options={[...sessions.keys()].map((sessionId) => ({
-						className: "",
+					options={sessionKeys.map((sessionId) => ({
 						value: sessionId,
 						label: sessionId,
+						style: {},
 					}))}
 					value={selectedSessionId || ""}
 					onChange={(e) => handleSessionChange(e)}
@@ -124,7 +132,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 			</Box>
 			{selectedSessionId ? (
 				<ConfigurationDisplay
-					data={sessions.get(selectedSessionId)?.configuration}
+					data={sessionData[selectedSessionId]?.overallConfiguration}
 				/>
 			) : (
 				<Typography className={styles.configurationPlaceholder}>
