@@ -11,12 +11,14 @@ import {
 } from "@mui/material";
 
 interface SessionInfoProps {
+    sessionId: string;
 	executionOrder: string[];
 	lastUpdated: number;
 	variables: { [key: string]: any };
 }
 
 const SessionInfo: React.FC<SessionInfoProps> = ({
+    sessionId,
 	executionOrder,
 	lastUpdated,
 	variables,
@@ -33,10 +35,13 @@ const SessionInfo: React.FC<SessionInfoProps> = ({
 				overflowY: "auto", // Scrollable if content overflows
 			}}
 		>
-			{/* Title */}
-			<Typography variant="h6" gutterBottom>
-				Session Information
-			</Typography>
+            {/* Session Id */}
+			<Box sx={{ marginBottom: "12px" }}>
+				<Typography variant="subtitle2" color="textSecondary">
+					Session ID:
+				</Typography>
+				<Typography variant="body2">{sessionId}</Typography>
+			</Box>
 
 			{/* Last Updated */}
 			<Box sx={{ marginBottom: "12px" }}>

@@ -24,6 +24,7 @@ import { useRunButton } from "../viewUtils";
 import TabbedCodeOutput from "@/components/TabbedCodeOutput";
 import SessionInfo from "./SessionInfo";
 import { IGCSession } from "shared";
+import MarkdownDisplay from "@/components/MarkdownDisplay";
 
 interface Session {
 	id: string;
@@ -38,13 +39,13 @@ const RawGraphNodeView: React.FC = () => {
 	const [selectedSession, setSelectedSession] = useState<string>("");
 	const [isFocused, setIsFocused] = useState(false);
 	const [lastExecutionData, setLastExecutionData] = useState<any>(null);
-    const [loadedSession, setLoadedSession] = useState<IGCSession | null>(null);
+	const [loadedSession, setLoadedSession] = useState<IGCSession | null>(null);
 
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const sessionUpdate = useStore((state) => state.sessionUpdate);
+	const sessionUpdate = useStore((state) => state.sessionUpdate);
 
-    const selectedItem = useStore.getState().selectedItem;
+	const selectedItem = useStore.getState().selectedItem;
 	const curFile = useStore.getState().selectedFile;
 	const sessionsData =
 		curFile !== null
@@ -157,25 +158,24 @@ const RawGraphNodeView: React.FC = () => {
 		}
 	}, []);
 
-    useEffect(() => {
-        // Get session info from the selected file and session
-        if (filePath === "" || selectedSession === "") {
-            setLoadedSession(null);
-            return;
-        }
-        const sessionData = useStore.getState().getSessionData(filePath);
-        if (sessionData === undefined) {
-            setLoadedSession(null);
-            return;
-        }
-        const session = sessionData.sessions[selectedSession];
-        if (session === undefined) {
-            setLoadedSession(null);
-            return;
-        }
-        setLoadedSession(session);
-
-    }, [filePath, selectedSession]);
+	useEffect(() => {
+		// Get session info from the selected file and session
+		if (filePath === "" || selectedSession === "") {
+			setLoadedSession(null);
+			return;
+		}
+		const sessionData = useStore.getState().getSessionData(filePath);
+		if (sessionData === undefined) {
+			setLoadedSession(null);
+			return;
+		}
+		const session = sessionData.sessions[selectedSession];
+		if (session === undefined) {
+			setLoadedSession(null);
+			return;
+		}
+		setLoadedSession(session);
+	}, [filePath, selectedSession]);
 	useEffect(() => {
 		if (goodIGCFile === null) {
 			return;
@@ -246,14 +246,23 @@ const RawGraphNodeView: React.FC = () => {
 				display: "flex",
 				flexDirection: "column",
 				height: "100%",
+                overflowY: "scroll"
 			}}
 		>
+			{selectedItem !== null && selectedItem.item.type === "node" ? (
+				<div>
+					<MarkdownDisplay node={selectedItem.item.object} />
+				</div>
+			) : null}
 			<div style={{ flexGrow: 1, padding: "20px" }}>
 				{/* File Input */}
 				<Box>
-					<Typography variant="h6" gutterBottom>
+					<label
+						htmlFor="name-input"
+						className="selection-pane-label"
+					>
 						File
-					</Typography>
+					</label>
 					<TextField
 						value={selectedFile ? selectedFile.name : filePath}
 						onChange={handlePathChange}
@@ -309,10 +318,13 @@ const RawGraphNodeView: React.FC = () => {
 				</Box>
 
 				{/* Session Selection */}
-				<Box sx={{ mb: 2 }}>
-					<Typography variant="h6" gutterBottom>
+				<Box sx={{ paddingTop: "5px" }}>
+					<label
+						htmlFor="name-input"
+						className="selection-pane-label"
+					>
 						Session
-					</Typography>
+					</label>
 					<CustomSelect
 						id={""}
 						options={sessions.map((session) => {
@@ -345,24 +357,26 @@ const RawGraphNodeView: React.FC = () => {
 				{/* Basic Info Box */}
 				<Box
 					sx={{
-						mt: 2,
-						p: 2,
-						border: "1px solid gray",
-						borderRadius: 2,
+						paddingTop: "5px",
 						bgcolor: selectedSession ? "inherit" : "gray",
 					}}
 				>
-					<Typography
-						variant="body1"
-						color={
-							selectedSession ? "textPrimary" : "textSecondary"
-						}
+                    <label
+						htmlFor="name-input"
+						className="selection-pane-label"
 					>
-						Selected Session ID:{" "}
-						{selectedSession || "None Selected"}
-					</Typography>
-                    {loadedSession && (
-					<SessionInfo executionOrder={loadedSession.executions.map((e) => e.nodeId)} lastUpdated={loadedSession.lastUpdate} variables={loadedSession.overallConfiguration}/>)}
+						Session Info
+					</label>
+					{loadedSession && (
+						<SessionInfo
+                            sessionId={selectedSession}
+							executionOrder={loadedSession.executions.map(
+								(e) => e.nodeId,
+							)}
+							lastUpdated={loadedSession.lastUpdate}
+							variables={loadedSession.overallConfiguration}
+						/>
+					)}
 				</Box>
 			</div>
 			{lastExecutionData !== null && (

@@ -554,6 +554,8 @@ router.get("/session-data", async (req: Request, res: Response) => {
 		return res.status(404).json({ error: "Session config file not found" });
 	}
 	// Read the session config file and get the current primary session data
+    const content = await fs.readFile(sessionsConfigPath, "utf-8");
+    console.log(content);
 	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
 	const primarySession: string = sessionConfigData.current;
 	returnData.primarySession = primarySession;
@@ -607,8 +609,8 @@ router.get("/session-data", async (req: Request, res: Response) => {
 });
 
 router.delete("/session-data-node", async (req: Request, res: Response) => {
-	const filePath = req.query.filePath as string;
-	const nodeId = req.query.nodeId as string;
+	const filePath = req.body.filePath as string;
+	const nodeId = req.body.nodeId as string;
 	if (!filePath || !nodeId) {
 		return res
 			.status(400)
@@ -650,6 +652,8 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 
 	// Check if the primary session is affected
 	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
+    const content = await fs.readFile(sessionsConfigPath, "utf-8");
+    console.log(content);
 	const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
 	if (affectedSessions.includes(sessionsConfigData.current)) {
 		// Find the most current session

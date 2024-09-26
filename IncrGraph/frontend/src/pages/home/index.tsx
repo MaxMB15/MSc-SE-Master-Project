@@ -8,7 +8,9 @@ import useConfirmDialog from "@components/ConfirmDialog/useConfirmDialog";
 import useTextDialog from "@/components/TextDialog/useTextDialog";
 import { useComponentRegistry } from "@/hooks/useComponentRegistry";
 import LoadingScreen from "@/components/LoadingScreen";
-import { fetchAndRegisterComponents,} from "@/utils/componentCache";
+import { fetchAndRegisterComponents } from "@/utils/componentCache";
+import { ThemeProvider } from "@mui/material/styles";
+import { useThemeMode } from "@/hooks/useThemeMode";
 
 const HomePage: React.FC = () => {
 	// Variables
@@ -19,30 +21,32 @@ const HomePage: React.FC = () => {
 	const { registerComponent } = useComponentRegistry();
 
 	useEffect(() => {
-        fetchAndRegisterComponents(registerComponent).then(() => {
-            setIsLoading(false); // Components loaded, hide loading screen
-        });
+		fetchAndRegisterComponents(registerComponent).then(() => {
+			setIsLoading(false); // Components loaded, hide loading screen
+		});
 	}, []);
 
 	// For importing and categorizing components
+    const [theme] = useThemeMode();
 	if (isLoading) {
-		return <LoadingScreen />;
+
+		return (
+			<ThemeProvider theme={theme}>
+				<LoadingScreen />
+			</ThemeProvider>
+		);
 	}
 
 	return (
 		<RootPage>
 			<div className="app-container">
-				{isLoading ? (
-					<LoadingScreen />
-				) : (
-					<>
-						<FileExplorer openTextDialog={openTextDialog} />
-						<EditorPane />
-						<FileEditor openConfirmDialog={openConfirmDialog} />
-						<ConfirmDialogPortal />
-						<TextDialogPortal />
-					</>
-				)}
+				<>
+					<FileExplorer openTextDialog={openTextDialog} />
+					<EditorPane />
+					<FileEditor openConfirmDialog={openConfirmDialog} />
+					<ConfirmDialogPortal />
+					<TextDialogPortal />
+				</>
 			</div>
 		</RootPage>
 	);

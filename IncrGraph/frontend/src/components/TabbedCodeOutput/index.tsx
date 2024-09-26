@@ -57,45 +57,66 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 		};
 	}, []);
 
-    useEffect(() => {
-        // Example: Write to the terminal
-        terminals.current.forEach((terminal, index) => {
-            terminal?.clear();
-            if (index === 0) {
-                terminal?.writeln(
-                    executionData !== undefined ? `\x1b[30m${executionData.stdout}` : "\x1b[30m<No output>",
-                );
-            } else if (index === 1) {
-                terminal?.writeln(
-                    executionData !== undefined ? `\x1b[30m${executionData.stderr}` : "\x1b[30m<No errors>",
-                );
-            }
-        });
-    }, [executionData]);
+	useEffect(() => {
+		// Example: Write to the terminal
+		terminals.current.forEach((terminal, index) => {
+			terminal?.clear();
+			if (index === 0) {
+				terminal?.writeln(
+					executionData !== undefined
+						? `\x1b[30m${executionData.stdout}`
+						: "\x1b[30m<No output>",
+				);
+			} else if (index === 1) {
+				terminal?.writeln(
+					executionData !== undefined
+						? `\x1b[30m${executionData.stderr}`
+						: "\x1b[30m<No errors>",
+				);
+			}
+		});
+	}, [executionData]);
 
 	// useEffect(() => {
 	// 	fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
 	// }, [activeTab]);
 
 	const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-        // if(fitAddons.current && newValue <2){
-        //     fitAddons.current[newValue]?.fit();
-        // }
+		// if(fitAddons.current && newValue <2){
+		//     fitAddons.current[newValue]?.fit();
+		// }
 		setActiveTab(newValue);
 	};
 
 	return (
 		<Box className="tabbed-code-output">
-			<Tabs
-				value={activeTab}
-				onChange={handleTabChange}
-				className="tabbed-code-output-tabs"
-			>
-				<Tab label="Output" className="tabbed-code-output-tab" />
-				<Tab label="Errors" className="tabbed-code-output-tab" />
-				<Tab label="Configuration" className="tabbed-code-output-tab" />
-				<Tab label="Metrics" className="tabbed-code-output-tab" />
-			</Tabs>
+			<div style={{ whiteSpace: "nowrap" }}>
+				<div style={{ overflowX: "scroll", scrollbarWidth: "none" }}>
+					<Tabs
+						value={activeTab}
+						onChange={handleTabChange}
+						className="tabbed-code-output-tabs"
+					>
+						<Tab
+							label="Output"
+							className="tabbed-code-output-tab"
+						/>
+						<Tab
+							label="Errors"
+							className="tabbed-code-output-tab"
+						/>
+						<Tab
+							label="Configuration"
+							className="tabbed-code-output-tab"
+						/>
+						<Tab
+							label="Metrics"
+							className="tabbed-code-output-tab"
+						/>
+					</Tabs>
+				</div>
+			</div>
+
 			<Box className="tabbed-code-output-container">
 				<Box
 					ref={(el: HTMLDivElement | null) =>

@@ -1,5 +1,4 @@
 .tabsContainer {
-    overflow-x: auto;
     white-space: nowrap;
     background-color: var(--mui-palette-background-default);;
 }

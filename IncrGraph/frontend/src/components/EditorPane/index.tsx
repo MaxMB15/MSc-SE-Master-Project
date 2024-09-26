@@ -14,6 +14,7 @@ import ReactFlow, {
 	NodeChange,
 	EdgeChange,
 	ReactFlowInstance,
+	OnEdgesDelete,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./EditorPane.css";
@@ -36,7 +37,12 @@ import {
 	convertMapToTrueEdgeTypes,
 	convertMapToTrueNodeTypes,
 } from "@/IGCItems/utils/types";
-import { loadSessionData, removeExecutionInSession, removeNodeInSession } from "@/utils/sessionHandler";
+import {
+	loadSessionData,
+	removeExecutionInSession,
+	removeNodeInSession,
+} from "@/utils/sessionHandler";
+import { showRelevantDocumentation } from "@/IGCItems/nodes/DocumentationNode";
 
 interface EditorPaneProps {}
 
@@ -47,6 +53,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	const selectedFile = useStore((state) => state.selectedFile);
 	const isIGCFile = useStore((state) => state.isIGCFile);
 	const setSelectedItems = useStore((state) => state.setSelectedItems);
+	const selectedItem = useStore((state) => state.selectedItem);
 	const getNodes = useStore((state) => state.getNodes);
 	const setNodes = useStore((state) => state.setNodes);
 	const getEdges = useStore((state) => state.getEdges);
@@ -78,7 +85,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		}
 	}, [fileContent]);
 
-    // If a node is changed, check to see if there are any selection changes
+	// If a node is changed, check to see if there are any selection changes
 	useEffect(() => {
 		// Look at which nodes are selected
 		const newSelectedNodes: Node[] = nodes.filter((node) => node.selected);
@@ -86,13 +93,13 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedNodes(newSelectedNodes);
 	}, [nodes]);
 
-    // If an edge is changed, check to see if there are any selection changes
+	// If an edge is changed, check to see if there are any selection changes
 	useEffect(() => {
 		let newSelectedEdges: Edge[] = edges.filter((edge) => edge.selected);
 		setSelectedEdges(newSelectedEdges);
 	}, [edges]);
 
-    // When new selections are being made, update the selected items
+	// When new selections are being made, update the selected items
 	useEffect(() => {
 		const items: Item[] = [];
 		selectedNodes.forEach((node) => {
@@ -113,7 +120,15 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedItems(() => items);
 	}, [selectedNodes, selectedEdges]);
 
-    const getNodeTypes = useMemo(() => {
+	useEffect(() => {
+		if (selectedItem !== null && selectedItem.item.type === "node") {
+			showRelevantDocumentation(selectedItem?.item.object);
+			return;
+		}
+		showRelevantDocumentation(null);
+	}, [selectedItem?.id, selectedItem?.item.object.type]);
+
+	const getNodeTypes = useMemo(() => {
 		return convertMapToTrueNodeTypes(nodeTypes);
 	}, [nodeTypes]);
 
@@ -141,16 +156,15 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	}
 
 	// Node Functions
-	const onNodesChange = (changes: NodeChange[]) => {
-		// Get current session data
-		if (currentSessionId !== null) {
-            // Go through each change and update eds accordingly
-            for (let change of changes) {
-                if (change.type === "remove") {
-                    removeNodeInSession(selectedFile, change.id);
-                }
+	const onNodesDelete = async (nodes: Node[]) => {
+		console.log("Nodes deleted:", nodes);
+        if (currentSessionId !== null) {
+            for(let i = 0; i< nodes.length; i++){
+                await removeNodeInSession(selectedFile, nodes[i].id);
             }
-		}
+        }
+	};
+	const onNodesChange = async (changes: NodeChange[]) => {
 		setNodes(selectedFile, (nds) => applyNodeChanges(changes, nds));
 	};
 
@@ -176,77 +190,48 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 	};
 
 	// Edge Functions
+	const onEdgesDelete = async (edges: Edge[]) => {
+		const selectedItems = useStore.getState().selectedItems;
+		const selectedNodeIds: string[] = selectedItems.reduce<string[]>(
+			(acc, item) => {
+				if (item.item.type === "node") {
+					acc.push(item.item.object.id);
+				}
+				return acc;
+			},
+			[],
+		);
+		for (let i = 0; i < edges.length; i++) {
+			const edge = edges[i];
+			if (
+				edge.type === "ExecutionRelationship" &&
+				!(
+					selectedNodeIds.includes(edge.source) ||
+					selectedNodeIds.includes(edge.target)
+				)
+			) {
+				console.log("Removing execution relationship:", edge.id);
+				const currentSessionId = useStore.getState().currentSessionId;
+				if (
+					currentSessionId !== null &&
+					edge.data.label !== undefined &&
+					!isNaN(parseInt(edge.data.label))
+				) {
+					removeExecutionInSession(
+						selectedFile,
+						currentSessionId,
+						parseInt(edge.data.label),
+					);
+				}
+			}
+		}
+	};
 	const onEdgesChange = async (changes: EdgeChange[]) => {
 		setEdges(selectedFile, (eds) => {
-            for(let change of changes){
-                if(change.type === "remove"){
-                    const edge = eds.find((e) => e.id === change.id);
-                    if(edge !== undefined && edge.type === "ExecutionRelationship"){
-                        console.log("Removing execution relationship:", edge.id);
-                        const currentSessionId = useStore.getState().currentSessionId;
-                        if (
-                            currentSessionId !== null &&
-                            edge.data.label !== undefined &&
-                            !isNaN(parseInt(edge.data.label))
-                        ) {
-                            removeExecutionInSession(
-                                selectedFile,
-                                currentSessionId,
-                                parseInt(edge.data.label),
-                            );
-                        }
-                        
-                    }
-                    //removeNodeInSession(selectedFile, change.id);
-                //     const currentSessionId = useStore.getState().currentSessionId;
-				// if (
-				// 	currentSessionId !== null &&
-				// 	selectedItem.item.object.data.label !== undefined &&
-				// 	!isNaN(parseInt(selectedItem.item.object.data.label))
-				// ) {
-				// 	removeExecutionInSession(
-				// 		selectedFile,
-				// 		currentSessionId,
-				// 		parseInt(selectedItem.item.object.data.label),
-				// 	);
-				// }
-                }
-            }
-			// // Get current session data
-			// if (currentSessionId !== null) {
-			// 	const session = sessions.get(currentSessionId);
-			// 	if (session !== undefined) {
-			// 		let vSession = session;
-			// 		let currentExecutionPath: string[] = vSession.executionPath;
-			// 		// Go through each change and update eds accordingly
-			// 		for (let change of changes) {
-			// 			if (change.type === "remove") {
-			// 				const uepData = updateExecutionPathEdge(
-			// 					change.id,
-			// 					eds,
-			// 					vSession,
-			// 				);
-			// 				eds = uepData.edges;
-			// 				vSession = uepData.session;
-			// 			}
-			// 		}
-			// 		if (vSession.executionPath !== currentExecutionPath) {
-			// 			// Shallow is okay
-			// 			setSessions((prevSessions) => {
-			// 				return prevSessions.set(currentSessionId, vSession);
-			// 			});
-			// 		}
-			// 	}
-			// }
-            // for (let change of changes) {
-            //     if (change.type === "remove") {
-            //         removeNodeInSession(selectedFile, change.id);
-            //     }
-            // }
 			return applyEdgeChanges(changes, eds);
 		});
-        // // Update session data
-        // loadSessionData(selectedFile);
+		// // Update session data
+		// loadSessionData(selectedFile);
 	};
 
 	// If a new edge is created
@@ -315,7 +300,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Play Current Execution"
-                            onClick={() => loadSessionData(selectedFile)}
+							onClick={() => loadSessionData(selectedFile)}
 						>
 							<PlayArrow />
 						</button>
@@ -349,7 +334,8 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 							nodes={nodes}
 							edges={edges}
 							onNodesChange={onNodesChange}
-							onEdgesDelete={console.log}
+							onEdgesDelete={onEdgesDelete}
+							onNodesDelete={onNodesDelete}
 							onEdgesChange={onEdgesChange}
 							onConnect={onConnect}
 							nodeTypes={getNodeTypes}

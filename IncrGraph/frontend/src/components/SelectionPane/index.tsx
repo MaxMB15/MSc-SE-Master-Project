@@ -10,8 +10,7 @@ import useStore from "@/store/store";
 import _ from "lodash";
 import { useTriggerEdgeTypeUpdate } from "@/hooks/useEdgeTypeUpdate";
 import { ModuleComponent, ModuleComponentValues } from "@/types/frontend";
-import { deleteNodeInSession } from "@/requests";
-import { removeExecutionInSession } from "@/utils/sessionHandler";
+import { removeExecutionInSession, removeNodeInSession } from "@/utils/sessionHandler";
 
 interface SelectionPaneProps {}
 
@@ -108,7 +107,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		console.log("Delete button clicked");
 		if (selectedItem) {
 			if (selectedItem.item.type === "node") {
-				deleteNodeInSession(selectedFile, selectedItem.id);
+				removeNodeInSession(selectedFile, selectedItem.id);
 				setNodes(selectedFile, (prevNodes) =>
 					prevNodes.filter((node) => node.id !== selectedItem.id),
 				);
@@ -136,87 +135,6 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		let item = selectedItems.find((item) => item.id === value);
 		setSelectedItem(() => (item ? item : null));
 	};
-
-	// const getOptions = (type: "Node" | "Edge") => {
-	// 	if (type === "Node") {
-	// 		return [
-	// 			{
-	// 				value: "BaseNode",
-	// 				label: "Base",
-	// 				className: "selection-pane-node-base",
-	// 			},
-	// 			{
-	// 				value: "ClassNode",
-	// 				label: "Class",
-	// 				className: "selection-pane-node-class",
-	// 			},
-	// 			{
-	// 				value: "AbstractClassNode",
-	// 				label: "Abstract Class",
-	// 				className: "selection-pane-node-abstract-class",
-	// 			},
-	// 			{
-	// 				value: "InterfaceNode",
-	// 				label: "Interface",
-	// 				className: "selection-pane-node-interface",
-	// 			},
-	// 			{
-	// 				value: "LibraryNode",
-	// 				label: "Library",
-	// 				className: "selection-pane-node-library",
-	// 			},
-	// 			{
-	// 				value: "MethodNode",
-	// 				label: "Method",
-	// 				className: "selection-pane-node-method",
-	// 			},
-	// 			{
-	// 				value: "CodeFragmentNode",
-	// 				label: "Code Fragment",
-	// 				className: "selection-pane-node-code-fragment",
-	// 			},
-	// 			{
-	// 				value: "ImportNode",
-	// 				label: "Import File Node",
-	// 				className: "selection-pane-node-import",
-	// 			},
-	// 		];
-	// 	} else if (type === "Edge") {
-	// 		return [
-	// 			{
-	// 				value: "BaseRelationship",
-	// 				label: "Base",
-	// 				className: "selection-pane-edge-base",
-	// 			},
-	// 			{
-	// 				value: "InheritanceRelationship",
-	// 				label: "Inheritance",
-	// 				className: "selection-pane-edge-inheritance",
-	// 			},
-	// 			{
-	// 				value: "OverridesRelationship",
-	// 				label: "Overrides",
-	// 				className: "selection-pane-edge-overrides",
-	// 			},
-	// 			{
-	// 				value: "MethodRelationship",
-	// 				label: "Method",
-	// 				className: "selection-pane-edge-method",
-	// 			},
-	// 			{
-	// 				value: "ExecutionRelationship",
-	// 				label: "Execution",
-	// 				className: "selection-pane-edge-execution",
-	// 			},
-	// 			{
-	// 				value: "DependencyRelationship",
-	// 				label: "Dependency",
-	// 				className: "selection-pane-edge-dependency",
-	// 			},
-	// 		];
-	// 	}
-	// 	return [];
-	// };
 
 	if (!isIGCFile) {
 		return;

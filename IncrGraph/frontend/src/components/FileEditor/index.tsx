@@ -25,7 +25,10 @@ import { runCode } from "@/utils/codeExecution";
 import { FitAddon } from "@xterm/addon-fit";
 import TabbedCodeOutput from "../TabbedCodeOutput";
 import MarkdownDisplay from "../MarkdownDisplay";
-import { getIncomingNodes, isComponentOfType } from "../../IGCItems/utils/utils";
+import {
+	getIncomingNodes,
+	isComponentOfType,
+} from "../../IGCItems/utils/utils";
 import style from "./FileEditor.module.css";
 import { STYLES } from "@/styles/constants";
 import { IGCViewProps, RegisteredView } from "@/IGCItems/views/BaseView";
@@ -106,7 +109,9 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	const fileContent = useStore((state) => state.fileContent);
 	const fileChanged = useStore((state) => state.fileChanged);
 	const hasEditor = useStore((state) => state.hasEditor);
-    const setHasEditorInitialized = useStore((state) => state.setHasEditorInitialized);
+	const setHasEditorInitialized = useStore(
+		(state) => state.setHasEditorInitialized,
+	);
 	const isIGCFile = useStore((state) => state.isIGCFile);
 	const setNodes = useStore((state) => state.setNodes);
 	const setEdges = useStore((state) => state.setEdges);
@@ -132,7 +137,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE); // Checking what is responsible for the node update
 	const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
 	const [activeTab, setActiveTab] = useState(0);
-    const [curViews, setCurViews] = useState<RegisteredView[]>([]);
+	const [curViews, setCurViews] = useState<RegisteredView[]>([]);
 
 	// UTIL FUNCTIONS
 
@@ -735,8 +740,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// }, [filterContent, selectedItem, models]);
 
 	useEffect(() => {
-		if (fileContent !== null && isIGCFile && selectedFile !== null && selectedFile in hasEditor && !hasEditor[selectedFile]) {
-            setHasEditorInitialized(selectedFile);
+		if (
+			fileContent !== null &&
+			isIGCFile &&
+			selectedFile !== null &&
+			selectedFile in hasEditor &&
+			!hasEditor[selectedFile]
+		) {
+			setHasEditorInitialized(selectedFile);
 			const serializedData = serializeGraphData(fileContent);
 			setNodes(selectedFile, () => serializedData.nodes);
 			setEdges(selectedFile, () => serializedData.edges);
@@ -763,7 +774,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 				),
 			);
 
-            loadSessionData(selectedFile);
+			loadSessionData(selectedFile);
 		}
 	}, [fileChanged]);
 
@@ -891,24 +902,23 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			return <></>;
 		}
 		return (
-			<Tabs
-				value={activeTab}
-				onChange={handleTabChange}
-				className={style.tabs}
-				sx={{
-					padding: "0px 10px",
-					height: STYLES.tabHeight,
-					minHeight: STYLES.tabHeight,
-					display: "inline-flex",
-					"& .MuiTabs-indicator": {
-						backgroundColor: STYLES.primary,
-					},
-				}}
-			>
-				{views.map((view, index) => {
-					return <Tab label={view.displayName} key={index} />;
-				})}
-			</Tabs>
+			<div style={{ overflowX: "scroll", scrollbarWidth: "none" }}>
+				<Tabs
+					value={activeTab}
+					onChange={handleTabChange}
+					className={style.tabs}
+					sx={{
+						padding: "0px 10px",
+						height: STYLES.tabHeight,
+						minHeight: STYLES.tabHeight,
+						display: "inline-flex",
+					}}
+				>
+					{views.map((view, index) => {
+						return <Tab label={view.displayName} key={index} />;
+					})}
+				</Tabs>
+			</div>
 		);
 	};
 	const createTabContent = (view: IGCViewProps[]): JSX.Element => {
@@ -993,16 +1003,21 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		// return [];
 	};
 	const views = useMemo(() => {
-        const v = getViews();
+		const v = getViews();
 		// Clean the nav bar elements
-        if(!_.isEqual(v.map((v2) => v2.key), curViews.map((v2) => v2.key))){
-		    setNavBarContainer(() => []);
-        }
-        setCurViews(v);
+		if (
+			!_.isEqual(
+				v.map((v2) => v2.key),
+				curViews.map((v2) => v2.key),
+			)
+		) {
+			setNavBarContainer(() => []);
+		}
+		setCurViews(v);
 		// Return the new views
 		return v;
 	}, [selectedItem?.id, selectedItem?.item.type, fileChanged]);
-    
+
 	const tabs = useMemo(() => createTabs(views), [views]);
 	const viewContent = useMemo(
 		() => createTabContent(views),

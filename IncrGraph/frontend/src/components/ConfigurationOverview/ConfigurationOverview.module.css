@@ -7,7 +7,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	border-top: 5px solid #121212;
+	border-top: 5px solid var(--mui-palette-background-pure);
 	margin-bottom: 40px; /* Add margin-bottom because of footer*/
 	align-items: center;
     height: 50%;

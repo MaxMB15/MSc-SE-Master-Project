@@ -8,7 +8,7 @@ import {
 	createSession,
 } from "@/requests";
 import useStore from "@/store/store";
-import { FileIdCodeList, IGCFileSessionData, IGCSessionData } from "shared";
+import { FileIdCodeList, IGCFileSessionData } from "shared";
 import { Node } from "reactflow";
 import { updateExecutionPath } from "@/IGCItems/utils/utils";
 import { isCodeNode } from "@/IGCItems/nodes/CodeNode";
@@ -61,18 +61,22 @@ export const removeNodeInSession = async (filePath: string, nodeId: string) => {
 	}
 	useStore.getState().setSessionData(filePath, () => sessionData);
 
-	// Update edges for the current session
-	const newExecutionData = await getExecutionPathFromSession(
-		filePath,
-		useStore.getState().currentSessionId ?? sessionData.primarySession,
-		sessionData,
-	);
-	useStore
-		.getState()
-		.setEdges(filePath, (prevEdges) => [
-			...prevEdges.filter((e) => e.type !== "ExecutionRelationship"),
-			...updateExecutionPath(newExecutionData),
-		]);
+    // Update session data
+	loadSessionData(filePath).then((sessionData) => {
+        updateExecutionRelationships(filePath, sessionData);
+    });
+	// // Update edges for the current session
+	// const newExecutionData = await getExecutionPathFromSession(
+	// 	filePath,
+	// 	useStore.getState().currentSessionId ?? sessionData.primarySession,
+	// 	sessionData,
+	// );
+	// useStore
+	// 	.getState()
+	// 	.setEdges(filePath, (prevEdges) => [
+	// 		...prevEdges.filter((e) => e.type !== "ExecutionRelationship"),
+	// 		...updateExecutionPath(newExecutionData),
+	// 	]);
 };
 
 export const removeExecutionInSession = async (
@@ -95,9 +99,11 @@ export const removeExecutionInSession = async (
 	await callExecuteMany(newExecutionData, "python", filePath, sessionId);
 
 	// Update session data
-	loadSessionData(filePath).then((sessionData) => {
+	await loadSessionData(filePath).then((sessionData) => {
         updateExecutionRelationships(filePath, sessionData);
     });
+
+    return sessionId;
 };
 export const getExecutionPathFromSession = async (
 	filePath: string,

@@ -15,27 +15,18 @@ import { FitAddon } from "@xterm/addon-fit";
 import { deserializeGraphData } from "@/IGCItems/utils/serialization";
 import { saveFileContent } from "@/requests";
 import { Box } from "@mui/material";
+import DocumentationNode, { IGCDocumentationData, isDocumentationNode } from "@/IGCItems/nodes/DocumentationNode";
 
-const RawNodeCodeView: React.FC = () => {
+const RawDocumentationNodeView: React.FC = () => {
 	const selectedFile = useStore((state) => state.selectedFile);
 	const selectedItem = useStore((state) => state.selectedItem);
 	const fileChanged = useStore((state) => state.fileChanged);
 	const mode = useStore((state) => state.mode);
-	const nodes = useStore((state) => state.nodes);
 	const setNodes = useStore((state) => state.setNodes);
 	const savedNodes = useStore((state) => state.savedNodes);
 	const getSessionData = useStore((state) => state.getSessionData);
 
 	const [content, setContent] = React.useState<string | undefined>(undefined);
-
-	const fitAddons = useRef<(FitAddon | null)[]>([]);
-
-	const calculateHeight = (bool: Boolean) => {
-		// THIS NEEDS TO BE FIXED
-		const totalHeight = window.innerHeight;
-		const tabbedOutputHeight = bool ? 600 : 400;
-		return totalHeight - tabbedOutputHeight;
-	};
 
 	const validItem =
 		selectedFile !== null &&
@@ -57,7 +48,7 @@ const RawNodeCodeView: React.FC = () => {
 				curContent !== undefined &&
 				selectedItem !== null
 			) {
-				savedNodes[sFile][selectedItem.id].data.codeData.code =
+				savedNodes[sFile][selectedItem.id].data.documentation =
 					curContent;
 				savedNodes[sFile][selectedItem.id].selected = true;
 				const rawGraphData = deserializeGraphData(
@@ -75,8 +66,7 @@ const RawNodeCodeView: React.FC = () => {
 			if (content !== undefined) {
 				useSaveIndicator(
 					content ===
-						savedNodes[selectedFile][selectedItem.id]?.data.codeData
-							.code
+						savedNodes[selectedFile][selectedItem.id]?.data.documentation
 						? "saved"
 						: "outdated",
 				);
@@ -94,10 +84,11 @@ const RawNodeCodeView: React.FC = () => {
 		return <div className="text-display">No node selected</div>;
 	}
 
-	const currentNode: Node<IGCCodeNodeData> = selectedItem.item
-		.object as Node<IGCCodeNodeData>;
-	console.log("Selected item", selectedItem);
-	console.log("nodes", nodes);
+	const currentNodeItem = selectedItem.item;
+    if(currentNodeItem.type !== 'node' || !isDocumentationNode(currentNodeItem.object)){
+        return <div className="text-display">Not a valid node selected</div>;
+    }
+    const currentNode = currentNodeItem.object;
 
 	const onChange = (content: string | undefined) => {
 		setContent(content);
@@ -105,7 +96,8 @@ const RawNodeCodeView: React.FC = () => {
 		setNodes(selectedFile, (prevNodes) => {
 			return prevNodes.map((node) => {
 				if (node.id === currentNode.id) {
-					node.data.codeData.code = content;
+					currentNode.data.documentation = content ?? "";
+                    return currentNode;
 				}
 				return node;
 			});
@@ -131,58 +123,34 @@ const RawNodeCodeView: React.FC = () => {
 		}
 	}
 	return (
-		<>
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					height: "100%",
-				}}
-			>
-				<div
-					style={{
-						flexGrow: 1,
-					}}
-				>
-					<Box
-						sx={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-						}}
-					>
-						<Editor
-							path={editorPathKey}
-							height="100%"
-							defaultLanguage="python"
-							defaultValue={currentNode.data.codeData.code}
-							theme={mode === "light" ? "light" : "vs-dark"}
-							onChange={onChange}
-							onMount={onMount}
-						/>
-					</Box>
-				</div>
-				{lastExecutionData !== null && (
-					<div style={{ flexShrink: 0, transition: "all 0.3s ease" }}>
-						<TabbedCodeOutput
-							executionData={lastExecutionData}
-							// fitAddons={fitAddons}
-						/>
-					</div>
-				)}
-			</div>
-		</>
+		<Box
+			sx={{
+				position: "absolute",
+				top: 0,
+				left: 0,
+				right: 0,
+				bottom: 0,
+			}}
+		>
+			<Editor
+				path={editorPathKey}
+				height="100%"
+				defaultLanguage="python"
+				defaultValue={currentNode.data.documentation}
+				theme={mode === "light" ? "light" : "vs-dark"}
+				onChange={onChange}
+				onMount={onMount}
+			/>
+		</Box>
 	);
 };
 
-const NodeCodeView: IGCViewProps & RegistryComponent = createView(
-	RawNodeCodeView,
-	"NodeCodeView",
-	"Node Code View",
-	[CodeNode],
+const DocumentationNodeView: IGCViewProps & RegistryComponent = createView(
+	RawDocumentationNodeView,
+	"DocumentationNodeView",
+	"Documentation Node View",
+	[DocumentationNode],
 	{},
 );
 
-export default NodeCodeView;
+export default DocumentationNodeView;

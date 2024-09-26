@@ -8,45 +8,51 @@ import {
 	getIncomingNodes,
 } from "../../IGCItems/utils/utils";
 import useStore from "@/store/store";
+import { isDocumentationNode } from "@/IGCItems/nodes/DocumentationNode";
 
 interface MarkdownDisplayProps {
 	node: Node;
 }
 
 const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
-	// Data Store
-	const { nodes, setNodes, edges, setEdges } = useStore();
-
 	const handleDoubleClick = () => {
-		setOrCreateDocumentationNode(node, nodes, edges);
+		setOrCreateDocumentationNode(node);
 	};
 	const getCodeDocumentation = (
 		node: Node,
-		nodes: Node[],
-		edges: Edge[],
 	): string | null => {
+        const selectedFile = useStore.getState().selectedFile;
+        if (selectedFile === null) {
+            return null;
+        }
+        const nodes = useStore.getState().getNodes(selectedFile);
+        const edges = useStore.getState().getEdges(selectedFile);
 		const incomingDocumentationNodes = getIncomingNodes(
 			node.id,
 			nodes,
 			edges,
-            (node) => node.type === "DocumentationNode",
+            (node) => isDocumentationNode(node),
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			return null;
 		}
-		return incomingDocumentationNodes[0].data.code;
+		return incomingDocumentationNodes[0].data.documentation;
 	};
 
 	const setOrCreateDocumentationNode = (
 		node: Node,
-		nodes: Node[],
-		edges: Edge[],
 	): void => {
+        const selectedFile = useStore.getState().selectedFile;
+        if (selectedFile === null) {
+            return;
+        }
+        const nodes = useStore.getState().getNodes(selectedFile);
+        const edges = useStore.getState().getEdges(selectedFile);
 		const incomingDocumentationNodes = getIncomingNodes(
 			node.id,
 			nodes,
 			edges,
-            (node) => node.type === "DocumentationNode",
+            (node) => isDocumentationNode(node),
 		);
 		if (incomingDocumentationNodes.length === 0) {
 			// Need to create the documentation node
@@ -60,7 +66,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 				},
 				data: {
 					label: `Documentation`,
-					code: "",
+					documentation: "",
 					language: "markdown",
 				},
 				selected: true,
@@ -71,16 +77,16 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 				target: node.id,
 				type: "DocumentationRelationship",
 			};
-			setNodes((prevNodes) => [
+			useStore.getState().setNodes(selectedFile, (prevNodes) => [
 				...prevNodes.map((node) => {
 					node.selected = false;
 					return node;
 				}),
 				documentationNode,
 			]);
-			setEdges((prevEdges) => [...prevEdges, documentationEdge]);
+			useStore.getState().setEdges(selectedFile, (prevEdges) => [...prevEdges, documentationEdge]);
 		} else {
-			setNodes((prevNodes) => [
+			useStore.getState().setNodes(selectedFile, (prevNodes) => [
 				...prevNodes.map((node) => {
 					if (node.id === incomingDocumentationNodes[0].id) {
 						node.selected = true;
@@ -93,7 +99,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ node }) => {
 		}
 	};
 
-	const content = getCodeDocumentation(node, nodes, edges);
+	const content = getCodeDocumentation(node);
 
 	return (
 		<div

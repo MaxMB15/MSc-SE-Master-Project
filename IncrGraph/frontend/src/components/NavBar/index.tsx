@@ -187,7 +187,7 @@ const Navbar: React.FC = () => {
 						open={isProjectInfoOpen}
 						onClose={toggleProjectInfoDrawer}
 					>
-						<Box className={styles.container}>
+						<Box className={styles.container} sx={{height: "100%"}}>
 							<div>
 								<Typography variant="h6">
 									Project Info

@@ -32,6 +32,15 @@ const defaultTheme: ThemeOptions = {
                 },
             },
         },
+        MuiTabs: {
+            styleOverrides: {
+                root: {
+                    "& .MuiTabs-indicator": {
+						backgroundColor: STYLES.primary,
+					},
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
