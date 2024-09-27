@@ -75,51 +75,19 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// Request for saving file content
 	// const { error: saveFileError, sendRequest: saveFileSendRequest } =
 	// 	useAxiosRequest<SaveFilePathRequest, null>();
-
-	// References to monaco editor
-	const editorRef = useRef<any>(null);
-	const monacoRef = useRef<Monaco | null>(null);
-
 	// References to the console terminal
-	const fitAddons = useRef<(FitAddon | null)[]>([]);
+	// const fitAddons = useRef<(FitAddon | null)[]>([]);
 
-	// Store variables
-	// const {
-	// 	selectedFile,
-	// 	fileContent,
-	// 	// projectDirectory,
-	// 	// setFileContent,
-	// 	// localContentBuffer,
-	// 	// setLocalContentBuffer,
-	// 	// fileHistories,
-	// 	// setFileHistories,
-	// 	isIGCFile,
-	// 	// nodes,
-	// 	setNodes,
-	// 	// edges,
-	// 	setEdges,
-	// 	// currentSessionId,
-	// 	// codeRunData,
-	// 	// mode,
-	// 	nodeTypes,
-	// 	relationshipTypes,
-	// 	viewTypes,
-	// } = useStore.getState();
 	const selectedFile = useStore((state) => state.selectedFile);
 	const fileContent = useStore((state) => state.fileContent);
 	const fileChanged = useStore((state) => state.fileChanged);
-	const hasEditor = useStore((state) => state.hasEditor);
 	const setHasEditorInitialized = useStore(
 		(state) => state.setHasEditorInitialized,
 	);
 	const isIGCFile = useStore((state) => state.isIGCFile);
-	const setNodes = useStore((state) => state.setNodes);
-	const setEdges = useStore((state) => state.setEdges);
 	const setSavedNodes = useStore((state) => state.setSavedNodes);
 	const setSavedEdges = useStore((state) => state.setSavedEdges);
-	const nodeTypes = useStore((state) => state.nodeTypes);
-	const relationshipTypes = useStore((state) => state.relationshipTypes);
-	const viewTypes = useStore((state) => state.viewTypes);
+
 	const navBarContainer = useStore((state) => state.navBarContainer);
 	const setNavBarContainer = useStore((state) => state.setNavBarContainer);
 
@@ -130,15 +98,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// STATE
 	const [isCollapsed, setIsCollapsed] = useState<boolean>(false); // State for collapsing the file editor
 	const [width, setWidth] = useState(500); // State for the width of the file editor
-	const [isSaved, setIsSaved] = useState<boolean>(true); // State for checking if the file is currently saved
-	const [models, setModels] = useState(new Map<string, any>()); // State for storing the monaco models
-	const [filterContent, setFilterContent] = useState<boolean>(true); // Whether to filter the main IGC content
-	const [changeFromType, setChangeFromType] =
-		useState<EditorDisplayContentType>(EditorDisplayContentType.NONE); // Checking what is responsible for the node update
-	const [showTerminal, setShowTerminal] = useState<boolean>(false); // State to control terminal visibility
 	const [activeTab, setActiveTab] = useState(0);
-	const [curViews, setCurViews] = useState<RegisteredView[]>([]);
-
+	const [views, setViews] = useState<(IGCViewProps & RegistryComponent)[]>(
+		[],
+	);
 	// UTIL FUNCTIONS
 
 	// // INITIALIZE MODELS
@@ -504,22 +467,22 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// 	// Make sure there is an update for when editor.current is updated
 	// 	checkInitializeModels();
 	// };
-	const handleResize = useCallback(() => {
-		// if (editorRef.current) {
-		// 	editorRef.current.layout();
-		// }
-		fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
-	}, []);
+	// const handleResize = useCallback(() => {
+	// 	// if (editorRef.current) {
+	// 	// 	editorRef.current.layout();
+	// 	// }
+	// 	fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
+	// }, []);
 
 	// Resizing the editor
-	useEffect(() => {
-		// Window resize event listener
-		window.addEventListener("resize", handleResize);
+	// useEffect(() => {
+	// 	// Window resize event listener
+	// 	window.addEventListener("resize", handleResize);
 
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, [handleResize]);
+	// 	return () => {
+	// 		window.removeEventListener("resize", handleResize);
+	// 	};
+	// }, [handleResize]);
 
 	// // Event listener for keydown
 	// const handleKeyDown = (event: KeyboardEvent) => {
@@ -740,6 +703,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 	// }, [filterContent, selectedItem, models]);
 
 	useEffect(() => {
+		const hasEditor = useStore.getState().hasEditor;
 		if (
 			fileContent !== null &&
 			isIGCFile &&
@@ -749,8 +713,12 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		) {
 			setHasEditorInitialized(selectedFile);
 			const serializedData = serializeGraphData(fileContent);
-			setNodes(selectedFile, () => serializedData.nodes);
-			setEdges(selectedFile, () => serializedData.edges);
+			useStore
+				.getState()
+				.setNodes(selectedFile, () => serializedData.nodes);
+			useStore
+				.getState()
+				.setEdges(selectedFile, () => serializedData.edges);
 			// Need a copy of the data to prevent references
 			const serializedData2 = serializeGraphData(fileContent);
 
@@ -941,10 +909,14 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		return false;
 	};
 	const validView = (view: RegisteredView): boolean => {
+		const viewTypes = useStore.getState().viewTypes;
 		return view.key in viewTypes && viewTypes[view.key].enabled;
 	};
 	const getViews = (): (IGCViewProps & RegistryComponent)[] => {
 		const selectedComponent = selectedItem?.item;
+		const nodeTypes = useStore.getState().nodeTypes;
+		const relationshipTypes = useStore.getState().relationshipTypes;
+		const viewTypes = useStore.getState().viewTypes;
 		const allViews = Object.values(viewTypes)
 			.map((vt) => vt.object)
 			.filter((v) => validView(v));
@@ -1002,27 +974,20 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 		// }
 		// return [];
 	};
-	const views = useMemo(() => {
-		const v = getViews();
+	useEffect(() => {
+		const v = getViews().sort((v1, v2) => v1.weight - v2.weight);
 		// Clean the nav bar elements
 		if (
 			!_.isEqual(
 				v.map((v2) => v2.key),
-				curViews.map((v2) => v2.key),
+				views.map((v2) => v2.key),
 			)
 		) {
 			setNavBarContainer(() => []);
 		}
-		setCurViews(v);
-		// Return the new views
-		return v;
+		setViews(v);
 	}, [selectedItem?.id, selectedItem?.item.type, fileChanged]);
 
-	const tabs = useMemo(() => createTabs(views), [views]);
-	const viewContent = useMemo(
-		() => createTabContent(views),
-		[views, activeTab],
-	);
 	const navBarElements = navBarContainer
 		.sort((a, b) => a.weight - b.weight)
 		.map((element) => element.element);
@@ -1035,7 +1000,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 			minConstraints={[40, Infinity]}
 			maxConstraints={[800, Infinity]}
 			onResize={(_, { size }) => setWidth(size.width)}
-			onResizeStop={handleResize}
+			// onResizeStop={handleResize}
 			resizeHandles={["w"]}
 			handle={
 				<div className="resize-handle-container-left">
@@ -1116,9 +1081,10 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 							flexDirection: "column",
 							height: "100vh",
 							overflow: "hidden",
+                            paddingLeft: "2px",
 						}}
 					>
-						<div className={style.tabsContainer}>{tabs}</div>
+						<div className={style.tabsContainer}>{createTabs(views)}</div>
 						<Box
 							sx={{
 								flexGrow: 1,
@@ -1126,7 +1092,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ openConfirmDialog }) => {
 								position: "relative",
 							}}
 						>
-							{viewContent}
+							{createTabContent(views)}
 						</Box>
 						<div>
 							<SelectionPane />

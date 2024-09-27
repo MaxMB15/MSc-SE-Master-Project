@@ -198,6 +198,7 @@ const CodeNodeView: IGCViewProps & RegistryComponent = createView(
 	"CodeNodeView",
 	"Code Node View",
 	[CodeNode],
+    0,
 	{},
 );
 

@@ -154,6 +154,7 @@ const GeneralTextView: IGCViewProps & RegistryComponent = createView(
 	"GeneralTextView",
 	"File Data",
 	[],
+    0,
 	{},
 );
 

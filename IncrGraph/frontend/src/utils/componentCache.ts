@@ -268,6 +268,7 @@ export const createView = <T extends {} = {}>(
 	key: string,
 	displayName: string,
 	forComponents: RegistryComponent[],
+    weight: number = 0,
 	options: CreateViewOptions = {},
 ): IGCViewProps<T> & RegistryComponent => {
 	const { parentComponent, abstract = false } = options;
@@ -299,6 +300,7 @@ export const createView = <T extends {} = {}>(
 	registryComponent.typeHierarchy.push(typeSymbol);
 
 	registryComponent.forComponents = forComponents;
+    registryComponent.weight = weight;
 
 	return registryComponent;
 };

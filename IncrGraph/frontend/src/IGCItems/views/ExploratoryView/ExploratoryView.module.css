@@ -1,0 +1,30 @@
+.contextMenu {
+	position: absolute;
+	background: var(--mui-palette-background-paper);
+	border: 1px solid var(--mui-palette-background-pure);
+	padding: 8px 0;
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	border-radius: 5px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	width: 200px;
+}
+
+.contextMenuItem {
+	padding: 8px 16px;
+	cursor: pointer;
+	color: var(--context-menu-text);
+	font-size: 14px;
+	width: 100%;
+}
+
+.contextMenuItem:hover {
+	background-color: var(--mui-palette-background-hover);
+    width: 160px;
+}
+
+.contextMenuItem:active {
+	background-color: var(--mui-palette-background-selected);
+    width: 160px;
+}

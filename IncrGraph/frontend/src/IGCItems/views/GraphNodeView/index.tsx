@@ -396,6 +396,7 @@ const GraphNodeView: IGCViewProps & RegistryComponent = createView(
 	"GraphNodeView",
 	"Graph Node View",
 	[GraphNode],
+    0,
 	{},
 );
 

@@ -150,6 +150,7 @@ const DocumentationNodeView: IGCViewProps & RegistryComponent = createView(
 	"DocumentationNodeView",
 	"Documentation Node View",
 	[DocumentationNode],
+    0,
 	{},
 );
 
