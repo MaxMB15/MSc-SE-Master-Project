@@ -39,6 +39,7 @@ import {
 } from "@/IGCItems/utils/types";
 import {
 	loadSessionData,
+	refreshSession,
 	removeExecutionInSession,
 	removeNodeInSession,
 } from "@/utils/sessionHandler";
@@ -99,25 +100,45 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		setSelectedEdges(newSelectedEdges);
 	}, [edges]);
 
+    useEffect(() => {
+        if(useStore.getState().waitForSelection) {
+            const curFile = useStore.getState().selectedFile;
+            if(selectedNodes.length > 0 && curFile !== null){
+                useStore.getState().setChosenNode(()=>selectedNodes[0]);
+                setNodes(curFile, (nds) => {
+                    return nds.map((node) => {
+                        if(node.id === selectedNodes[0].id){
+                            node.selected = false;
+                        }
+                        return node;
+                    });
+                });
+            }
+        }
+    }, [selectedNodes])
+
 	// When new selections are being made, update the selected items
 	useEffect(() => {
-		const items: Item[] = [];
-		selectedNodes.forEach((node) => {
-			items.push({
-				item: { type: "node", object: node },
-				id: node.id,
-				name: node.data.label,
-			});
-		});
-
-		selectedEdges.forEach((edge) => {
-			items.push({
-				item: { type: "relationship", object: edge },
-				id: edge.id,
-				name: edge.id,
-			});
-		});
-		setSelectedItems(() => items);
+        if(!useStore.getState().waitForSelection) {
+            const items: Item[] = [];
+            selectedNodes.forEach((node) => {
+                items.push({
+                    item: { type: "node", object: node },
+                    id: node.id,
+                    name: node.data.label,
+                });
+            });
+    
+            selectedEdges.forEach((edge) => {
+                items.push({
+                    item: { type: "relationship", object: edge },
+                    id: edge.id,
+                    name: edge.id,
+                });
+            });
+            setSelectedItems(() => items);
+        }
+		
 	}, [selectedNodes, selectedEdges]);
 
 	useEffect(() => {
@@ -300,7 +321,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 						<button
 							className="icon-button"
 							title="Play Current Execution"
-							onClick={() => loadSessionData(selectedFile)}
+							onClick={() => refreshSession(selectedFile)}
 						>
 							<PlayArrow />
 						</button>

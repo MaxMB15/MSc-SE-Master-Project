@@ -4,7 +4,8 @@ import useStore from "@/store/store";
 import { lightTheme, darkTheme } from "@/styles/theme";
 
 export const useThemeMode = (): [Theme, () => void, "light" | "dark"] => {
-	const {mode, setMode} = useStore();
+    const mode = useStore((state) => state.mode);
+    const setMode = useStore((state) => state.setMode);
 
 	useEffect(() => {
 		const savedMode = localStorage.getItem("theme") as

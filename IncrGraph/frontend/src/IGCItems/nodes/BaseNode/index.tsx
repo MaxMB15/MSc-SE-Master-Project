@@ -27,7 +27,7 @@ export type IGCNodeData<T = {}> = T & {
 
 export type IGCNodeProps<T = {}> = React.FC<NodeProps<IGCNodeData<T>>>;
 
-const RawBaseNode: IGCNodeProps = ({ id, data }) => {
+const RawBaseNode: IGCNodeProps = ({ id, data, selected }) => {
 	const { setNodes } = useStore();
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number;
@@ -78,7 +78,20 @@ const RawBaseNode: IGCNodeProps = ({ id, data }) => {
 	const isTarget = connectionNodeId && connectionNodeId !== id;
 	const label = isTarget ? "Drop here" : "Drag to connect";
 
+    let selectionColor = "transparent";
+    if(useStore.getState().waitForSelection){
+        selectionColor = STYLES.nodePickColor;
+    }
+    else if(selected){
+        selectionColor = STYLES.nodeSelectedColor;
+    }
 	return (
+        <div style={{
+            border: `1px solid ${selectionColor}`,
+            backgroundColor: selectionColor,
+            boxShadow: selectionColor === "transparent" ? undefined : `0 4px 12px rgba(${selectionColor}, 0.4)`,
+            borderRadius: "11px",
+        }}>
 		<div className="customNode" onContextMenu={handleContextMenu}>
 			<div
 				className="customNodeBody"
@@ -150,6 +163,7 @@ const RawBaseNode: IGCNodeProps = ({ id, data }) => {
 				}
 			/>
 		</div>
+        </div>
 	);
 };
 const BaseNode: IGCNodeProps & RegistryComponent = createComponent(

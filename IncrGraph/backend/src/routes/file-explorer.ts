@@ -773,8 +773,9 @@ router.post("/primary-session", async (req: Request, res: Response) => {
 		".sessions",
 		path.basename(filePath),
 	);
-
 	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
+    const content = await fs.readFile(sessionsConfigPath, "utf-8");
+    console.log(content);
 	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
 
 	if (sessionConfigData.current === sessionId) {
@@ -826,5 +827,71 @@ router.post("/session", async (req: Request, res: Response) => {
 
 	return res.json({ message: "Session created" });
 });
+
+router.delete("/session", async (req: Request, res: Response) => {
+    const filePath = req.body.filePath as string;
+	const sessionId = req.body.sessionId as string;
+
+    if (!filePath || !sessionId) {
+        return res
+            .status(400)
+            .json({ error: "File path and session ID are required" });
+    }
+
+    // Get the session directory
+    const sessionDir = path.join(
+        path.dirname(filePath),
+        ".sessions",
+        path.basename(filePath),
+        sessionId,
+    );
+
+    // Remove the session directory
+    await fs.remove(sessionDir);
+
+    // Check if the primary session is affected
+    const sessionsConfigPath = path.join(
+        path.dirname(filePath),
+        ".sessions",
+        path.basename(filePath),
+        "session.config.json",
+    );
+    const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
+    if (sessionsConfigData.current === sessionId) {
+        // Find the most current session
+        // Go through each session config file and fine the one with the most recent timestamp
+        let mostRecentSession = "";
+        let mostRecentTimestamp = 0;
+        const sessionDirs = await getSubDirectories(
+            path.join(path.dirname(filePath), ".sessions", path.basename(filePath)),
+        );
+        for (const session of sessionDirs) {
+            const sessionConfigPath = path.join(
+                path.dirname(filePath),
+                ".sessions",
+                path.basename(filePath),
+                session,
+                "executions",
+                "config.json",
+            );
+            if (!fs.existsSync(sessionConfigPath)) {
+                continue;
+            }
+            const sessionConfigData: SessionConfig = await fs.readJSON(
+                sessionConfigPath,
+            );
+            if (sessionConfigData.timestamp > mostRecentTimestamp) {
+                mostRecentTimestamp = sessionConfigData.timestamp;
+                mostRecentSession = session;
+            }
+        }
+        sessionsConfigData.current = mostRecentSession;
+        await fs.writeJSON(sessionsConfigPath, sessionsConfigData);
+
+        return res.json({ message: "Session removed", newPrimary: mostRecentSession });
+    }
+    return res.json({ message: "Session removed" });
+});
+
 
 export default router;

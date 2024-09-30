@@ -13,6 +13,15 @@ import {
 import styles from "./ExploratoryView.module.css";
 import useStore from "@/store/store";
 import { IGCFileSessionData } from "shared";
+import useTextDialog from "@/components/TextDialog/useTextDialog";
+import {
+	createExecutionData,
+	createNewSession,
+	loadSessionData,
+	updateExecutionRelationships,
+} from "@/utils/sessionHandler";
+import { runGraph } from "@/utils/codeExecution";
+import { callExecuteMany } from "@/requests";
 
 interface PathNode {
 	id: string;
@@ -33,7 +42,12 @@ interface TreeNode {
 	children: TreeNode[];
 }
 
-function buildTree(paths: PathNode[][]): TreeNode {
+interface InsertAction {
+	position: "before" | "after";
+	nodeId: IdType;
+}
+
+const buildTree = (paths: PathNode[][]): TreeNode => {
 	const root: TreeNode = {
 		id: "root",
 		originalId: "",
@@ -80,14 +94,14 @@ function buildTree(paths: PathNode[][]): TreeNode {
 	}
 
 	return root;
-}
+};
 
-function findExecutionPathNodeIds(
+const findExecutionTreeNodePath = (
 	node: TreeNode,
 	executionPath: PathNode[],
 	pathIndex: number,
-	executionPathNodeIds: string[],
-): boolean {
+	path: TreeNode[],
+): boolean => {
 	// Deep comparison of originalId and label
 	if (
 		node.originalId !== executionPath[pathIndex].id ||
@@ -97,7 +111,7 @@ function findExecutionPathNodeIds(
 		return false;
 	}
 
-	executionPathNodeIds.push(node.id);
+	path.push(node);
 
 	if (pathIndex === executionPath.length - 1) {
 		// Reached the end of the execution path
@@ -106,23 +120,18 @@ function findExecutionPathNodeIds(
 
 	for (const child of node.children) {
 		if (
-			findExecutionPathNodeIds(
-				child,
-				executionPath,
-				pathIndex + 1,
-				executionPathNodeIds,
-			)
+			findExecutionTreeNodePath(child, executionPath, pathIndex + 1, path)
 		) {
 			return true;
 		}
 	}
 
 	// Backtrack if no matching path is found from this node
-	executionPathNodeIds.pop();
+	path.pop();
 	return false;
-}
+};
 
-function traverseTree(
+const traverseTree = (
 	node: TreeNode,
 	nodesArray: Node[],
 	edgesArray: Edge[],
@@ -132,7 +141,7 @@ function traverseTree(
 	highlightColor: string,
 	edgeColor: string,
 	parentNodeId?: string,
-) {
+) => {
 	// Skip the root node
 	if (node.id !== "root") {
 		nodesArray.push({
@@ -171,10 +180,73 @@ function traverseTree(
 			node.id,
 		);
 	}
-}
+};
+
+const findPathToNode = (
+	node: TreeNode,
+	targetNodeId: string,
+	path: TreeNode[] = [],
+): TreeNode[] | null => {
+	// Add the current node's ID to the path
+	path.push(node);
+
+	// Check if the current node is the target node
+	if (node.id === targetNodeId) {
+		return path;
+	}
+
+	// Recursively search in the children
+	for (const child of node.children) {
+		const result = findPathToNode(child, targetNodeId, [...path]);
+		if (result) {
+			return result;
+		}
+	}
+
+	// If not found, return null
+	return null;
+};
+
+const getCurrentExecutionPath = (): PathNode[] => {
+	const curFile = useStore.getState().selectedFile;
+	const currentSessionId = useStore.getState().currentSessionId;
+
+	const sessionsData: IGCFileSessionData | null =
+		curFile === null
+			? null
+			: useStore.getState().getSessionData(curFile) ?? null;
+	if (
+		sessionsData === null ||
+		curFile === null ||
+		currentSessionId === null
+	) {
+		return [];
+	}
+	const nodeIdLabelPairs: { [id: string]: string } = useStore
+		.getState()
+		.getNodes(curFile)
+		.reduce<{ [id: string]: string }>((acc, n) => {
+			acc[n.id] = n.data.label;
+			return acc;
+		}, {});
+
+	return [
+		{ id: "start", label: "start" },
+		...sessionsData.sessions[currentSessionId].executions.map((e) => {
+			return {
+				id: e.nodeId,
+				label: nodeIdLabelPairs[e.nodeId],
+			};
+		}),
+	];
+};
 
 const RawExploratoryView = () => {
+	const { openTextDialog, TextDialogPortal } = useTextDialog();
+	const [insertType, setInsertType] = useState<InsertAction | null>(null);
+
 	const containerRef = useRef<HTMLDivElement>(null);
+	const treeRef = useRef<TreeNode | null>(null);
 	const [contextMenu, setContextMenu] = useState<ContextMenuState>({
 		visible: false,
 		x: 0,
@@ -182,160 +254,133 @@ const RawExploratoryView = () => {
 		nodeId: null,
 	});
 
-	const lightMode = useStore.getState().mode === "light";
+	const mode = useStore((state) => state.mode);
+	const lightMode = mode === "light";
 
-	useEffect(() => {
-		const nodeColor = lightMode ? "#cccccc" : "#888888";
-		const nodeFontColor = lightMode ? "#000000" : "#ffffff";
-		const edgeColor = lightMode ? "#cccccc" : "#888888";
-		const highlightColor = "#ff6347";
+	const currentSessionId = useStore((state) => state.currentSessionId);
 
-		const getPaths = (): PathNode[][] => {
-			const curFile = useStore.getState().selectedFile;
+	const executionPath = getCurrentExecutionPath();
 
-			const sessionsData: IGCFileSessionData | null =
-				curFile === null
-					? null
-					: useStore.getState().getSessionData(curFile) ?? null;
-			if (sessionsData === null || curFile === null) {
-				return [];
-			}
-			const nodeIdLabelPairs: { [id: string]: string } = useStore
-				.getState()
-				.getNodes(curFile)
-				.reduce<{ [id: string]: string }>((acc, n) => {
-					acc[n.id] = n.data.label;
-					return acc;
-				}, {});
+	const nodeColor = lightMode ? "#cccccc" : "#888888";
+	const nodeFontColor = lightMode ? "#000000" : "#ffffff";
+	const edgeColor = lightMode ? "#cccccc" : "#888888";
+	const highlightColor = "#ff6347";
 
-			const retList = [];
-			const sessions = Object.keys(sessionsData.sessions);
-			for (let i = 0; i < sessions.length; i++) {
-				const sessionId = sessions[i];
-				const session = sessionsData.sessions[sessionId];
-				retList.push(
-					session.executions.map((e) => {
-						return {
-							id: e.nodeId,
-							label: nodeIdLabelPairs[e.nodeId],
-						};
-					}),
-				);
-			}
+	const getPaths = (): PathNode[][] => {
+		const curFile = useStore.getState().selectedFile;
 
-			return retList;
-		};
+		const sessionsData: IGCFileSessionData | null =
+			curFile === null
+				? null
+				: useStore.getState().getSessionData(curFile) ?? null;
+		if (sessionsData === null || curFile === null) {
+			return [];
+		}
+		const nodeIdLabelPairs: { [id: string]: string } = useStore
+			.getState()
+			.getNodes(curFile)
+			.reduce<{ [id: string]: string }>((acc, n) => {
+				acc[n.id] = n.data.label;
+				return acc;
+			}, {});
 
-		const getCurrentExecutionPath = (): PathNode[] => {
-			const curFile = useStore.getState().selectedFile;
-			const currentSessionId = useStore.getState().currentSessionId;
-
-			const sessionsData: IGCFileSessionData | null =
-				curFile === null
-					? null
-					: useStore.getState().getSessionData(curFile) ?? null;
-			if (
-				sessionsData === null ||
-				curFile === null ||
-				currentSessionId === null
-			) {
-				return [];
-			}
-			const nodeIdLabelPairs: { [id: string]: string } = useStore
-				.getState()
-				.getNodes(curFile)
-				.reduce<{ [id: string]: string }>((acc, n) => {
-					acc[n.id] = n.data.label;
-					return acc;
-				}, {});
-
-			return sessionsData.sessions[currentSessionId].executions.map(
-				(e) => {
+		const retList = [];
+		const sessions = Object.keys(sessionsData.sessions);
+		for (let i = 0; i < sessions.length; i++) {
+			const sessionId = sessions[i];
+			const session = sessionsData.sessions[sessionId];
+			retList.push([
+				{ id: "start", label: "start" },
+				...session.executions.map((e) => {
 					return {
 						id: e.nodeId,
 						label: nodeIdLabelPairs[e.nodeId],
 					};
-				},
-			);
-		};
-
-		const executionPath = getCurrentExecutionPath();
-		const paths = getPaths();
-
-		const root = buildTree(paths);
-
-		const executionPathNodeIds: string[] = [];
-		let found = false;
-		for (const child of root.children) {
-			if (
-				findExecutionPathNodeIds(
-					child,
-					executionPath,
-					0,
-					executionPathNodeIds,
-				)
-			) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			console.warn("Execution path not found in the tree.");
+				}),
+			]);
 		}
 
-		const nodesArray: Node[] = [];
-		const edgesArray: Edge[] = [];
+		return retList;
+	};
+	const paths = getPaths();
 
-		traverseTree(
-			root,
-			nodesArray,
-			edgesArray,
-			executionPathNodeIds,
-			nodeColor,
-			nodeFontColor,
-			highlightColor,
-			edgeColor,
-		);
+	const root = buildTree(paths);
+	treeRef.current = root;
 
-		const nodes = new DataSet<Node>(nodesArray);
-		const edges = new DataSet<Edge>(edgesArray);
+	const executionTreeNodePath: TreeNode[] = [];
+	let found = false;
+	for (const child of root.children) {
+		if (
+			findExecutionTreeNodePath(
+				child,
+				executionPath,
+				0,
+				executionTreeNodePath,
+			)
+		) {
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		console.warn("Execution path not found in the tree.");
+	}
 
-		const data = { nodes, edges };
+	const nodesArray: Node[] = [];
+	const edgesArray: Edge[] = [];
 
-		// Configure options for hierarchical layout
-		const options = {
-			layout: {
-				hierarchical: {
-					direction: "UD", // Up to Down
-					sortMethod: "directed",
-					nodeSpacing: 200,
-					levelSeparation: 150,
-				},
-			},
-			nodes: {
-				shape: "dot",
-				size: 15,
-				borderWidth: 2,
-			},
-			edges: {
-				smooth: {
-					enabled: true,
-					type: "cubicBezier",
-					forceDirection: "vertical",
-					roundness: 0.4,
-				},
-			},
-			physics: {
-				enabled: false, // Disable physics since we're using a hierarchical layout
-			},
-			interaction: {
-				dragNodes: false, // Prevent manual node dragging
-				zoomView: true,
-				dragView: true,
-				multiselect: false,
-			},
-		};
+	const executionPathNodeIds = executionTreeNodePath.map((node) => node.id);
 
+	traverseTree(
+		root,
+		nodesArray,
+		edgesArray,
+		executionPathNodeIds,
+		nodeColor,
+		nodeFontColor,
+		highlightColor,
+		edgeColor,
+	);
+
+	const nodes = new DataSet<Node>(nodesArray);
+	const edges = new DataSet<Edge>(edgesArray);
+
+	const data = { nodes, edges };
+
+	// Configure options for hierarchical layout
+	const options = {
+		layout: {
+			hierarchical: {
+				direction: "UD", // Up to Down
+				sortMethod: "directed",
+				nodeSpacing: 200,
+				levelSeparation: 150,
+			},
+		},
+		nodes: {
+			shape: "dot",
+			size: 15,
+			borderWidth: 2,
+		},
+		edges: {
+			smooth: {
+				enabled: true,
+				type: "cubicBezier",
+				forceDirection: "vertical",
+				roundness: 0.4,
+			},
+		},
+		physics: {
+			enabled: false, // Disable physics since we're using a hierarchical layout
+		},
+		interaction: {
+			dragNodes: false, // Prevent manual node dragging
+			zoomView: true,
+			dragView: true,
+			multiselect: false,
+		},
+	};
+	useEffect(() => {
 		if (containerRef.current !== null) {
 			const network = new Network(containerRef.current, data, options);
 
@@ -374,20 +419,174 @@ const RawExploratoryView = () => {
 				network.destroy();
 			};
 		}
-	}, [contextMenu.visible, lightMode]);
+	}, [contextMenu.visible, lightMode, currentSessionId]);
 
 	const selectedFile = useStore.getState().selectedFile;
-	const currentSessionId = useStore.getState().currentSessionId;
+	const chosenNode = useStore((state) => state.chosenNode);
+
+	useEffect(() => {
+		if (
+			chosenNode !== null &&
+			insertType !== null &&
+			treeRef.current !== null
+		) {
+			console.log(chosenNode);
+			useStore.getState().setWaitForSelection((_) => false);
+			useStore.getState().setChosenNode((_) => null);
+
+			// Create new session based on the chosen node
+			const index = executionTreeNodePath.findIndex(
+				(node) => node.id === (insertType.nodeId as string),
+			);
+			if (index === -1) {
+				throw new Error(
+					`Node with id ${insertType.nodeId} not found in the path.`,
+				);
+			}
+
+			const originalIdPath = executionTreeNodePath.map(
+				(node) => node.originalId,
+			);
+			originalIdPath.splice(
+				insertType.position === "before" ? index : index + 1,
+				0,
+				chosenNode.id,
+			);
+			originalIdPath.shift();
+			console.log("New execution path:", originalIdPath);
+			if (selectedFile === null) {
+				return;
+			}
+			openTextDialog(defaultSessionName).then((sessionName) => {
+				if (sessionName !== null) {
+					createNewSession(selectedFile, sessionName).then(() => {
+						createExecutionData(selectedFile, originalIdPath).then(
+							(executionData) => {
+								callExecuteMany(
+									executionData,
+									"python",
+									selectedFile,
+									sessionName,
+								).then(() => {
+									loadSessionData(selectedFile).then(
+										(sessionData) => {
+											useStore
+												.getState()
+												.setCurrentSessionId(
+													() => sessionName,
+												);
+											updateExecutionRelationships(
+												selectedFile,
+												sessionData,
+											);
+										},
+									);
+								});
+							},
+						);
+					});
+				}
+				setInsertType(null);
+			});
+		}
+	}, [chosenNode, insertType]);
+
 	if (selectedFile === null) {
 		return <div className="text-display">No File Selected</div>;
 	} else if (currentSessionId === null) {
 		return <div className="text-display">No Session Selected</div>;
 	}
 
-	const handleAction = (action: string, nodeId: IdType) => {
-		console.log(`${action} on node ${nodeId}`);
-		// Implement your action logic here
+	const defaultSessionName = `IGC_${new Intl.DateTimeFormat("en-GB", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: false,
+	})
+		.format(new Date())
+		.replace(/,/, "")
+		.replace(/\//g, "-")
+		.replace(" ", "_")}`;
+
+	const startNewSession = async (nodeId: IdType) => {
 		setContextMenu({ ...contextMenu, visible: false });
+
+		if (treeRef.current) {
+			const path = findPathToNode(treeRef.current, nodeId as string);
+			if (path) {
+				console.log(`Path to node ${nodeId}:`, path);
+				const realExecutionPath = path.map((node) => node.originalId);
+				realExecutionPath.shift(); // For root node
+				realExecutionPath.shift(); // For start node
+
+				const sessionName = await openTextDialog(defaultSessionName);
+
+				if (sessionName !== null) {
+					createNewSession(selectedFile, sessionName).then(() => {
+						createExecutionData(
+							selectedFile,
+							realExecutionPath,
+						).then((executionData) => {
+							callExecuteMany(
+								executionData,
+								"python",
+								selectedFile,
+								sessionName,
+							).then(() => {
+								loadSessionData(selectedFile).then(
+									(sessionData) => {
+										useStore
+											.getState()
+											.setCurrentSessionId(
+												() => sessionName,
+											);
+										updateExecutionRelationships(
+											selectedFile,
+											sessionData,
+										);
+									},
+								);
+							});
+						});
+					});
+				}
+			} else {
+				console.warn(`Node ${nodeId} not found in the tree.`);
+			}
+		} else {
+			console.error("Tree not initialized.");
+		}
+	};
+	const addBeforeSession = async (nodeId: IdType) => {
+		setInsertType({ position: "before", nodeId: nodeId });
+		setContextMenu({ ...contextMenu, visible: false });
+
+		// const sessionName = await openTextDialog(defaultSessionName);
+		useStore.getState().setWaitForSelection((_) => true);
+	};
+	const addAfterSession = async (nodeId: IdType) => {
+		setInsertType({ position: "after", nodeId: nodeId });
+		setContextMenu({ ...contextMenu, visible: false });
+
+		// const sessionName = await openTextDialog(defaultSessionName);
+		useStore.getState().setWaitForSelection((_) => true);
+	};
+
+	const nodeInExecutionPath = (nodeId: string) => {
+		if (treeRef.current === null) {
+			return false;
+		}
+		const path = findPathToNode(treeRef.current, nodeId as string);
+		if (!path) {
+			return false;
+		}
+
+		return executionPath.some(
+			(e) => e.id === path[path.length - 1].originalId,
+		);
 	};
 
 	const backgroundColor = lightMode ? "#ffffff" : "#1e1e1e";
@@ -410,42 +609,39 @@ const RawExploratoryView = () => {
 				>
 					<div
 						className={styles.contextMenuItem}
-						onClick={() =>
-							handleAction(
-								"Start Session From Here",
-								contextMenu.nodeId!,
-							)
-						}
+						onClick={() => startNewSession(contextMenu.nodeId!)}
 					>
 						Start Session From Here
 					</div>
-					<div
-						className={styles.contextMenuItem}
-						onClick={() =>
-							handleAction(
-								"Insert Before Node",
-								contextMenu.nodeId!,
-							)
-						}
-					>
-						Insert Before Node
-					</div>
-					<div
-						className={styles.contextMenuItem}
-						onClick={() =>
-							handleAction(
-								"Insert After Node",
-								contextMenu.nodeId!,
-							)
-						}
-					>
-						Insert After Node
-					</div>
+					{nodeInExecutionPath(contextMenu.nodeId as string) && (
+						<>
+							{contextMenu.nodeId !== "node1" && (
+								<div
+									className={styles.contextMenuItem}
+									onClick={() =>
+										addBeforeSession(contextMenu.nodeId!)
+									}
+								>
+									Insert Before Node
+								</div>
+							)}
+
+							<div
+								className={styles.contextMenuItem}
+								onClick={() =>
+									addAfterSession(contextMenu.nodeId!)
+								}
+							>
+								Insert After Node
+							</div>
+						</>
+					)}
 				</div>
 			)}
 
 			{/* Network Graph */}
 			<div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+			<TextDialogPortal />
 		</div>
 	);
 };

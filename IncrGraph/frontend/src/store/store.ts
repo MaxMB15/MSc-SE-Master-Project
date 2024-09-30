@@ -66,6 +66,12 @@ interface State {
 	selectedItem: Item | null;
 	setSelectedItem: (updater: (prev: Item | null) => Item | null) => void;
 
+	waitForSelection: boolean;
+	setWaitForSelection: (updater: (prev: boolean) => boolean) => void;
+
+	chosenNode: Node | null;
+	setChosenNode: (updater: (prev: Node | null) => Node | null) => void;
+
 	hasEditor: { [fileKey: string]: boolean };
 	setHasEditorCreated: (fileKey: string) => void;
 	setHasEditorInitialized: (fileKey: string) => void;
@@ -242,6 +248,14 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 	selectedItem: null,
 	setSelectedItem: (updater: (prev: Item | null) => Item | null) =>
 		set((state) => ({ selectedItem: updater(state.selectedItem) })),
+
+	waitForSelection: false,
+	setWaitForSelection: (updater: (prev: boolean) => boolean) =>
+		set((state) => ({ waitForSelection: updater(state.waitForSelection) })),
+
+	chosenNode: null,
+	setChosenNode: (updater: (prev: Node | null) => Node | null) =>
+		set((state) => ({ chosenNode: updater(state.chosenNode) })),
 
 	hasEditor: {},
 	setHasEditorCreated: (fileKey: string) =>

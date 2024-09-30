@@ -65,7 +65,7 @@
             "data": {
                 "label": "Set X",
                 "codeData": {
-                    "code": "x = 6"
+                    "code": "x = 7"
                 },
                 "dependencies": {
                     "variables": [],
@@ -85,7 +85,7 @@
                 "x": -356.8171700807792,
                 "y": -201.75671134256004
             },
-            "selected": false,
+            "selected": true,
             "width": 154,
             "height": 84,
             "positionAbsolute": {

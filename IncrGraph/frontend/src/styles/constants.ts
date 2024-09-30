@@ -51,6 +51,9 @@ export const STYLES = {
     nodeBottomBackgroundColor: "#3f3f3f",
     nodePickColor: "#75e7b7",
     nodeDropColor: "#ea6c76",
+    nodeSelectedColor: "rgb(0, 190, 253)",
+    nodeErrorColor: "rgb(255, 0, 0)",
+    nodeNeedsPickColor: "rgb(0, 212, 7)",
 
     footerHeight: "25px",
     componentNavbarHeight: "23px",

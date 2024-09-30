@@ -16,7 +16,6 @@
 	height: calc(100% - var(--nodeBottomHeight));
 	width: 100%;
 	top: 0px;
-	background: transparent;
 	z-index: 1000;
 	line-height: 1;
 	border-radius: 4px;

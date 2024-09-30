@@ -6,6 +6,7 @@ import {
 	getFileContent,
 	callExecuteMany,
 	createSession,
+    deleteSession,
 } from "@/requests";
 import useStore from "@/store/store";
 import { FileIdCodeList, IGCFileSessionData } from "shared";
@@ -178,3 +179,31 @@ export const createExecutionData = async (
 	}
 	return returnData;
 };
+export const refreshSession = async (filePath: string) => {
+    const currentSessionId = useStore.getState().currentSessionId;
+    if (currentSessionId === null) {
+        return;
+    }
+    // Remove the session, then re-add it to refresh the data
+    // Get the execution path before deleting the session
+    const executionPath = await getExecutionPathFromSession(
+        filePath,
+        currentSessionId,
+    );
+    // Remove the session
+    await deleteSession(filePath, currentSessionId);
+
+    // Create a new session
+    await createNewSession(filePath, currentSessionId);
+
+    // Create the execution data
+    const newExecutionData = await createExecutionData(filePath, executionPath);
+
+    // Execute the new execution data
+    await callExecuteMany(newExecutionData, "python", filePath, currentSessionId);
+
+    // Update session data
+    await loadSessionData(filePath).then((sessionData) => {
+        updateExecutionRelationships(filePath, sessionData);
+    });
+}

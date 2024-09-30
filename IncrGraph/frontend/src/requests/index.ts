@@ -341,3 +341,17 @@ export const createSession = async (filePath: string, sessionId: string) => {
 
     return sendAxiosRequest<PrimarySessionRequest, Empty>(options);
 }
+
+export const deleteSession = async (filePath: string, sessionId: string) => {
+    const options: UseAxiosRequestOptions<PrimarySessionRequest> = {
+        method: "DELETE",
+        route: "/api/file-explorer/session",
+        data: {
+            filePath: filePath,
+            sessionId: sessionId,
+        },
+        useJWT: false,
+    };
+
+    return sendAxiosRequest<PrimarySessionRequest, Empty>(options);
+}
