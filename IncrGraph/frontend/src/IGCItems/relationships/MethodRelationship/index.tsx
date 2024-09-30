@@ -8,6 +8,7 @@ import { callAnalyze } from "@/requests";
 import { RegistryComponent } from "@/types/frontend";
 import { createComponent } from "@/utils/componentCache";
 import useStore from "@/store/store";
+import { isCodeNode } from "@/IGCItems/nodes/CodeNode";
 
 const RawMethodRelationship: IGCRelationshipProps = (props) => {
 	const { setNodes } = useStore();
@@ -27,26 +28,35 @@ const RawMethodRelationship: IGCRelationshipProps = (props) => {
 		console.log("MethodRelationshipProps", props);
 		if (
 			sourceNode !== undefined &&
-			sourceNode.type === "methodNode" &&
+			sourceNode.type === "MethodNode" &&
 			targetNode !== undefined &&
-			targetNode.type === "classNode" &&
+			targetNode.type === "ClassNode" &&
 			targetNode.data !== undefined &&
-			targetNode.data.code !== undefined
+			targetNode.data.codeData.code !== undefined
 		) {
 			console.log("sourceNode", sourceNode);
 			console.log("targetNode", targetNode);
 
+			const selectedFile = useStore.getState().selectedFile;
+			if (selectedFile === null) {
+				return;
+			}
+
 			// Run analysis on class node to get class name
-			callAnalyze(targetNode.data.code).then((response) => {
+			callAnalyze(targetNode.data.codeData.code).then((response) => {
 				console.log("Response", response);
 				if (response.new_definitions.classes.length !== 0) {
 					// Update method node with class name
-					setNodes((prevNodes) => {
+					setNodes(selectedFile, (prevNodes) => {
 						return prevNodes.map((node) => {
-							if (node.id === props.source) {
+							if (isCodeNode(node) && node.id === props.source) {
 								node.data = {
 									...node.data,
-									scope: response.new_definitions.classes[0],
+									codeData: {
+										...node.data.codeData,
+										scope: response.new_definitions
+											.classes[0],
+									},
 								};
 							}
 							return node;

@@ -4,13 +4,14 @@ import { addEdge, getEdgeId } from "@/IGCItems/utils/utils";
 import { callAnalyze, callExecute, callExecuteMany } from "@/requests";
 import useStore from "@/store/store";
 import { createDependencyGraph } from "@/IGCItems/utils/edgeCreation";
-import { nodeHasCode } from "@/IGCItems/utils/types";
 import {
 	createExecutionData,
 	loadSessionData,
 	updateExecutionRelationships,
 } from "./sessionHandler";
 import { GraphNodeData } from "@/IGCItems/nodes/GraphNode";
+import { IGCCodeNodeData, isCodeNode } from "@/IGCItems/nodes/CodeNode";
+import { IGCNodeData } from "@/IGCItems/nodes/BaseNode";
 
 // If the node is a method node, apply the transformation to the code to allow it to attach to the class node
 // const applyCodeTransformation = (node: Node, metaNodeData: any) => {
@@ -21,8 +22,8 @@ export const runAnalysis = (node: Node) => {
 	if (selectedFile === null) {
 		return;
 	}
-	if (nodeHasCode(node)) {
-		callAnalyze(node.data.code).then((response: CodeAnalysisResponse) => {
+	if (isCodeNode(node)) {
+		callAnalyze(node.data.codeData.code).then((response: CodeAnalysisResponse) => {
 			useStore.getState().setNodes(selectedFile, (prevNodes) => {
 				return prevNodes.map((n) => {
 					if (node.id === n.id) {
@@ -62,9 +63,9 @@ export const runAllAnalysis = async () => {
 	// Get all analysis data for all nodes
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
 	for (let node of useStore.getState().getNodes(selectedFile)) {
-		if (nodeHasCode(node)) {
+		if (isCodeNode(node)) {
 			try {
-				const result = await callAnalyze(node.data.code);
+				const result = await callAnalyze(node.data.codeData.code);
 				nodeAnalysisData[node.id] = result;
 			} catch (error) {
 				console.error(`Error analyzing node ${node.id}:`, error);
@@ -167,18 +168,17 @@ const setScope = (
 	return metaNodeData;
 };
 // Meta Analysis
-const metaAnalysis = (node: Node, metaNodeData: CodeAnalysisResponse) => {
-	if (!nodeHasCode(node)) {
+const metaAnalysis = (node: Node<IGCCodeNodeData<IGCNodeData>>, metaNodeData: CodeAnalysisResponse) => {
+	if (!isCodeNode(node)) {
 		return node;
 	}
 
-	if (node.type === "baseNode") {
+	if (node.type === "BaseNode") {
 		if (
 			metaNodeData.new_definitions !== undefined &&
 			metaNodeData.new_definitions.classes.length > 0
 		) {
-			node.type = "classNode";
-			node.data["class"] = metaNodeData.new_definitions.classes[0];
+			node.type = "ClassNode";
 			node.data["label"] = metaNodeData.new_definitions.classes[0];
 		} else {
 			if (metaNodeData.new_definitions !== undefined) {
@@ -190,31 +190,29 @@ const metaAnalysis = (node: Node, metaNodeData: CodeAnalysisResponse) => {
 						metaNodeData.new_definitions.variables[0];
 				}
 			}
-			node.type = "codeFragmentNode";
+			node.type = "CodeFragmentNode";
 		}
-	} else if (node.type === "classNode" && node.data !== undefined) {
+	} else if (node.type === "ClassNode" && node.data !== undefined) {
 		if (
 			metaNodeData &&
 			metaNodeData.new_definitions &&
 			metaNodeData.new_definitions.classes &&
 			metaNodeData.new_definitions.classes.length > 0
 		) {
-			node.data["class"] = metaNodeData.new_definitions.classes[0];
 			node.data["label"] = metaNodeData.new_definitions.classes[0];
 		}
-	} else if (node.type === "methodNode" && node.data !== undefined) {
+	} else if (node.type === "MethodNode" && node.data !== undefined) {
 		if (
 			metaNodeData &&
 			metaNodeData.new_definitions &&
 			metaNodeData.new_definitions.functions &&
 			metaNodeData.new_definitions.functions.length > 0
 		) {
-			node.data["method"] = metaNodeData.new_definitions.functions[0];
 			node.data["label"] = metaNodeData.new_definitions.functions[0];
 		}
 	}
-	if (node.data !== undefined && node.data.scope !== undefined) {
-		metaNodeData = setScope(metaNodeData, node.data.scope);
+	if (node.data !== undefined && node.data.codeData.scope !== undefined) {
+		metaNodeData = setScope(metaNodeData, node.data.codeData.scope);
 	}
 	node.data = { ...node.data, ...metaNodeData };
 

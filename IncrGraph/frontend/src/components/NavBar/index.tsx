@@ -19,9 +19,9 @@ import OpenDirectoryButton from "../OpenDirectoryButton";
 import useStore from "@/store/store";
 import ThemeToggle from "../ThemeToggle";
 import styles from './NavBar.module.css'; // Import the CSS module
-import { isCodeContainingNode } from "../../IGCItems/utils/types";
 import { usePopupContext } from "../Popup/PopupProvider";
 import AddOnManager from "../AddOnManager/AddOnManager";
+import { isCodeNode } from "@/IGCItems/nodes/CodeNode";
 
 const Navbar: React.FC = () => {
 	const [anchorElFile, setAnchorElFile] = useState<null | HTMLElement>(null);
@@ -80,8 +80,8 @@ const Navbar: React.FC = () => {
 	const SLOC = (): string => {
 		let sloc = 0;
 		nodes.forEach((node) => {
-			if (isCodeContainingNode(node)) {
-				sloc += node.data.code.split("\n").length;
+			if (isCodeNode(node)) {
+				sloc += node.data.codeData.code.split("\n").length;
 			}
 		});
 		return sloc.toString();
