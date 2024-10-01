@@ -106,7 +106,7 @@ const RawBaseNode: IGCNodeProps = ({ id, data, selected }) => {
 						: BaseNode.color,
 				}}
 			>
-				{data.children !== undefined && data.children}
+				{data.children !== undefined && !isConnecting && data.children}
 				{!isConnecting && (
 					<Handle
 						position={Position.Right}

@@ -72,7 +72,7 @@ const CodeNode: IGCCodeNodeProps & RegistryComponent = createComponent(
 		abstract: true,
 	},
 );
-export const isCodeNode = (node: Node): node is Node<IGCCodeNodeData> => {
+export const isCodeNode = (node: Node): node is Node<IGCCodeNodeData<IGCNodeProps>> => {
     const nodeTypes = useStore.getState().nodeTypes;
     if(node.type !== undefined && node.type in nodeTypes) {
         return isComponentOfType(nodeTypes[node.type].object, CodeNode);

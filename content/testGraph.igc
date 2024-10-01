@@ -28,7 +28,7 @@
             "data": {
                 "label": "Multiply C",
                 "codeData": {
-                    "code": "# c = c * 2\n\n# print(c)"
+                    "code": "c = c * 2\n\nprint(c)"
                 },
                 "dependencies": {
                     "variables": [
@@ -50,7 +50,7 @@
                 "x": -355,
                 "y": 77
             },
-            "selected": false,
+            "selected": true,
             "width": 154,
             "height": 84,
             "positionAbsolute": {

@@ -25,6 +25,7 @@ const RawGraphNode: IGCNodeProps<GraphNodeData> = (props) => (
 					selectedSession={props.data.selectedSession}
 				/>
 			),
+            label: `${path.basename(props.data.filePath)}(${props.data.selectedSession})`,
 			backgroundColor: GraphNode.color,
             handleRun: () => runGraph(props.id),
 		}}

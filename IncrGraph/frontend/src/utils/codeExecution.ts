@@ -23,34 +23,36 @@ export const runAnalysis = (node: Node) => {
 		return;
 	}
 	if (isCodeNode(node)) {
-		callAnalyze(node.data.codeData.code).then((response: CodeAnalysisResponse) => {
-			useStore.getState().setNodes(selectedFile, (prevNodes) => {
-				return prevNodes.map((n) => {
-					if (node.id === n.id) {
-						if (
-							n.data !== undefined &&
-							n.data.scope !== undefined
-						) {
-							n.data = {
-								...n.data,
-								...response,
-							};
-						} else {
-							n.data = { ...n.data, ...response };
+		callAnalyze(node.data.codeData.code).then(
+			(response: CodeAnalysisResponse) => {
+				useStore.getState().setNodes(selectedFile, (prevNodes) => {
+					return prevNodes.map((n) => {
+						if (node.id === n.id) {
+							if (
+								n.data !== undefined &&
+								n.data.scope !== undefined
+							) {
+								n.data = {
+									...n.data,
+									...response,
+								};
+							} else {
+								n.data = { ...n.data, ...response };
+							}
+							if (n.data.codeData.new_definitions !== undefined) {
+								return metaAnalysis(n, {
+									new_definitions: n.data
+										.new_definitions as CodeAnalysisResponse["new_definitions"],
+									dependencies: n.data
+										.dependencies as CodeAnalysisResponse["dependencies"],
+								});
+							}
 						}
-						if (n.data.new_definitions !== undefined) {
-							return metaAnalysis(n, {
-								new_definitions: n.data
-									.new_definitions as CodeAnalysisResponse["new_definitions"],
-								dependencies: n.data
-									.dependencies as CodeAnalysisResponse["dependencies"],
-							});
-						}
-					}
-					return n;
+						return n;
+					});
 				});
-			});
-		});
+			},
+		);
 	}
 };
 
@@ -62,7 +64,9 @@ export const runAllAnalysis = async () => {
 
 	// Get all analysis data for all nodes
 	const nodeAnalysisData: { [nodeId: string]: CodeAnalysisResponse } = {};
-	for (let node of useStore.getState().getNodes(selectedFile)) {
+	for (let node of useStore.getState().getNodes(selectedFile) as Node<
+		IGCCodeNodeData<IGCNodeData>
+	>[]) {
 		if (isCodeNode(node)) {
 			try {
 				const result = await callAnalyze(node.data.codeData.code);
@@ -71,32 +75,32 @@ export const runAllAnalysis = async () => {
 				console.error(`Error analyzing node ${node.id}:`, error);
 			}
 		} else {
+			const n = node as Node;
 			console.log(
-				`Skipping node ${node.id} (no code or documentation node).`,
+				`Skipping node ${n.id} (no code or documentation node).`,
 			);
 		}
 	}
 
 	useStore.getState().setNodes(selectedFile, (prevNodes) => {
 		return prevNodes.map((node) => {
-			if (node.id in nodeAnalysisData) {
-				if (node.data !== undefined && node.data.scope !== undefined) {
-					node.data = {
-						...node.data,
-						...nodeAnalysisData[node.id],
-					};
-				} else {
-					node.data = { ...node.data, ...nodeAnalysisData[node.id] };
-				}
+			if (node.id in nodeAnalysisData && isCodeNode(node)) {
+				node.data.codeData = {
+					...node.data.codeData,
+					...nodeAnalysisData[node.id],
+				};
 				console.log(`Node ${node.id} updated with analysis result.`);
 			} else {
 				console.log(`No analysis result for node ${node.id}.`);
 			}
-			if (node.data.new_definitions !== undefined) {
-				return metaAnalysis(node, {
-					new_definitions: node.data
+			if (
+				isCodeNode(node) &&
+				node.data.codeData.new_definitions !== undefined
+			) {
+				return metaAnalysis(node as Node, {
+					new_definitions: node.data.codeData
 						.new_definitions as CodeAnalysisResponse["new_definitions"],
-					dependencies: node.data
+					dependencies: node.data.codeData
 						.dependencies as CodeAnalysisResponse["dependencies"],
 				});
 			}
@@ -168,7 +172,10 @@ const setScope = (
 	return metaNodeData;
 };
 // Meta Analysis
-const metaAnalysis = (node: Node<IGCCodeNodeData<IGCNodeData>>, metaNodeData: CodeAnalysisResponse) => {
+const metaAnalysis = (
+	node: Node<IGCCodeNodeData<IGCNodeData>>,
+	metaNodeData: CodeAnalysisResponse,
+) => {
 	if (!isCodeNode(node)) {
 		return node;
 	}
@@ -214,7 +221,7 @@ const metaAnalysis = (node: Node<IGCCodeNodeData<IGCNodeData>>, metaNodeData: Co
 	if (node.data !== undefined && node.data.codeData.scope !== undefined) {
 		metaNodeData = setScope(metaNodeData, node.data.codeData.scope);
 	}
-	node.data = { ...node.data, ...metaNodeData };
+	node.data.codeData = { ...node.data.codeData, ...metaNodeData };
 
 	return node;
 };

@@ -210,10 +210,11 @@ const detectOverrideRelationships = (
 				for (let mn of methodNodes) {
 					if (
 						mn.data !== undefined &&
-						mn.data.new_definitions !== undefined
+                        isCodeNode(mn) &&
+						mn.data.codeData.new_definitions !== undefined
 					) {
 						const methodDefinitions2 =
-							mn.data.new_definitions.functions
+							mn.data.codeData.new_definitions.functions
 								.filter((f: string) => f.includes("."))
 								.map((f: string) => f.split(".")[1]);
 						for (let mdef of methodDefinitions) {
@@ -279,9 +280,9 @@ const detectInheritanceRelationships = (
 			for (let cn of classNodes) {
 				if (
 					cn.data !== undefined &&
-					cn.data.new_definitions !== undefined
+					cn.data.codeData.new_definitions !== undefined
 				) {
-					const classDefinitions = cn.data.new_definitions.classes;
+					const classDefinitions = cn.data.codeData.new_definitions.classes;
 					if (!classDefinitions) {
 						continue;
 					}
