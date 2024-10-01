@@ -1,7 +1,7 @@
 [
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes",
-    "last_updated": "2024-10-01T00:11:52.207Z",
+    "last_updated": "2024-10-01T01:39:01.456Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes/AbstractClassNode/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/nodes/BaseNode/index.tsx",
@@ -22,7 +22,7 @@
   },
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships",
-    "last_updated": "2024-10-01T00:11:52.207Z",
+    "last_updated": "2024-10-01T01:39:01.458Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships/BaseRelationship/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/relationships/CustomConnectionLine.tsx",
@@ -36,7 +36,7 @@
   },
   {
     "search_path": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views",
-    "last_updated": "2024-10-01T00:11:52.208Z",
+    "last_updated": "2024-10-01T01:39:01.463Z",
     "files": [
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/BaseView/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/CodeNodeView/index.tsx",
@@ -45,6 +45,7 @@
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/GraphNodeView/SessionInfo.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/GraphNodeView/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/NodeDocumentationView/index.tsx",
+      "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/ProjectionView/index.tsx",
       "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/IncrGraph/frontend/src/IGCItems/views/viewUtils.tsx"
     ]
   }

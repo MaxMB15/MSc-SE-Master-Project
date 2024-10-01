@@ -50,13 +50,9 @@ const RawMethodRelationship: IGCRelationshipProps = (props) => {
 					setNodes(selectedFile, (prevNodes) => {
 						return prevNodes.map((node) => {
 							if (isCodeNode(node) && node.id === props.source) {
-								node.data = {
-									...node.data,
-									codeData: {
-										...node.data.codeData,
-										scope: response.new_definitions
-											.classes[0],
-									},
+								node.data.codeData = {
+									...node.data.codeData,
+									scope: response.new_definitions.classes[0],
 								};
 							}
 							return node;
