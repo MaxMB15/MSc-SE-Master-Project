@@ -15,17 +15,18 @@ export type GraphNodeData = {
 };
 
 const RawGraphNode: IGCNodeProps<GraphNodeData> = (props) => (
+    
 	<BaseNode
 		{...props}
 		data={{
 			...props.data,
 			children: (
 				<GraphNodeDisplay
-					filePath={props.data.filePath}
-					selectedSession={props.data.selectedSession}
+					filePath={props.data.filePath ?? ""}
+					selectedSession={props.data.selectedSession ?? ""}
 				/>
 			),
-            label: `${path.basename(props.data.filePath)}(${props.data.selectedSession})`,
+            label: props.data.filePath && props.data.selectedSession ? `${path.basename(props.data.filePath)}(${props.data.selectedSession})`: "",
 			backgroundColor: GraphNode.color,
             handleRun: () => runGraph(props.id),
 		}}

@@ -7,6 +7,7 @@ import "@xterm/xterm/css/xterm.css";
 import "./TabbedCodeOutput.css";
 import { STYLES } from "@/styles/constants";
 import { IGCCodeNodeExecution } from "shared";
+import useStore from "@/store/store";
 
 interface TabbedCodeOutputProps {
 	executionData: IGCCodeNodeExecution | undefined;
@@ -20,6 +21,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 	const [activeTab, setActiveTab] = useState(0);
 	const terminalRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const terminals = useRef<(Terminal | null)[]>([]);
+    const theme = useStore(state => state.mode);
+
 
 	useEffect(() => {
 		terminalRefs.current.forEach((ref, index) => {
@@ -27,8 +30,8 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				console.log(`Initializing terminal ${index}`);
 				terminals.current[index] = new Terminal({
 					theme: {
-						background: STYLES.mainBackgroundColorLight,
-						cursor: STYLES.mainBackgroundColorLight,
+						background: theme === "light" ? STYLES.mainBackgroundColorLight : STYLES.mainBackgroundColorDark,
+						cursor: theme === "light" ? STYLES.mainBackgroundColorLight : STYLES.mainBackgroundColorDark,
 					},
 					cursorStyle: "block",
 					cursorBlink: false,
@@ -55,7 +58,7 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 		return () => {
 			terminals.current.forEach((terminal) => terminal?.dispose());
 		};
-	}, []);
+	}, [theme]);
 
 	useEffect(() => {
 		// Example: Write to the terminal
@@ -63,19 +66,19 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 			terminal?.clear();
 			if (index === 0) {
 				terminal?.writeln(
-					executionData !== undefined
-						? `\x1b[30m${executionData.stdout}`
-						: "\x1b[30m<No output>",
+					executionData !== undefined && executionData.stdout !== ""
+						? `${theme === "light" ? "\x1b[30m": ""}${executionData.stdout}`
+						: `${theme === "light" ? "\x1b[30m": ""}<No output>`,
 				);
 			} else if (index === 1) {
 				terminal?.writeln(
-					executionData !== undefined
-						? `\x1b[30m${executionData.stderr}`
-						: "\x1b[30m<No errors>",
+					executionData !== undefined && executionData.stderr !== ""
+						? `${theme === "light" ? "\x1b[30m": ""}${executionData.stderr}`
+						: `${theme === "light" ? "\x1b[30m": ""}<No errors>`,
 				);
 			}
 		});
-	}, [executionData]);
+	}, [executionData, theme]);
 
 	// useEffect(() => {
 	// 	fitAddons.current.forEach((fitAddon) => fitAddon?.fit());

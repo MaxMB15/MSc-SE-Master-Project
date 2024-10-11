@@ -128,6 +128,7 @@ export const getExecutionPathFromSession = async (
 	return executionPaths;
 };
 
+// *This can go into infinite loop if there is a cycle in the graph
 export const createExecutionData = async (
 	filePath: string,
 	executionPath: string[],

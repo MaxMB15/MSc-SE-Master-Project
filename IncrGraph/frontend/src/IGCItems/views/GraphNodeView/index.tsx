@@ -53,6 +53,8 @@ const RawGraphNodeView: React.FC = () => {
 			: null;
 	const currentSessionId = useStore.getState().currentSessionId;
 
+    const fileInputValue = selectedFile ? selectedFile.name : filePath;
+
 	const handleFileInputChange = (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
@@ -94,7 +96,9 @@ const RawGraphNodeView: React.FC = () => {
 		const curFile = useStore.getState().selectedFile;
 		const selectedItem = useStore.getState().selectedItem;
 		if (curFile !== null && selectedItem !== null) {
-			const igcFile = path.isAbsolute(filePath)
+			// Check if the file path is absolute or relative
+			const isAbsolute = path.isAbsolute(filePath);
+			const igcFile = isAbsolute
 				? filePath
 				: path.join(path.dirname(curFile), filePath);
 			if (igcFile.endsWith(".igc")) {
@@ -246,7 +250,7 @@ const RawGraphNodeView: React.FC = () => {
 				display: "flex",
 				flexDirection: "column",
 				height: "100%",
-                overflowY: "scroll"
+				overflowY: "scroll",
 			}}
 		>
 			{selectedItem !== null && selectedItem.item.type === "node" ? (
@@ -264,10 +268,16 @@ const RawGraphNodeView: React.FC = () => {
 						File
 					</label>
 					<TextField
-						value={selectedFile ? selectedFile.name : filePath}
+						value={fileInputValue}
 						onChange={handlePathChange}
 						onFocus={() => setIsFocused(true)}
-						onBlur={() => setIsFocused(false)}
+						onBlur={(event) => {
+							if (event.target) {
+								event.target.scrollLeft =
+									event.target.scrollWidth;
+							}
+							setIsFocused(false);
+						}}
 						fullWidth
 						placeholder="Enter relative/absolute path or select a file"
 						slotProps={{
@@ -361,7 +371,7 @@ const RawGraphNodeView: React.FC = () => {
 						bgcolor: selectedSession ? "inherit" : "gray",
 					}}
 				>
-                    <label
+					<label
 						htmlFor="name-input"
 						className="selection-pane-label"
 					>
@@ -369,7 +379,7 @@ const RawGraphNodeView: React.FC = () => {
 					</label>
 					{loadedSession && (
 						<SessionInfo
-                            sessionId={selectedSession}
+							sessionId={selectedSession}
 							executionOrder={loadedSession.executions.map(
 								(e) => e.nodeId,
 							)}
@@ -396,7 +406,7 @@ const GraphNodeView: IGCViewProps & RegistryComponent = createView(
 	"GraphNodeView",
 	"Graph Node View",
 	[GraphNode],
-    0,
+	0,
 	{},
 );
 

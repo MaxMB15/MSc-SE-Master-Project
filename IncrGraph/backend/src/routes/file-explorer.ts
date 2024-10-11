@@ -1,3 +1,4 @@
+import { Mutex } from "async-mutex";
 import { Router, Request, Response } from "express";
 import fs from "fs-extra";
 import path from "path";
@@ -18,6 +19,16 @@ const router = Router();
 
 // Logger
 const logger = createCustomLogger("backend");
+
+// Mutex for file handling
+const fileMutex = new Mutex();
+
+async function safeOperation<T>(operation: () => Promise<T>): Promise<T> {
+	return fileMutex.runExclusive(async () => {
+		// Execute the operation
+		return await operation();
+	});
+}
 
 // Helper function to validate file paths
 const validatePath = (filePath: string, res: Response): boolean => {
@@ -554,9 +565,14 @@ router.get("/session-data", async (req: Request, res: Response) => {
 		return res.status(404).json({ error: "Session config file not found" });
 	}
 	// Read the session config file and get the current primary session data
-    const content = await fs.readFile(sessionsConfigPath, "utf-8");
-    console.log(content);
-	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
+	const content = await safeOperation(() =>
+		fs.readFile(sessionsConfigPath, "utf-8"),
+	);
+	console.log(content);
+	if (content === "") {
+		console.log("content is empty");
+	}
+	const sessionConfigData = JSON.parse(content);
 	const primarySession: string = sessionConfigData.current;
 	returnData.primarySession = primarySession;
 
@@ -652,9 +668,10 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 
 	// Check if the primary session is affected
 	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
-    const content = await fs.readFile(sessionsConfigPath, "utf-8");
-    console.log(content);
-	const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
+	const content = await safeOperation(() =>
+		fs.readFile(sessionsConfigPath, "utf-8"),
+	);
+	const sessionsConfigData = await JSON.parse(content);
 	if (affectedSessions.includes(sessionsConfigData.current)) {
 		// Find the most current session
 		// Go through each session config file and fine the one with the most recent timestamp
@@ -680,7 +697,9 @@ router.delete("/session-data-node", async (req: Request, res: Response) => {
 			}
 		}
 		sessionsConfigData.current = mostRecentSession;
-		await fs.writeJSON(sessionsConfigPath, sessionsConfigData);
+		await safeOperation(() =>
+			fs.writeJSON(sessionsConfigPath, sessionsConfigData),
+		);
 	}
 
 	return res.json(affectedSessions);
@@ -749,11 +768,13 @@ router.delete(
 
 		// Create the config so it remains a valid session
 		await fs.ensureDir(executionsDir);
-		await fs.writeJSON(sessionConfigPath, {
-			path: [],
-			timestamp: Date.now(),
-			filePath: filePath,
-		});
+		await safeOperation(() =>
+			fs.writeJSON(sessionConfigPath, {
+				path: [],
+				timestamp: Date.now(),
+				filePath: filePath,
+			}),
+		);
 
 		return res.json(sessionConfigData.path);
 	},
@@ -774,16 +795,19 @@ router.post("/primary-session", async (req: Request, res: Response) => {
 		path.basename(filePath),
 	);
 	const sessionsConfigPath = path.join(sessionDir, "session.config.json");
-    const content = await fs.readFile(sessionsConfigPath, "utf-8");
-    console.log(content);
-	const sessionConfigData = await fs.readJSON(sessionsConfigPath);
+	const content = await safeOperation(() =>
+		fs.readFile(sessionsConfigPath, "utf-8"),
+	);
+	const sessionConfigData = JSON.parse(content);
 
 	if (sessionConfigData.current === sessionId) {
 		return res.status(400).json({ error: "Session already active" });
 	}
 
 	sessionConfigData.current = sessionId;
-	await fs.writeJSON(sessionsConfigPath, sessionConfigData);
+	await safeOperation(() =>
+		fs.writeJSON(sessionsConfigPath, sessionConfigData),
+	);
 
 	return res.json({ message: "Primary session updated" });
 });
@@ -823,75 +847,83 @@ router.post("/session", async (req: Request, res: Response) => {
 	// Get session directory
 
 	const sessionsConfigPath = path.join(fileSessionDir, "session.config.json");
-	await fs.writeJSON(sessionsConfigPath, { current: sessionId });
+	await safeOperation(() =>
+		fs.writeJSON(sessionsConfigPath, { current: sessionId }),
+	);
 
 	return res.json({ message: "Session created" });
 });
 
 router.delete("/session", async (req: Request, res: Response) => {
-    const filePath = req.body.filePath as string;
+	const filePath = req.body.filePath as string;
 	const sessionId = req.body.sessionId as string;
 
-    if (!filePath || !sessionId) {
-        return res
-            .status(400)
-            .json({ error: "File path and session ID are required" });
-    }
+	if (!filePath || !sessionId) {
+		return res
+			.status(400)
+			.json({ error: "File path and session ID are required" });
+	}
 
-    // Get the session directory
-    const sessionDir = path.join(
-        path.dirname(filePath),
-        ".sessions",
-        path.basename(filePath),
-        sessionId,
-    );
+	// Get the session directory
+	const sessionDir = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+		sessionId,
+	);
 
-    // Remove the session directory
-    await fs.remove(sessionDir);
+	// Remove the session directory
+	await fs.remove(sessionDir);
 
-    // Check if the primary session is affected
-    const sessionsConfigPath = path.join(
-        path.dirname(filePath),
-        ".sessions",
-        path.basename(filePath),
-        "session.config.json",
-    );
-    const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
-    if (sessionsConfigData.current === sessionId) {
-        // Find the most current session
-        // Go through each session config file and fine the one with the most recent timestamp
-        let mostRecentSession = "";
-        let mostRecentTimestamp = 0;
-        const sessionDirs = await getSubDirectories(
-            path.join(path.dirname(filePath), ".sessions", path.basename(filePath)),
-        );
-        for (const session of sessionDirs) {
-            const sessionConfigPath = path.join(
-                path.dirname(filePath),
-                ".sessions",
-                path.basename(filePath),
-                session,
-                "executions",
-                "config.json",
-            );
-            if (!fs.existsSync(sessionConfigPath)) {
-                continue;
-            }
-            const sessionConfigData: SessionConfig = await fs.readJSON(
-                sessionConfigPath,
-            );
-            if (sessionConfigData.timestamp > mostRecentTimestamp) {
-                mostRecentTimestamp = sessionConfigData.timestamp;
-                mostRecentSession = session;
-            }
-        }
-        sessionsConfigData.current = mostRecentSession;
-        await fs.writeJSON(sessionsConfigPath, sessionsConfigData);
+	// Check if the primary session is affected
+	const sessionsConfigPath = path.join(
+		path.dirname(filePath),
+		".sessions",
+		path.basename(filePath),
+		"session.config.json",
+	);
+	const sessionsConfigData = await fs.readJSON(sessionsConfigPath);
+	if (sessionsConfigData.current === sessionId) {
+		// Find the most current session
+		// Go through each session config file and fine the one with the most recent timestamp
+		let mostRecentSession = "";
+		let mostRecentTimestamp = 0;
+		const sessionDirs = await getSubDirectories(
+			path.join(
+				path.dirname(filePath),
+				".sessions",
+				path.basename(filePath),
+			),
+		);
+		for (const session of sessionDirs) {
+			const sessionConfigPath = path.join(
+				path.dirname(filePath),
+				".sessions",
+				path.basename(filePath),
+				session,
+				"executions",
+				"config.json",
+			);
+			if (!fs.existsSync(sessionConfigPath)) {
+				continue;
+			}
+			const sessionConfigData: SessionConfig = await fs.readJSON(
+				sessionConfigPath,
+			);
+			if (sessionConfigData.timestamp > mostRecentTimestamp) {
+				mostRecentTimestamp = sessionConfigData.timestamp;
+				mostRecentSession = session;
+			}
+		}
+		sessionsConfigData.current = mostRecentSession;
+		await fs.writeJSON(sessionsConfigPath, sessionsConfigData);
 
-        return res.json({ message: "Session removed", newPrimary: mostRecentSession });
-    }
-    return res.json({ message: "Session removed" });
+		return res.json({
+			message: "Session removed",
+			newPrimary: mostRecentSession,
+		});
+	}
+	return res.json({ message: "Session removed" });
 });
-
 
 export default router;

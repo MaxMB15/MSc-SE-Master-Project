@@ -44,6 +44,8 @@ import {
 	removeNodeInSession,
 } from "@/utils/sessionHandler";
 import { showRelevantDocumentation } from "@/IGCItems/nodes/DocumentationNode";
+import { isGraphNode } from "@/IGCItems/nodes/GraphNode";
+import { fileExists } from "@/requests";
 
 interface EditorPaneProps {}
 
@@ -297,9 +299,19 @@ const EditorPane: React.FC<EditorPaneProps> = ({}) => {
 		}
 	};
 
-	const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
+	const onNodeDoubleClick = async (event: React.MouseEvent, node: Node) => {
 		console.log("Node double clicked", node);
 		console.log("Event", event);
+        if(isGraphNode(node)){
+            if(node.data.filePath){
+                const fileExistsPromise = await fileExists(node.data.filePath);
+                if(!fileExistsPromise){
+                    console.log("File does not exist");
+                    return;
+                }
+                useStore.getState().setSelectedFile(() => node.data.filePath);
+            }
+        }
 	};
 
 	return (

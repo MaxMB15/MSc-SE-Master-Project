@@ -17,8 +17,8 @@
             "style": {
                 "cursor": "grab"
             },
-            "width": 23,
-            "height": 23,
+            "width": 21,
+            "height": 21,
             "selected": false,
             "draggable": false
         },
@@ -65,25 +65,37 @@
                 "y": -305.61622374456385
             },
             "dragging": false
+        },
+        {
+            "id": "2",
+            "type": "GraphNode",
+            "data": {
+                "label": "Node 3",
+                "filePath": "/Users/maxboksem/Documents/Master's Thesis/MSc-SE-Master-Project/content/testGraph.igc",
+                "selectedSession": "testing3"
+            },
+            "position": {
+                "x": -51.854301043279975,
+                "y": 29.549907222621925
+            },
+            "selected": false,
+            "width": 154,
+            "height": 84,
+            "positionAbsolute": {
+                "x": -51.854301043279975,
+                "y": 29.549907222621925
+            },
+            "dragging": false
         }
     ],
     "edges": [
         {
-            "id": "execution-0-start>0",
+            "id": "execution-0-start>2",
             "source": "start",
-            "target": "0",
+            "target": "2",
             "type": "ExecutionRelationship",
             "data": {
                 "label": "1"
-            }
-        },
-        {
-            "id": "execution-0-0>1",
-            "source": "0",
-            "target": "1",
-            "type": "ExecutionRelationship",
-            "data": {
-                "label": "2"
             }
         }
     ]

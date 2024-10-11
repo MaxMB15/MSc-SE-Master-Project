@@ -69,10 +69,19 @@ export const lightTheme: Theme = createTheme(
 				secondary: STYLES.mainFontAccentColorLight,
 			},
 			primary: {
-				main: STYLES.mainBackgroundColorLight,
+				main: STYLES.mainFontAccentColorLight,
 				contrastText: STYLES.mainFontColorLight,
 			},
 		},
+        components: {
+            MuiAppBar: {
+                styleOverrides: {
+                    root: {
+                        backgroundColor: STYLES.mainBackgroundColorLight,
+                    },
+                },
+            }
+        }
 	}),
 );
 
@@ -94,10 +103,19 @@ export const darkTheme: Theme = createTheme(
 				secondary: STYLES.mainFontAccentColorDark,
 			},
 			primary: {
-				main: STYLES.mainBackgroundColorDark,
+				main: STYLES.mainFontAccentColorDark,
 				contrastText: STYLES.mainFontColorDark,
 			},   
 		},
+        components: {
+            MuiAppBar: {
+                styleOverrides: {
+                    root: {
+                        backgroundColor: STYLES.mainBackgroundColorDark,
+                    },
+                },
+            }
+        }
 	}),
 );
 

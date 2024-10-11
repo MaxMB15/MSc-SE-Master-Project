@@ -20,7 +20,6 @@ import {
 	loadSessionData,
 	updateExecutionRelationships,
 } from "@/utils/sessionHandler";
-import { runGraph } from "@/utils/codeExecution";
 import { callExecuteMany } from "@/requests";
 
 interface PathNode {
@@ -43,7 +42,7 @@ interface TreeNode {
 }
 
 interface InsertAction {
-	position: "before" | "after";
+	position: "before" | "after" | "replace";
 	nodeId: IdType;
 }
 
@@ -447,11 +446,27 @@ const RawExploratoryView = () => {
 			const originalIdPath = executionTreeNodePath.map(
 				(node) => node.originalId,
 			);
-			originalIdPath.splice(
-				insertType.position === "before" ? index : index + 1,
-				0,
-				chosenNode.id,
-			);
+            if(insertType.position === "replace") {
+                originalIdPath.splice(
+                    index,
+                    1,
+                    chosenNode.id,
+                );
+            }
+            else if (insertType.position === "before") {
+                originalIdPath.splice(
+                    index,
+                    0,
+                    chosenNode.id,
+                );
+            }
+            else if (insertType.position === "after") {
+                originalIdPath.splice(
+                    index + 1,
+                    0,
+                    chosenNode.id,
+                );
+            }
 			originalIdPath.shift();
 			console.log("New execution path:", originalIdPath);
 			if (selectedFile === null) {
@@ -575,6 +590,14 @@ const RawExploratoryView = () => {
 		useStore.getState().setWaitForSelection((_) => true);
 	};
 
+    const replaceNodeSession = async (nodeId: IdType) => {
+		setInsertType({ position: "replace", nodeId: nodeId });
+		setContextMenu({ ...contextMenu, visible: false });
+
+		// const sessionName = await openTextDialog(defaultSessionName);
+		useStore.getState().setWaitForSelection((_) => true);
+	};
+
 	const nodeInExecutionPath = (nodeId: string) => {
 		if (treeRef.current === null) {
 			return false;
@@ -625,6 +648,14 @@ const RawExploratoryView = () => {
 									Insert Before Node
 								</div>
 							)}
+                            <div
+								className={styles.contextMenuItem}
+								onClick={() =>
+									replaceNodeSession(contextMenu.nodeId!)
+								}
+							>
+								Replace Node
+							</div>
 
 							<div
 								className={styles.contextMenuItem}
