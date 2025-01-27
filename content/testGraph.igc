@@ -29,8 +29,8 @@
                 "y": -61.91765426091547
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -348.15624781133954,
                 "y": -61.91765426091547
@@ -81,8 +81,8 @@
                 "y": 77
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -355,
                 "y": 77
@@ -129,8 +129,8 @@
                 "y": -200.70553843347233
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -356.8171700807792,
                 "y": -200.70553843347233
@@ -178,8 +178,8 @@
                 "y": -8.532617617285553
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -62.61844945673221,
                 "y": -8.532617617285553
@@ -234,8 +234,8 @@
                 "y": 210.9602915087022
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -201.25280742171918,
                 "y": 210.9602915087022
@@ -287,14 +287,14 @@
             },
             "position": {
                 "x": 38.434213675790204,
-                "y": 207.85843770010536
+                "y": 206.85843770010536
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": 38.434213675790204,
-                "y": 207.85843770010536
+                "y": 206.85843770010536
             },
             "dragging": false
         },
@@ -348,8 +348,8 @@
                 "y": 352.21572409212973
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "dragging": false,
             "positionAbsolute": {
                 "x": -106.58948655183428,
@@ -401,8 +401,8 @@
                 "y": -186.09829778978502
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": 193.51533096391074,
                 "y": -186.09829778978502
@@ -449,8 +449,8 @@
                 "y": -21.762171822034247
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": 333.2321123918275,
                 "y": -21.762171822034247
@@ -504,8 +504,8 @@
                 "y": 408.3246724139688
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": 201.14069511749915,
                 "y": 408.3246724139688
@@ -525,8 +525,8 @@
                 "y": -328.4387839275788
             },
             "selected": false,
-            "width": 154,
-            "height": 84,
+            "width": 158,
+            "height": 88,
             "positionAbsolute": {
                 "x": -29.52316552752734,
                 "y": -328.4387839275788
@@ -554,6 +554,75 @@
             "height": 21,
             "selected": false,
             "draggable": false
+        },
+        {
+            "id": "documentation-3",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -62.61844945673221,
+                "y": -208.53261761728555
+            },
+            "data": {
+                "label": "Documentation",
+                "documentation": "# The Class definition of 'Animal'.",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 158,
+            "height": 88,
+            "hidden": true
+        },
+        {
+            "id": "documentation-4",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -201.25280742171918,
+                "y": 10.960291508702198
+            },
+            "data": {
+                "label": "Documentation",
+                "documentation": "\"getName\" Method definition. This returns the name of the Animal.",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 158,
+            "height": 88,
+            "hidden": true,
+            "dragging": false
+        },
+        {
+            "id": "documentation-5",
+            "type": "DocumentationNode",
+            "position": {
+                "x": 38.434213675790204,
+                "y": 7.858437700105355
+            },
+            "data": {
+                "label": "Documentation",
+                "documentation": "Initializer/Constructor of Animal class. Takes in a name as a parameter for the animal.",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 158,
+            "height": 88,
+            "hidden": true
+        },
+        {
+            "id": "documentation-6",
+            "type": "DocumentationNode",
+            "position": {
+                "x": -106.58948655183428,
+                "y": 152.21572409212973
+            },
+            "data": {
+                "label": "Documentation",
+                "documentation": "Creates an Animal instance and calls the getName method.",
+                "language": "markdown"
+            },
+            "selected": false,
+            "width": 158,
+            "height": 88,
+            "hidden": true
         }
     ],
     "edges": [
@@ -583,42 +652,6 @@
             "type": "MethodRelationship",
             "id": "0-9>7",
             "selected": false
-        },
-        {
-            "id": "execution-0-start>2",
-            "source": "start",
-            "target": "2",
-            "type": "ExecutionRelationship",
-            "data": {
-                "label": "1"
-            }
-        },
-        {
-            "id": "execution-0-2>3",
-            "source": "2",
-            "target": "3",
-            "type": "ExecutionRelationship",
-            "data": {
-                "label": "2"
-            }
-        },
-        {
-            "id": "execution-0-3>0",
-            "source": "3",
-            "target": "0",
-            "type": "ExecutionRelationship",
-            "data": {
-                "label": "3"
-            }
-        },
-        {
-            "id": "execution-0-0>1",
-            "source": "0",
-            "target": "1",
-            "type": "ExecutionRelationship",
-            "data": {
-                "label": "4"
-            }
         },
         {
             "id": "D0-1>0",
@@ -717,6 +750,129 @@
             "type": "OverridesRelationship",
             "data": {
                 "label": "getName"
+            }
+        },
+        {
+            "id": "0-documentation-3>3",
+            "source": "documentation-3",
+            "target": "3",
+            "type": "DocumentationRelationship"
+        },
+        {
+            "id": "0-documentation-4>4",
+            "source": "documentation-4",
+            "target": "4",
+            "type": "DocumentationRelationship"
+        },
+        {
+            "id": "0-documentation-5>5",
+            "source": "documentation-5",
+            "target": "5",
+            "type": "DocumentationRelationship"
+        },
+        {
+            "id": "0-documentation-6>6",
+            "source": "documentation-6",
+            "target": "6",
+            "type": "DocumentationRelationship"
+        },
+        {
+            "id": "execution-0-start>2",
+            "source": "start",
+            "target": "2",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "1"
+            }
+        },
+        {
+            "id": "execution-0-2>3",
+            "source": "2",
+            "target": "3",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "2"
+            }
+        },
+        {
+            "id": "execution-0-3>0",
+            "source": "3",
+            "target": "0",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "3"
+            }
+        },
+        {
+            "id": "execution-0-0>1",
+            "source": "0",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "4"
+            }
+        },
+        {
+            "id": "execution-0-1>0",
+            "source": "1",
+            "target": "0",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "5"
+            }
+        },
+        {
+            "id": "execution-1-0>1",
+            "source": "0",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "6"
+            }
+        },
+        {
+            "id": "execution-0-1>1",
+            "source": "1",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "7"
+            }
+        },
+        {
+            "id": "execution-1-1>1",
+            "source": "1",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "8"
+            }
+        },
+        {
+            "id": "execution-2-1>1",
+            "source": "1",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "9"
+            }
+        },
+        {
+            "id": "execution-3-1>1",
+            "source": "1",
+            "target": "1",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "10"
+            }
+        },
+        {
+            "id": "execution-1-1>0",
+            "source": "1",
+            "target": "0",
+            "type": "ExecutionRelationship",
+            "data": {
+                "label": "11"
             }
         }
     ]

@@ -154,7 +154,7 @@ export const getBezierNodeIntersection = (
 	p0: Point,
 	p1: Point,
 	p2: Point,
-): Point => {
+): Point | null => {
 	const intersections: Point[] = [];
 
 	// Check for intersections with the left and right sides
@@ -190,7 +190,7 @@ export const getBezierNodeIntersection = (
 	if (intersections.length > 0) {
 		return intersections[0]; // Return the first valid intersection
 	}
-	return { x: 0, y: 0 };
+	return null;
 };
 
 export const getNodeIntersectionWithCircle = (

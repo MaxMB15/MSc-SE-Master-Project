@@ -205,6 +205,19 @@ export const createNewFile = (filePath: string, content?: string) => {
 	return sendAxiosRequest<NewFileRequest, Empty>(options);
 };
 
+export const createEmptyIGCFile = (filePath: string) => {
+	const options: UseAxiosRequestOptions<SessionDataGetRequest> = {
+		method: "POST",
+		route: "/api/file-explorer/new-igc-file",
+		data: {
+            filePath: filePath,
+		},
+		useJWT: false,
+	};
+
+	return sendAxiosRequest<SessionDataGetRequest, Empty>(options);
+};
+
 export const createNewDirectory = (dirPath: string) => {
 	const options: UseAxiosRequestOptions<NewDirectoryRequest> = {
 		method: "POST",

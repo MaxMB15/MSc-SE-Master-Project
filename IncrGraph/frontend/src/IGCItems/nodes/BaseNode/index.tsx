@@ -59,6 +59,21 @@ const RawBaseNode: IGCNodeProps = ({ id, data, selected }) => {
 		}
 		handleClose();
 	};
+    const handleDuplicate = () => {
+        console.log("Duplicate action triggered for node:", id);
+        const curFile = useStore.getState().selectedFile;
+		if (curFile !== null) {
+			setNodes(curFile, (prevNodes) => {
+                    const node = prevNodes.find((node) => node.id === id);
+                    if (node === undefined) {
+                        return prevNodes;
+                    }
+                    return [...prevNodes.map((n) => {n.selected=false; return n;}), { ...node, id: getNodeId(prevNodes), selected: true, position: { x: node.position.x + 20, y: node.position.y + 20 } }];
+                }
+			);
+		}
+		handleClose();
+    };
 	const contextMenuAction = (action: (() => void) | undefined) => {
 		if (action === undefined) {
 			return undefined;
@@ -87,7 +102,7 @@ const RawBaseNode: IGCNodeProps = ({ id, data, selected }) => {
     }
 	return (
         <div style={{
-            border: `1px solid ${selectionColor}`,
+            border: `${STYLES.highlightThickness}px solid ${selectionColor}`,
             backgroundColor: selectionColor,
             boxShadow: selectionColor === "transparent" ? undefined : `0 4px 12px rgba(${selectionColor}, 0.4)`,
             borderRadius: "11px",
@@ -155,6 +170,7 @@ const RawBaseNode: IGCNodeProps = ({ id, data, selected }) => {
 				handleClose={handleClose}
 				position={contextMenu}
 				onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
 				onRun={
 					data.handleRun !== undefined &&
 					useStore.getState().currentSessionId !== null

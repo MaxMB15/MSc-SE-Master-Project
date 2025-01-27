@@ -75,7 +75,7 @@ const CodeNode: IGCCodeNodeProps & RegistryComponent = createComponent(
 export const isCodeNode = (node: Node): node is Node<IGCCodeNodeData<IGCNodeProps>> => {
     const nodeTypes = useStore.getState().nodeTypes;
     if(node.type !== undefined && node.type in nodeTypes) {
-        return isComponentOfType(nodeTypes[node.type].object, CodeNode);
+        return isComponentOfType(nodeTypes[node.type].object, CodeNode) && node.data !== undefined && node.data.codeData !== undefined;
     }
     return false;
 }

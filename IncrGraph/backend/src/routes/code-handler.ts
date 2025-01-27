@@ -345,13 +345,25 @@ router.post("/execute", async (req: Request, res: Response) => {
 	}
 
 	// Get analysis data
-	let metaNodeData: CodeAnalysisResponse;
-	try {
-		metaNodeData = await analyzeCode({ code, language });
-	} catch (error) {
-		logger.error("Error analyzing code", { error });
-		return;
-	}
+	let metaNodeData: CodeAnalysisResponse = {
+        dependencies: {
+            variables: [],
+            functions: [],
+            classes: [],
+            modules: []
+        },
+        new_definitions: {
+            variables: [],
+            functions: [],
+            classes: []
+        }
+    };
+	// try {
+	// 	metaNodeData = await analyzeCode({ code, language });
+	// } catch (error) {
+	// 	logger.error("Error analyzing code", { error });
+	// 	return;
+	// }
     // Update the specific session path file
 	const currentRunNumber = await addPathToSession(nodeId, executionsDir, filePath);
 

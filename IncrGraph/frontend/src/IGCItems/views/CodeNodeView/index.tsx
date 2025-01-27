@@ -9,12 +9,11 @@ import { RegistryComponent } from "@/types/frontend";
 import useStore from "@/store/store";
 import { Node } from "reactflow";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Editor } from "@monaco-editor/react";
 import { editor, KeyCode, KeyMod } from "monaco-editor";
 import { useRunButton, useSaveIndicator } from "../viewUtils";
 import TabbedCodeOutput from "@/components/TabbedCodeOutput";
-import { FitAddon } from "@xterm/addon-fit";
 import { deserializeGraphData } from "@/IGCItems/utils/serialization";
 import { saveFileContent } from "@/requests";
 import { Box } from "@mui/material";
@@ -24,15 +23,13 @@ const RawCodeNodeView: React.FC = () => {
 	const selectedFile = useStore((state) => state.selectedFile);
 	const selectedItem = useStore((state) => state.selectedItem);
 	const fileChanged = useStore((state) => state.fileChanged);
+    const currentSessionId = useStore((state) => state.currentSessionId);
 	const mode = useStore((state) => state.mode);
-	const nodes = useStore((state) => state.nodes);
 	const setNodes = useStore((state) => state.setNodes);
 	const savedNodes = useStore((state) => state.savedNodes);
 	const getSessionData = useStore((state) => state.getSessionData);
 
 	const [content, setContent] = React.useState<string | undefined>(undefined);
-
-	const fitAddons = useRef<(FitAddon | null)[]>([]);
 
 	const validItem =
 		selectedFile !== null &&
@@ -85,7 +82,7 @@ const RawCodeNodeView: React.FC = () => {
 		if (si !== null) {
 			useRunButton(si.item.object as Node<IGCCodeNodeData>);
 		}
-	}, [content, selectedItem?.id]);
+	}, [content, selectedItem?.id, currentSessionId]);
 
 	if (!validItem) {
 		return <div className="text-display">No node selected</div>;
@@ -117,7 +114,6 @@ const RawCodeNodeView: React.FC = () => {
 	useStore.getState().setHasEditorCreated(editorPathKey);
 
 	const sessionsData = getSessionData(selectedFile);
-	const currentSessionId = useStore.getState().currentSessionId;
 	let lastExecutionData = null;
 	if (
 		currentSessionId !== null &&

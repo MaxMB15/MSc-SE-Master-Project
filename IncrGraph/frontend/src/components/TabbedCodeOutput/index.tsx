@@ -11,47 +11,46 @@ import useStore from "@/store/store";
 
 interface TabbedCodeOutputProps {
 	executionData: IGCCodeNodeExecution | undefined;
-	// fitAddons: React.MutableRefObject<(FitAddon | null)[]>;
 }
 
 const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 	executionData,
-	// fitAddons,
 }) => {
 	const [activeTab, setActiveTab] = useState(0);
 	const terminalRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const terminals = useRef<(Terminal | null)[]>([]);
-    const theme = useStore(state => state.mode);
-
+	const fitAddons = useRef<(FitAddon | null)[]>([]);
+	const theme = useStore((state) => state.mode);
 
 	useEffect(() => {
 		terminalRefs.current.forEach((ref, index) => {
 			if (ref && !terminals.current[index]) {
 				console.log(`Initializing terminal ${index}`);
-				terminals.current[index] = new Terminal({
+
+				// Initialize FitAddon
+				const fitAddon = new FitAddon();
+				fitAddons.current[index] = fitAddon;
+
+				const terminal = new Terminal({
 					theme: {
-						background: theme === "light" ? STYLES.mainBackgroundColorLight : STYLES.mainBackgroundColorDark,
-						cursor: theme === "light" ? STYLES.mainBackgroundColorLight : STYLES.mainBackgroundColorDark,
+						background:
+							theme === "light"
+								? STYLES.mainBackgroundColorLight
+								: STYLES.mainBackgroundColorDark,
+						cursor:
+							theme === "light"
+								? STYLES.mainBackgroundColorLight
+								: STYLES.mainBackgroundColorDark,
 					},
 					cursorStyle: "block",
 					cursorBlink: false,
 				});
 
-				// fitAddons.current[index] = new FitAddon();
-				// terminals.current[index]?.loadAddon(fitAddons.current[index]!);
-				terminals.current[index]?.open(ref);
+				terminal.loadAddon(fitAddon);
+				terminal.open(ref);
+				fitAddon.fit(); // Fit the terminal on load
 
-				const terminalElement: HTMLElement | null =
-					ref?.querySelector(".xterm-viewport");
-				if (terminalElement) {
-					// terminalElement.style.paddingRight = '40px';
-				}
-				const terminal: HTMLElement | null =
-					ref?.querySelector(".xterm");
-				if (terminal) {
-					terminal.style.paddingRight = "20px";
-				}
-				// fitAddons.current[index]?.fit();
+				terminals.current[index] = terminal;
 			}
 		});
 
@@ -61,33 +60,56 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 	}, [theme]);
 
 	useEffect(() => {
-		// Example: Write to the terminal
+		// Write to the terminals when executionData changes
 		terminals.current.forEach((terminal, index) => {
 			terminal?.clear();
 			if (index === 0) {
-				terminal?.writeln(
-					executionData !== undefined && executionData.stdout !== ""
-						? `${theme === "light" ? "\x1b[30m": ""}${executionData.stdout}`
-						: `${theme === "light" ? "\x1b[30m": ""}<No output>`,
-				);
+                if(executionData && executionData.stdout !== ""){
+                    const stdoutVals = executionData.stdout.split("\n");
+                    for(let i = 0; i < stdoutVals.length; i++){
+                        terminal?.writeln(
+                            `${theme === "light" ? "\x1b[30m" : ""}${stdoutVals[i]}`
+                        );
+                    }
+				    
+                }
+                else{
+                    terminal?.writeln(`${theme === "light" ? "\x1b[30m" : ""}<No output>`);
+                }
 			} else if (index === 1) {
-				terminal?.writeln(
-					executionData !== undefined && executionData.stderr !== ""
-						? `${theme === "light" ? "\x1b[30m": ""}${executionData.stderr}`
-						: `${theme === "light" ? "\x1b[30m": ""}<No errors>`,
-				);
+                if(executionData && executionData.stderr !== ""){
+                    const stderrVals = executionData.stderr.split("\n");
+                    for(let i = 0; i < stderrVals.length; i++){
+                        terminal?.writeln(
+                            `${theme === "light" ? "\x1b[30m" : ""}${stderrVals[i]}`
+                        );
+                    }
+				    
+                }
+                else{
+                    terminal?.writeln(`${theme === "light" ? "\x1b[30m" : ""}<No errors>`);
+                }
 			}
 		});
 	}, [executionData, theme]);
 
-	// useEffect(() => {
-	// 	fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
-	// }, [activeTab]);
+	useEffect(() => {
+		// Fit terminals when the active tab changes
+		fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
+	}, [activeTab]);
+
+	useEffect(() => {
+		// Fit terminals when the window resizes
+		const handleResize = () => {
+			fitAddons.current.forEach((fitAddon) => fitAddon?.fit());
+		};
+		window.addEventListener("resize", handleResize);
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
 
 	const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-		// if(fitAddons.current && newValue <2){
-		//     fitAddons.current[newValue]?.fit();
-		// }
 		setActiveTab(newValue);
 	};
 
@@ -140,7 +162,7 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				{activeTab === 2 && (
 					<ConfigurationDisplay
 						data={
-							executionData !== undefined
+							executionData
 								? executionData.configuration
 								: "No Configuration Available"
 						}
@@ -149,7 +171,7 @@ const TabbedCodeOutput: React.FC<TabbedCodeOutputProps> = ({
 				{activeTab === 3 && (
 					<ConfigurationDisplay
 						data={
-							executionData !== undefined
+							executionData
 								? executionData.metrics
 								: "No Metrics Available"
 						}

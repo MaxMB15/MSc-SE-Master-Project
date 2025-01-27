@@ -87,7 +87,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
         }
     };
     const handleDeleteSession = async () => {
-        if (selectedFile === null || selectedSessionId === null) {
+        if (selectedFile === null || selectedSessionId === null || selectedSessionId === "") {
             return;
         }
         const sessionName = selectedSessionId;
@@ -156,7 +156,7 @@ const ConfigurationOverview: React.FC<ConfigurationOverviewProps> = ({
 					onClick={handleDeleteSession}
 					className={styles.configurationOverviewButton}
 					sx={{ backgroundColor: STYLES.nodeErrorColor }}
-					disabled={currentSessionId === null || selectedSessionId === null}
+					disabled={currentSessionId === null || selectedSessionId === null || selectedSessionId === ""}
 				>
 					Delete Session
 				</Button>

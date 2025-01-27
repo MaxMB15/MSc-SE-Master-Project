@@ -30,11 +30,9 @@
 		"react-draggable": "^4.4.6",
 		"react-json-view": "^1.21.3",
 		"react-markdown": "^8.0.6",
-		"react-redux": "^9.1.2",
 		"react-resizable": "^3.0.5",
 		"react-router-dom": "^6.23.1",
 		"reactflow": "^11.11.3",
-		"redux": "^5.0.1",
 		"shared": "file:../shared",
 		"vis-network": "^9.1.9",
 		"zustand": "^4.5.4"

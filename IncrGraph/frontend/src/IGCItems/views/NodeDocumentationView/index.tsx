@@ -73,12 +73,6 @@ const RawDocumentationNodeView: React.FC = () => {
 			}
 		}
 	}, [fileChanged, content]);
-	useEffect(() => {
-		const si = useStore.getState().selectedItem;
-		if (si !== null) {
-			useRunButton(si.item.object as Node<IGCCodeNodeData>);
-		}
-	}, [content, selectedItem?.id]);
 
 	if (!validItem) {
 		return <div className="text-display">No node selected</div>;
@@ -135,7 +129,7 @@ const RawDocumentationNodeView: React.FC = () => {
 			<Editor
 				path={editorPathKey}
 				height="100%"
-				defaultLanguage="python"
+                defaultLanguage="markdown"
 				defaultValue={currentNode.data.documentation}
 				theme={mode === "light" ? "light" : "vs-dark"}
 				onChange={onChange}

@@ -15,6 +15,7 @@ import { loadSessionData } from "@/utils/sessionHandler";
 import { serializeGraphData } from "@/IGCItems/utils/serialization";
 import { Node, Edge } from "reactflow";
 import { isComponentOfType } from "@/IGCItems/utils/utils";
+import GeneralTextView from "@/IGCItems/views/GeneralTextView";
 
 interface FileEditorProps {
 	openConfirmDialog: (
@@ -84,6 +85,9 @@ const FileEditor: React.FC<FileEditorProps> = (props) => {
 
 	// Function to get views based on selected item
 	const getViews = useCallback((): (IGCViewProps & RegistryComponent)[] => {
+        if(!isIGCFile){
+            return [GeneralTextView]
+        }
 		const selectedComponent = selectedItem?.item;
 		const allViews = Object.values(viewTypes)
 			.map((vt) => vt.object)
@@ -134,7 +138,7 @@ const FileEditor: React.FC<FileEditorProps> = (props) => {
 			setNavBarContainer(() => []);
 			setViews(newViews);
 		}
-	}, [getViews, selectedItem?.id, views, setNavBarContainer]);
+	}, [isIGCFile, selectedItem?.id, views, setNavBarContainer]);
 
 	// Memoized function to create tab elements
 	const createTabs = useMemo(() => {

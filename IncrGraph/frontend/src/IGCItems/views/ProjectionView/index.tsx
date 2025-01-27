@@ -210,15 +210,16 @@ const RawProjectionView: React.FC = () => {
 		// Display all associated dependencies
 		const depNodes = [];
 		const nodes = useStore.getState().getNodes(selectedFile);
-		const edges = useStore
-			.getState()
-			.getEdges(selectedFile)
-			.filter((edge) => edge.type === "DependencyRelationship");
+		const edges = useStore.getState().getEdges(selectedFile);
+
+		const depEdges = edges.filter(
+			(edge) => edge.type === "DependencyRelationship",
+		);
 		if (dependencyChosen !== undefined) {
 			const connectedDepOutNodes = getOutgoingNodes(
 				selectedItem.id,
 				nodes,
-				edges,
+				depEdges,
 				(node) =>
 					isCodeNode(node) &&
 					containsDependency(dependencyChosen, node),
@@ -226,7 +227,7 @@ const RawProjectionView: React.FC = () => {
 			const connectedDepInNodes = getIncomingNodes(
 				selectedItem.id,
 				nodes,
-				edges,
+				depEdges,
 				(node) =>
 					isCodeNode(node) &&
 					containsDependency(dependencyChosen, node),
@@ -246,7 +247,7 @@ const RawProjectionView: React.FC = () => {
 					marginTop: "10px",
 					marginBottom: "10px",
 					width: "100%",
-                    // backgroundColor: "white",
+					// backgroundColor: "white",
 				}}
 			>
 				<InputLabel>Dependency</InputLabel>
@@ -357,7 +358,7 @@ const RawProjectionView: React.FC = () => {
 			// Calculate the height for the Monaco Editor based on the number of lines in the code
 			const codeContent = codeNode?.data.codeData.code || "";
 			const lineCount = codeContent.split("\n").length;
-			const editorHeight = lineCount * 19;
+			const editorHeight = lineCount * 22;
 
 			return (
 				<div
@@ -418,6 +419,7 @@ const RawProjectionView: React.FC = () => {
 				display: "flex",
 				flexDirection: "column",
 				gap: "10px",
+				height: "100%",
 			}}
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -455,8 +457,16 @@ const RawProjectionView: React.FC = () => {
 					<StyledToggleButton value="Code">Code</StyledToggleButton>
 				</ToggleButtonGroup>
 			</div>
-			<div style={{ flex: 1, overflowY: "auto", height: "100%" }}>
-				{view}
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					flexGrow: 1,
+					height: "100vh",
+					overflowY: "auto",
+				}}
+			>
+				<div style={{ flexGrow: 1 }}>{view}</div>
 			</div>
 		</div>
 	);

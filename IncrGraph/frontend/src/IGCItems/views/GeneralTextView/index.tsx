@@ -17,6 +17,7 @@ const RawGeneralTextView: React.FC = () => {
 	const selectedFile = useStore((state) => state.selectedFile);
 	const fileContent = useStore((state) => state.fileContent);
 	const fileChanged = useStore((state) => state.fileChanged);
+    const isIGCFile = useStore((state) => state.isIGCFile);
 	const mode = useStore((state) => state.mode);
 	const [content, setContent] = React.useState<string | undefined>(undefined);
 
@@ -139,7 +140,7 @@ const RawGeneralTextView: React.FC = () => {
 			<Editor
 				path={selectedFile}
 				height="100%"
-				defaultLanguage="python"
+                {...(isIGCFile && { defaultLanguage: "json" })}
 				defaultValue={fileContent}
 				theme={mode === "light" ? "light" : "vs-dark"}
 				onChange={onChange}

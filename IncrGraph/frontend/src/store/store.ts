@@ -173,8 +173,12 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 
 				return {
 					fileHistory: { ...state.fileHistory, ...fileHistory },
+                    selectedItem: null,
+                    selectedItems: [],
+                    navBarContainer: [],
 					selectedFile: updatedFile,
 					fileContent: fileContent.content,
+                    currentSessionId: null,
 					isIGCFile:
 						updatedFile !== null && updatedFile.endsWith(".igc"),
 					fileChanged: Date.now(),
@@ -182,8 +186,12 @@ const useStore = createWithEqualityFn<State>((set, get) => ({
 			}
 			// If selected file is null, then we don't need to save the file history
 			return {
-				selectedFile: updatedFile,
+                selectedItem: null,
+                selectedItems: [],
+                navBarContainer: [],
+                selectedFile: updatedFile,
 				fileContent: fileContent?.content || null,
+                currentSessionId: null,
 				isIGCFile: updatedFile !== null && updatedFile.endsWith(".igc"),
 				fileChanged: Date.now(),
 			};

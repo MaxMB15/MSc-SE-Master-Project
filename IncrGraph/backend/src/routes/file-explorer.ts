@@ -223,6 +223,56 @@ router.post("/new-file", async (req: Request, res: Response) => {
 	}
 });
 
+// Create new igc file
+router.post("/new-igc-file", async (req: Request, res: Response) => {
+	const { filePath } = req.body as {
+		filePath: string;
+	};
+
+	const content = {
+		nodes: [
+			{
+				id: "start",
+				type: "StartNode",
+				data: {
+					label: "Start",
+				},
+				position: {
+					x: 0,
+					y: -100,
+				},
+				positionAbsolute: {
+					x: 0,
+					y: -100,
+				},
+				style: {
+					cursor: "grab",
+				},
+				width: 23,
+				height: 23,
+				selected: false,
+				draggable: false,
+			},
+		],
+		edges: [],
+	};
+
+	try {
+		if (!filePath) {
+			res.status(400).send("File path is required");
+			return;
+		}
+
+		await fs.ensureFile(filePath);
+		await fs.writeJSON(filePath, content, "utf8");
+		logger.info(`Created new file at ${filePath}`);
+		res.status(200).send("File created successfully");
+	} catch (error) {
+		logger.error("Failed to create file", { error });
+		res.status(500).send("Internal Server Error");
+	}
+});
+
 // Create new directory
 router.post("/new-directory", async (req: Request, res: Response) => {
 	const { dirPath } = req.body as { dirPath: string };
@@ -603,11 +653,16 @@ router.get("/session-data", async (req: Request, res: Response) => {
 		for (let i = 0; i < sessionConfigData.path.length; i++) {
 			const nodeId = sessionConfigData.path[i];
 			const executionDir = path.join(executionsDir, `${i + 1}`);
-			const executionData: IGCCodeNodeExecution = {
-				...(await getExecutionData(executionDir)),
-				nodeId: nodeId,
-			};
-			sessionData.executions.push(executionData);
+            try {
+                const executionData: IGCCodeNodeExecution = {
+                    ...(await getExecutionData(executionDir)),
+                    nodeId: nodeId,
+                };
+                sessionData.executions.push(executionData);
+            }
+            catch (error) {
+                console.error(`Error getting execution data for (${executionDir}):`, error);
+            }
 		}
 		// Update the overall configuration to the most recent one
 		// Get the most recent configuration file

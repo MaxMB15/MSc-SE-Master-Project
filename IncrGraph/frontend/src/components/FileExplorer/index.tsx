@@ -13,7 +13,8 @@ import ConfigurationOverview from "../ConfigurationOverview";
 import path from "path-browserify";
 import ContextMenu from "./components/ContextMenu";
 import TreeView from "../TreeView";
-import { createNewDirectory, createNewFile, deleteFileOrDirectory } from "@/requests";
+import { createEmptyIGCFile, createNewDirectory, createNewFile, deleteFileOrDirectory, getFileContent, renameFileOrDirectory } from "@/requests";
+import { isValidIGC } from "@/IGCItems/utils/serialization";
 
 interface FileExplorerProps {
 	openTextDialog: (defaultName: string) => Promise<string | null>;
@@ -71,17 +72,33 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 		}
 	};
 
-	const handleNodeRename = (node: FileNode, newName: string) => {
+	const handleNodeRename = async (node: FileNode, newName: string) => {
 		if (!selectedNode) return;
         if (newName === "") return;
 
 		const updatedNode = { ...selectedNode, name: newName };
 		console.log(`Renaming ${selectedNode.fullPath} to ${newName}`);
+        const newPath = path.join(path.dirname(node.fullPath), newName)
+        await renameFileOrDirectory(node.fullPath, newPath);
+
 		setTree((prevTree) =>
 			prevTree.map((n) =>
 				n.fullPath === updatedNode.fullPath ? updatedNode : n,
 			),
 		);
+        // Check if the new file is an igc file or if it does not decode to a proper json
+        if (newName.endsWith(".igc")) {
+            // Get file content
+            const fileContent = await getFileContent(newPath);
+            if(!isValidIGC(fileContent.content)){
+                // Create an empty igc file
+                console.log(`Creating empty IGC file ${newPath}`);
+                await createEmptyIGCFile(newPath);
+            }
+        }
+
+        // Refresh the file tree
+        refreshFileTree();
 	};
     const handleDelete = async (node: FileNode | null) => {
         if(node === null) return;
@@ -232,7 +249,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ openTextDialog }) => {
 					</div>
 					{!isCollapsed && (
 						<>
-							<div style={{ height: "50%", maxHeight: "50%" }}>
+							<div style={{ height: "30%", maxHeight: "30%" }}>
 								{loading ? (
 									<div className="loading">
 										<p>Loading...</p>

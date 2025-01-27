@@ -54,6 +54,7 @@ export const useRunButton = (
 		weight: 10,
 		element: (
 			<button
+                key={runButtonKey}
 				className="icon-button"
 				title="Run Code"
 				onClick={() => {
@@ -68,17 +69,16 @@ export const useRunButton = (
 					}
 				}}
 				disabled={
-					(node.type === "GraphNode" &&
-						"filePath" in node.data &&
-						"selectedSession" in node.data &&
+					(isGraphNode(node) &&
 						(node.data.filePath === undefined ||
 							node.data.filePath === "" ||
 							node.data.selectedSession === undefined ||
 							node.data.selectedSession === "")) ||
-					("codeData" in node.data &&
-						node.type !== "GraphNode" &&
+					(isCodeNode(node) &&
 						node.data.codeData.code === "") ||
-					useStore.getState().currentSessionId === null
+					useStore.getState().currentSessionId === null ||
+                    useStore.getState().currentSessionId === ""
+                    
 				}
 			>
 				<PlayArrow />

@@ -40,6 +40,7 @@ const SelectionPane: React.FC<SelectionPaneProps> = ({}) => {
 		}
 	}, [selectedItem, selectedItems]);
 	useEffect(() => {
+        // Reset the selected item
 		if (selectedItems.length > 0) {
 			setSelectedItem(() => selectedItems[0]);
 			let optionType = selectedItems[0].item.object.type ?? "";

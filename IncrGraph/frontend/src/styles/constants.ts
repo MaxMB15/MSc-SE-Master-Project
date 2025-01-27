@@ -54,6 +54,7 @@ export const STYLES = {
     nodeSelectedColor: "rgb(0, 190, 253)",
     nodeErrorColor: "rgb(255, 0, 0)",
     nodeNeedsPickColor: "rgb(0, 212, 7)",
+    highlightThickness: 3,
 
     footerHeight: "25px",
     componentNavbarHeight: "23px",

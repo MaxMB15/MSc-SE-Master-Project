@@ -103,19 +103,19 @@ const createQuadraticPath = (
 		targetCenter,
 	);
 
+    // If intersections were not found, fallback to original points
+	const finalSource = sourceIntersection || sourceCenter;
+	const finalTarget = targetIntersection || targetCenter;
+
 	// Calculate the adjusted control point
 	const adjustedControlPoint: Point = {
 		x:
 			2 * offsetPoint.x -
-			0.5 * (sourceIntersection.x + targetIntersection.x),
+			0.5 * (finalSource.x + finalTarget.x),
 		y:
 			2 * offsetPoint.y -
-			0.5 * (sourceIntersection.y + targetIntersection.y),
+			0.5 * (finalSource.y + finalTarget.y),
 	};
-
-	// If intersections were not found, fallback to original points
-	const finalSource = sourceIntersection || sourceCenter;
-	const finalTarget = targetIntersection || targetCenter;
 
 	// Create the quadratic Bezier path command
 	return {

@@ -98,7 +98,7 @@ const Navbar: React.FC = () => {
 					className={styles.logo}
 				/>
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-					Incremental Graph Code (IncrCode)
+					Incremental Graph Code (IGC)
 				</Typography>
 				<Box sx={{ display: "flex", alignItems: "center" }}>
 					<IconButton
@@ -196,7 +196,7 @@ const Navbar: React.FC = () => {
 									<ListItem>
 										<ListItemText
 											primary="Time Worked"
-											secondary="10 hours"
+											secondary="0 hours"
 										/>
 									</ListItem>
 									<ListItem>

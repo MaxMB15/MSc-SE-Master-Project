@@ -31,3 +31,14 @@ export const isValidJSON = (str: string) => {
 		return false;
 	}
 };
+
+export const isValidIGC = (content: string) => {
+    if (!isValidJSON(content)) {
+        return false;
+    }
+    const data = JSON.parse(content);
+    if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+        return false;
+    }
+    return true;
+}
