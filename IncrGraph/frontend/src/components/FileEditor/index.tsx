@@ -277,7 +277,7 @@ const FileEditor: React.FC<FileEditorProps> = (props) => {
 						{!isCollapsed && (
 							<>
 								<span className="navbar-component-title">
-									Code Editor
+									File Editor
 								</span>
 								{navBarElements}
 								<span className="take-full-width"></span>

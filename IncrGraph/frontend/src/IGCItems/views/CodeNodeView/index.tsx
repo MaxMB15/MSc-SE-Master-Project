@@ -9,8 +9,8 @@ import { RegistryComponent } from "@/types/frontend";
 import useStore from "@/store/store";
 import { Node } from "reactflow";
 
-import React, { useEffect } from "react";
-import { Editor } from "@monaco-editor/react";
+import React, { useEffect, useRef } from "react";
+import { Editor, Monaco } from "@monaco-editor/react";
 import { editor, KeyCode, KeyMod } from "monaco-editor";
 import { useRunButton, useSaveIndicator } from "../viewUtils";
 import TabbedCodeOutput from "@/components/TabbedCodeOutput";
@@ -18,6 +18,7 @@ import { deserializeGraphData } from "@/IGCItems/utils/serialization";
 import { saveFileContent } from "@/requests";
 import { Box } from "@mui/material";
 import MarkdownDisplay from "@/components/MarkdownDisplay";
+import { showSuggestionSnippet } from "@/utils/codeTemplates";
 
 const RawCodeNodeView: React.FC = () => {
 	const selectedFile = useStore((state) => state.selectedFile);
@@ -29,6 +30,9 @@ const RawCodeNodeView: React.FC = () => {
 	const savedNodes = useStore((state) => state.savedNodes);
 	const getSessionData = useStore((state) => state.getSessionData);
 
+    const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+    const monacoRef = useRef<Monaco | null>(null);
+
 	const [content, setContent] = React.useState<string | undefined>(undefined);
 
 	const validItem =
@@ -37,7 +41,9 @@ const RawCodeNodeView: React.FC = () => {
 		selectedItem.item.type === "node";
 
 	// Save indicator
-	const onMount = (editor: editor.IStandaloneCodeEditor) => {
+	const onMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+        editorRef.current = editor;
+        monacoRef.current = monaco;
 		setContent(editor.getModel()?.getValue());
 
 		// Custom save handler for Command+S or Ctrl+S
@@ -109,6 +115,9 @@ const RawCodeNodeView: React.FC = () => {
 				return node;
 			});
 		});
+        if(content === "" && editorRef !== null && monacoRef !== null && monacoRef.current !== null){
+            showSuggestionSnippet(selectedItem.item.type, "python", monacoRef.current, editorRef.current);
+        }
 	};
 	const editorPathKey = `${selectedFile}-${selectedItem.id}`;
 	useStore.getState().setHasEditorCreated(editorPathKey);
