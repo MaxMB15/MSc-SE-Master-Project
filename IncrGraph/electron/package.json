@@ -125,7 +125,7 @@
 	"devDependencies": {
 		"@types/http-server": "^0.12.4",
 		"electron": "^31.2.1",
-		"electron-builder": "^24.13.3",
+		"electron-builder": "^26.6.0",
 		"typescript": "^5.5.3"
 	}
 }
